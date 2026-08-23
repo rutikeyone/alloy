@@ -1,6 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/app/app_routes.dart';
+import 'package:notes_app/alloy.g.dart';
 import 'package:notes_app/app/app_startup.dart';
 import 'package:notes_app/features/diagnostics/ui/scope_tree_screen.dart';
 import 'package:notes_app/features/environments/ui/environments_screen.dart';
@@ -21,26 +22,28 @@ class NotesApp extends StatelessWidget {
   final AlloyEnvironment environment;
 
   @override
-  Widget build(BuildContext context) => AlloyAppScope(
-    start: () => startNotesApp(environment: environment),
-    loading: const _Starting(),
-    errorBuilder: (context, error, retry) =>
-        _StartupFailed(error: error, retry: retry),
-    child: MaterialApp(
-      title: 'Alloy showcase',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-      ),
-      routes: {
-        AppRoutes.home: (_) => const HomeScreen(),
-        AppRoutes.notes: (_) => const NotesScreen(),
-        AppRoutes.noteDetail: (_) => const NoteDetailScreen(),
-        AppRoutes.session: (_) => const SessionScreen(),
-        AppRoutes.formatters: (_) => const FormattersScreen(),
-        AppRoutes.scopeTree: (_) => const ScopeTreeScreen(),
-        AppRoutes.environments: (_) => const EnvironmentsScreen(),
-      },
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Alloy showcase',
+    theme: ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
     ),
+    builder: AlloyAppScope.builder(
+      root: NotesScope(environment),
+      bootstrap: () => $alloyBootstrap(environment),
+      rootName: $alloyRootScopeName,
+      loading: const _Starting(),
+      errorBuilder: (context, error, retry) =>
+          _StartupFailed(error: error, retry: retry),
+    ),
+    routes: {
+      AppRoutes.home: (_) => const HomeScreen(),
+      AppRoutes.notes: (_) => const NotesScreen(),
+      AppRoutes.noteDetail: (_) => const NoteDetailScreen(),
+      AppRoutes.session: (_) => const SessionScreen(),
+      AppRoutes.formatters: (_) => const FormattersScreen(),
+      AppRoutes.scopeTree: (_) => const ScopeTreeScreen(),
+      AppRoutes.environments: (_) => const EnvironmentsScreen(),
+    },
   );
 }
 
@@ -48,10 +51,8 @@ class _Starting extends StatelessWidget {
   const _Starting();
 
   @override
-  Widget build(BuildContext context) => const MaterialApp(
-    home: Scaffold(
-      body: Center(child: CircularProgressIndicator(key: Key('app-starting'))),
-    ),
+  Widget build(BuildContext context) => const Scaffold(
+    body: Center(child: CircularProgressIndicator(key: Key('app-starting'))),
   );
 }
 
@@ -62,24 +63,22 @@ class _StartupFailed extends StatelessWidget {
   final VoidCallback retry;
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    home: Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('The graph could not start'),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text('$error', key: const Key('startup-error')),
-            ),
-            FilledButton(
-              key: const Key('startup-retry'),
-              onPressed: retry,
-              child: const Text('Try again'),
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => Scaffold(
+    body: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('The graph could not start'),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text('$error', key: const Key('startup-error')),
+          ),
+          FilledButton(
+            key: const Key('startup-retry'),
+            onPressed: retry,
+            child: const Text('Try again'),
+          ),
+        ],
       ),
     ),
   );

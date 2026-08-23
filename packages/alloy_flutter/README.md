@@ -62,18 +62,56 @@ singletons, `loading` is shown while `init()` runs and `errorBuilder` receives a
 
 ## Who owns the root scope
 
-`AlloyAppScope` does. It builds the graph, publishes it, and disposes it on unmount:
+`AlloyAppScope` does. It takes the graph the same way `AlloyApplication.start` does, builds it,
+publishes it, and disposes it on unmount. Its usual home is `MaterialApp.builder`:
 
 ```dart
 void main() => runApp(
-  AlloyAppScope(
-    start: startMyApp,
-    loading: const _Splash(),
-    errorBuilder: (context, error, retry) => _StartupFailed(error, retry),
-    child: const MyApp(),
+  MaterialApp(
+    theme: ThemeData(colorSchemeSeed: Colors.indigo),
+    builder: AlloyAppScope.builder(
+      root: const AppScope(),
+      loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
+      errorBuilder: (context, error, retry) => StartupFailed(error, retry),
+    ),
+    home: const HomeScreen(),
   ),
 );
 ```
+
+In Code-Gen Mode the three generated names go straight in — no wrapper function in between:
+
+```dart
+builder: AlloyAppScope.builder(
+  root: $AlloyRootScope(environment: environment),
+  bootstrap: () => $alloyBootstrap(environment),
+  rootName: $alloyRootScopeName,
+),
+```
+
+**Why `builder` and not above the app.** Everything `MaterialApp.builder` returns sits below
+`Theme`, `Directionality`, `MediaQuery` and `Localizations`, and the child it hands you is the
+navigator. So `loading` and `errorBuilder` are ordinary screens with the app's theme — put the
+scope *above* `MaterialApp` instead and they have no theme at all, which is why they would each
+need a throwaway `MaterialApp` of their own.
+
+If the app already uses `builder`, compose the two yourself; merging two builders is the app's
+decision, not the framework's:
+
+```dart
+builder: (context, child) => AlloyAppScope(
+  root: const AppScope(),
+  child: MyOwnWrapper(child: child!),
+),
+```
+
+**`bootstrap` is a function, not a list.** Bootstrap steps are instances that hold resources, so a
+stored list would hand a restart the same objects it just released — the defect that made the
+generated `$alloyBootstrap` a getter in the first place. `root` *is* a plain value, because an
+`AlloyScopeBuilder` only registers and carries no state.
+
+For a graph the declarative form cannot express, `AlloyAppScope.start(start: () async { ... })`
+takes a function returning a started scope.
 
 Building the graph *inside* `runApp` rather than before it is the point. `runApp(App(scope: await
 start()))` has no way to show a startup failure — the app dies before its first frame. Here the
@@ -84,6 +122,33 @@ failure is a screen with a retry. As a bonus, `WidgetsFlutterBinding` is already
 call that retries a failed start. The published provider is keyed by the scope, so a restart
 rebuilds the subtree — a child scope cannot be reparented, and would otherwise be left pointing at
 a root that is gone.
+
+### Hot reload keeps the graph; hot restart rebuilds it
+
+Measured on the iOS simulator, because the behaviour is easy to assume and
+easy to get wrong.
+
+**Hot reload leaves the graph alone.** `AlloyAppScope` keeps its state, so the
+root scope is not rebuilt: no bootstrap step re-runs, no initializer re-runs,
+and every instance stays the one it was. Editing a widget takes effect
+immediately, which is the point.
+
+**That includes edits to registered classes**, and this is the part that
+surprises people. Change what a factory or a bootstrap step produces, hot
+reload, and the screen still shows the *old* value — the instance already
+exists and nothing asked for a new one. Alloy is doing what a singleton is for.
+When you are iterating on a service's construction, use hot restart, or call
+`AlloyAppScope.of(context).restart()` to rebuild only the graph while the app
+keeps running.
+
+**Hot restart rebuilds everything**: a new isolate, so statics reset, phase 0
+runs again, and the new code takes effect.
+
+One caveat about hot restart, inherent to Flutter rather than to Alloy: it
+replaces the isolate outright, so `dispose()` never runs. Whatever the old
+graph held — a socket, a file handle, a native binding — is dropped rather than
+released. `restart()` does not have this problem; it disposes the old root
+before building the new one.
 
 ### `disposeOnExitRequest` is off by default
 

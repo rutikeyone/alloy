@@ -8,13 +8,20 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # Two channels, not two Flutter versions: every package needs Dart ^3.13,
+    # which no Flutter below 3.47 ships, so there is no older version to test
+    # against. beta is the useful axis — it finds breakage before it lands.
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [stable, beta]
+    continue-on-error: ${{ matrix.channel == 'beta' }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.47.1
-          channel: stable
+          channel: ${{ matrix.channel }}
 
       - name: Resolve workspace
         run: flutter pub get
@@ -25,6 +32,15 @@ jobs:
       - name: Resolve external consumer
         run: dart pub get
         working-directory: compat/external_consumer
+
+      # Existence only. Whether a translation still says what the English says
+      # is not checkable by machine — that is a line in the RELEASING checklist.
+      - name: Translations are present
+        run: |
+          for f in README.ru.md README.zh-CN.md \
+                   MIGRATION.md MIGRATION.ru.md MIGRATION.zh-CN.md; do
+            test -s "$f" || { echo "missing or empty: $f"; exit 1; }
+          done
 
       - name: Analyze
         run: dart analyze --fatal-infos .

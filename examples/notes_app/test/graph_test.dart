@@ -1,6 +1,5 @@
 import 'package:alloy/alloy.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:notes_app/app/app_startup.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/core/app_config.dart';
 import 'package:notes_app/core/clock.dart';
@@ -11,12 +10,14 @@ import 'package:notes_app/features/notes/data/note_repository.dart';
 import 'package:notes_app/features/notes/domain/note_store.dart';
 import 'package:notes_app/features/notes/ui/notes_controller.dart';
 
+import 'support.dart';
+
 void main() {
   late AlloyScope app;
 
   setUp(() async {
     BootLog.reset();
-    app = await startNotesApp();
+    app = await startNotesGraph();
   });
 
   tearDown(() async => app.dispose());

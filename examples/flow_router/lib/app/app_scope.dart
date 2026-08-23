@@ -9,8 +9,3 @@ class AppScope implements AlloyScopeBuilder {
   void build(AlloyScope scope) =>
       scope.registerLazySingleton<EventLog>(const EventLogFactory());
 }
-
-/// Builds the root scope. Manual Mode — this example is about flows, not
-/// about generation.
-Future<AlloyScope> startFlowRouter() =>
-    AlloyApplication.start(root: const AppScope(), rootName: 'app');

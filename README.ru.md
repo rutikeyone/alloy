@@ -1,0 +1,424 @@
+[English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md)
+
+> Перевод [README.md](README.md). Канонический текст — английский: при расхождении верен он.
+> README отдельных пакетов не переводятся — это справочники по API.
+
+# Alloy
+
+Фреймворк внедрения зависимостей для Dart и Flutter. Два режима: декларативная кодогенерация и
+рукописный API на чистом Dart поверх одного и того же рантайма.
+
+Статус: **Фаза 1 завершена.** Рантайм, Flutter-биндинги, аннотации, слой анализа, оба генератора и
+плагин линтера реализованы и покрыты тестами.
+
+Пришли с уже работающим `get_it` или `injectable`? Начните с
+[MIGRATION.ru.md](MIGRATION.ru.md) — там разобрано, что во что переводится и, что полезнее,
+что не переводится вовсе.
+
+## Пакеты
+
+| Пакет | Зависит от | Попадает в приложение |
+|---|---|---|
+| `alloy_annotations` | `meta` | да |
+| `alloy` | `alloy_annotations` | да, ядро рантайма, без Flutter |
+| `alloy_flutter` | `alloy`, `flutter` | да |
+| `alloy_go_router` | `alloy_flutter`, `go_router` | да, опционально |
+| `alloy_talker` | `alloy`, `talker` | да, опционально |
+| `alloy_logging` | `alloy`, `logging` | да, опционально |
+| `alloy_logger` | `alloy`, `logger` | да, опционально |
+| `alloy_analyzer` | `alloy_annotations`, `analyzer` | нет |
+| `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | только dev_dependency |
+| `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | только dev_dependency |
+
+`alloy_analyzer` существует затем, чтобы генератор и линтер разбирали объявления Alloy **одной**
+реализацией, а не двумя, которые неизбежно разойдутся. Он владеет IR и топологической сортировкой и
+не зависит ни от `build`, ни от API плагина.
+
+**Инвариант проекта:** сгенерированный код имеет право использовать только публичный API `alloy`.
+В тот момент, когда генерации понадобится что-то, чего не выражает Manual Mode, это два разных
+фреймворка под одним именем.
+
+## Инструментарий
+
+Собрано и проверено на **Flutter 3.47.1 / Dart 3.13.1**, analyzer 13.3.0.
+
+Все пакеты требуют Dart `^3.13.0`, а его не поставляет ни один Flutter ниже **3.47** — значит это
+единый пол для всех, и расхождения версий между пакетами, за которым надо следить, попросту нет.
+CI гоняет `stable` и `beta`, а не матрицу прошлых релизов: полезно ловить ту поломку, которая ещё
+не вышла.
+
+Не держите в PATH `dart` из Homebrew — ставьте Flutter SDK первым. Старый `dart` ломается негромко:
+`dart analyze .` выдаёт десятки фантомных issue против чужого анализатора, а `dart pub get` честно
+отказывается от констрейнта SDK. Проверяйте `dart --version`, прежде чем верить прогону.
+
+`dart_style` пиньте сознательно: 3.1.7 требует `analyzer <12.0.0` и молча держит весь workspace на
+три мажора позади. Эталонный вывод к тому же меняется между релизами форматтера.
+
+## Проверка
+
+```
+dart analyze --fatal-infos .
+dart format --output=none --set-exit-if-changed .
+(cd packages/alloy && dart test)
+(cd packages/alloy_flutter && flutter test)
+(cd examples/counter_manual && dart test)
+(cd examples/counter_codegen && dart run build_runner build && flutter test)
+(cd examples/notes_app && dart run build_runner build && flutter test)
+(cd packages/alloy_lint && dart test)
+(cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
+```
+
+CI (`.github/workflows/ci.yml`) гоняет всё перечисленное плюс `git diff --exit-code` после
+регенерации обоих примеров **и `compat/external_consumer`**, так что устаревший сгенерированный код
+валит сборку. Генератор форматирует свой вывод той же версией `dart_style`, что и проверка формата,
+поэтому они никогда не спорят.
+
+## Тестирование приложения на Alloy
+
+`testWidgets` выполняет тело в fake-async зоне, поэтому `Future.delayed` в инициализаторе там не
+завершается никогда. Стройте корневой скоуп в `setUp`, а не внутри `testWidgets`, а утверждения про
+граф целиком держите в обычном `test`. `examples/notes_app/test/screens_test.dart` использует оба
+подхода.
+
+Чтобы подменить зависимость, создайте дочерний скоуп и зарегистрируйте её заново: дубликат внутри
+одного скоупа — ошибка, а затенение из дочернего — штатный способ, и в тестах, и в продакшене.
+
+## Известное предупреждение при публикации
+
+`alloy_lint` сообщает «the name of lib/main.dart should match the name of the package». Эта точка
+входа задана API плагина сервера анализа — сервер генерирует код, который импортирует
+`package:alloy_lint/main.dart` и читает его переменную `plugin`. У `riverpod_lint` то же самое
+предупреждение.
+
+## Раскладка
+
+Один публичный тип на файл. Sealed-иерархия `AlloyRegistration` — осознанное исключение: sealed
+обязана жить в одной библиотеке, поэтому её наследники это `part`-файлы
+`src/registration/alloy_registration.dart`, а не отдельные библиотеки.
+
+`compat/external_consumer` — единственный каталог вне этого правила: это пакет, намеренно **не**
+входящий в workspace и не объявляющий `resolution: workspace`, так что pub резолвит его
+самостоятельно, ровно как сторонний проект. Он существует, чтобы держать пайплайн кодогенерации
+честным снаружи репозитория — см. его собственный README.
+
+## Генераторы
+
+`alloy_generator` поставляет три билдера:
+
+| Билдер | Вход → выход | Назначение |
+|---|---|---|
+| `alloy_property_injection` | `.dart` → `.alloy.g.part` | миксины, заполняющие `late final` поля |
+| `alloy_scan` | `.dart` → `.alloy.json` (кэш) | IR по одной библиотеке |
+| `alloy_container` | `$lib$` → `lib/alloy.g.dart` | `$AlloyRootScope`, `$alloyBootstrap`, `$startAlloy()` |
+
+`alloy_scan` идёт до `alloy_container`; агрегирующий билдер читает все `.alloy.json` через
+`findAssets`, потому что один build step не видит программу целиком. На выходе — приватные
+const-классы-фабрики и `$AlloyRootScope`, где регистрации упорядочены компайл-тайм топологической
+сортировкой. Поля с property injection считаются рёбрами графа, поэтому блок всегда регистрируется
+после того, что он инжектит. Цикл валит сборку, называя цикл, а не эмитит сломанный код.
+
+Дженерики работают и как зависимости, и как цель `exposeAs`: `Repository<User>` и
+`Repository<Order>` — две разные регистрации, потому что в рантайме `AlloyKey` строится от `Type`, а
+это разные типы. А вот **сам инъектируемый класс** дженериком быть не может:
+`@AlloyInject class Cache<T>` отвергается, поскольку ничто не сообщает генератору, какие
+инстанциации регистрировать. Аннотируйте конкретный подтип или выставьте его через `exposeAs`.
+
+Нуллабельность в ключ регистрации не входит: зависимость `Foo?` читает регистрацию `Foo`. Понятия
+опциональной зависимости у Alloy пока нет.
+
+Классы с `@AlloyBootstrap` собираются в `$alloyBootstrap`, упорядоченные по `order`, а затем по
+имени, чтобы вывод был стабильным. Они выполняются строго последовательно, до появления контейнера,
+поэтому парсер отвергает шаг, чей конструктор требует параметры.
+
+`$alloyBootstrap` эмитится **геттером**, а не хранимым списком: top-level `final` построил бы шаги
+один раз на процесс, молча разделив их между повторной попыткой старта и между тестами, и оставив
+живыми после смерти усыновившего их скоупа. Отработавшие шаги корневой скоуп **усыновляет**, так
+что шаг, который что-то открыл, закрывается при разборе — последним, после всего, что построено
+поверх него. Если шаг упал, уже отработавшие освобождаются в обратном порядке до выброса ошибки:
+скоупа, которому их передать, ещё нет.
+
+Классы с `@AlloyInit` становятся асинхронными синглтонами: сгенерированная фабрика конструирует
+объект, дожидается его `init()` и регистрирует с `dependsOn`, переведённым в `AlloyKey`. Заметьте,
+что литерал множества строится в рантайме, а не `const`: `AlloyKey` переопределяет `==`, а элементы
+const-множества обязаны иметь примитивное равенство.
+
+### Окружения — опционально
+
+Пока ничего из перечисленного этого не требует. Проект, который никогда не пишет
+`@AlloyEnvironment`, имеет ровно один граф, все регистрации принадлежат ему, а `$startAlloy()` не
+принимает никакого окружения. Читайте дальше только когда одной сборке нужна другая реализация,
+чем другой.
+
+`@AlloyEnvironment` ограничивает регистрацию одним или несколькими окружениями:
+
+```dart
+@AlloyInject(exposeAs: ApiClient)
+@AlloyEnvironment.prod
+@AlloyEnvironment.stage
+class LiveApiClient implements ApiClient { ... }
+
+@AlloyInject(exposeAs: ApiClient)
+@AlloyEnvironment.dev
+@AlloyEnvironment.test
+class FakeApiClient implements ApiClient { ... }
+```
+
+`dev`, `stage`, `prod` и `test` — константы, а не закрытое множество: `@AlloyEnvironment('canary')`
+объявляет своё собственное и ведёт себя точно так же. Аннотация **повторяется**, а не принимает
+список, потому что регистрация принадлежит *множеству* окружений, а старт выбирает ровно *одно*:
+
+```dart
+final scope = await $startAlloy(environment: AlloyEnvironment.prod);
+```
+
+Сгенерированный контейнер принимает выбор полем и оборачивает условием только ограниченные
+регистрации:
+
+```dart
+final class $AlloyRootScope implements AlloyScopeBuilder {
+  const $AlloyRootScope({
+    this.environment = AlloyEnvironment.defaultEnvironment,
+  });
+
+  final AlloyEnvironment environment;
+
+  @override
+  void build(AlloyScope scope) {
+    scope.registerLazySingleton<EventLog>(const _EventLogFactory());
+    if (environment.matches(const <String>{'dev', 'test'})) {
+      scope.registerLazySingleton<ApiClient>(const _FakeApiClientFactory());
+    }
+    if (environment.matches(const <String>{'prod', 'stage'})) {
+      scope.registerLazySingleton<ApiClient>(const _LiveApiClientFactory());
+    }
+  }
+}
+```
+
+Из этой формы следуют три вещи:
+
+- **Опциональность сохраняется до конца.** Параметр `environment` появляется только когда какое-то
+  объявление называет окружение, и даже тогда у него есть дефолт
+  `AlloyEnvironment.defaultEnvironment` — то самое единственное окружение неразделённого графа. Этот
+  дефолт матчит только регистрации без ограничений, поэтому запуск разделённого графа без выбора
+  оставляет разделённые типы незарегистрированными, и первый же их резолв падает с внятной ошибкой,
+  а не молча отдаёт не тот класс.
+- **Ничто не регистрируется дважды.** Генератор отвергает две регистрации одного типа с
+  пересекающимися окружениями — включая случай, когда одна не называет окружения вовсе, ведь
+  неограниченная регистрация присутствует везде. То, что иначе было бы молчаливым last-one-wins,
+  становится ошибкой сборки с именами обоих классов и окружения, в котором они столкнулись.
+- **Manual Mode умеет то же самое.** `matches` — обычный публичный API, поэтому рукописный билдер
+  пишет тот же `if`, что эмитит генератор. Унаследуйтесь от `AlloyEnvironment` и переопределите
+  `matches`, чтобы активировать несколько сразу или матчить не по имени.
+
+Шаги `@AlloyBootstrap` тоже принимают окружения. Когда хоть один это делает, `$alloyBootstrap`
+превращается из геттера в функцию выбранного окружения, а пропущенные шаги не выполняются и не
+усыновляются:
+
+```dart
+List<AlloyBootstrapStep> $alloyBootstrap(AlloyEnvironment environment) => [
+  BindPlatform(),
+  if (environment.matches(const <String>{'prod', 'stage'})) ReportCrashes(),
+];
+```
+
+Окружение, которого никто не заявляет, легально и оставляет соответствующие типы
+незарегистрированными: их резолв упадёт обычной ошибкой «не зарегистрировано», а не подсунет
+чужой класс.
+
+`@AlloyScopeRoot` именует корневой скоуп и сводит старт к одному вызову:
+
+```dart
+final scope = await $startAlloy();
+```
+
+Генератор эмитит `$alloyRootScopeName` и `$startAlloy()`, связывающий контейнер, список bootstrap и
+имя. Без аннотации имя по умолчанию `root`; два аннотированных класса в одном пакете — ошибка
+генерации.
+
+## Кто владеет корневым скоупом
+
+`AlloyAppScope`. Он строит граф, публикует его, разбирает при размонтировании и превращает падение
+старта в экран с кнопкой повтора вместо приложения, умершего до первого кадра.
+
+Граф он принимает так же, как `AlloyApplication.start`, и живёт в `MaterialApp.builder`, поэтому
+`loading` и `errorBuilder` — обычные экраны с темой приложения, а не второй `MaterialApp`:
+
+```dart
+void main() => runApp(
+  MaterialApp(
+    builder: AlloyAppScope.builder(
+      root: $AlloyRootScope(environment: environment),
+      bootstrap: () => $alloyBootstrap(environment),
+      rootName: $alloyRootScopeName,
+      loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
+    ),
+    home: const HomeScreen(),
+  ),
+);
+```
+
+`bootstrap` — функция, а не список, и это намеренно: шаги держат ресурсы, а рестарт обязан получить
+новые. Для графа, который эта форма не выражает, остаётся `AlloyAppScope.start(start: ...)`.
+
+`AlloyAppScope.of(context).restart()` пересобирает граф — тот же вызов повторяет упавший старт.
+Разбор при завершении приложения включается вручную (`disposeOnExitRequest`) и на практике работает
+только на десктопе; почему Flutter не может обещать это на мобильных, написано в README
+`alloy_flutter`.
+
+## Наблюдение за графом
+
+`AlloyObserver` сообщает, что делает граф: появляются скоупы, строятся инстансы, завершается старт,
+падает разбор. Наблюдатели передаются туда, где граф создаётся:
+
+```dart
+final scope = await AlloyApplication.start(
+  root: const AppScope(),
+  observers: [AlloyLogObserver(const AlloyDeveloperLogSink())],
+);
+```
+
+Наблюдателей наследует каждый скоуп, созданный ниже, так что одна регистрация покрывает дерево.
+
+Дизайн определяют две вещи. Колбэки получают `AlloyScopeRef` и `AlloyKey` — описатели, а не живые
+объекты, потому что наблюдатель, способный резолвить из скоупа посреди разбора или диспоузнуть его
+второй раз, уже не наблюдает. И исключение из колбэка проглатывается: наблюдение не должно уметь
+ломать наблюдаемое.
+
+Резолв не логируется. Попадание в кэш — горячий путь, и событие на каждый `get` было бы шумом;
+видеть стоит **создание** инстанса, что и покрывает `onInstanceCreated`. Без зарегистрированных
+наблюдателей цена каждого события — одна проверка пустого списка.
+
+`AlloyLogObserver` превращает события в `AlloyLogRecord` и отдаёт их в `AlloyLogSink`.
+`AlloyDeveloperLogSink` (`dart:developer`, без зависимостей) поставляется в `alloy`; остальное
+подключают пакеты-адаптеры:
+
+| Пакет | Форма | Зачем |
+|---|---|---|
+| `alloy_talker` | `AlloyObserver` | каждый вид события — свой цветной `TalkerLog`, фильтруемый в `TalkerScreen` |
+| `alloy_logging` | `AlloyLogSink` | у `logging` с dart.dev нет понятия вида записи |
+| `alloy_logger` | `AlloyLogSink` | то же плюс собственный вывод в консоль |
+
+### Любой другой логгер, без пакета
+
+Приёмник — это один колбэк, поэтому ничто не остаётся за бортом из-за отсутствия адаптера:
+
+```dart
+AlloyLogObserver(AlloyLogSink.from((record) => myLogger.debug(record.message)))
+```
+
+| Логгер | Вся интеграция целиком |
+|---|---|
+| `loggy` | `AlloyLogSink.from((r) => logDebug(r.message))` |
+| `fimber` | `AlloyLogSink.from((r) => Fimber.d(r.message, ex: r.error))` |
+| `simple_logger` | `AlloyLogSink.from((r) => logger.info(r.message))` |
+| Sentry | `AlloyLogSink.from((r) { if (r.error != null) Sentry.captureException(r.error, stackTrace: r.stackTrace); })` |
+| Crashlytics | `AlloyLogSink.from((r) => FirebaseCrashlytics.instance.log(r.message))` |
+
+Запись — не просто строка: в ней есть `level`, `scope`, `key`, `error` и `stackTrace`, и именно
+поэтому две строки про крашрепортинг могут фильтровать только падения, а не сливать в платный
+сервис весь trace.
+
+`AlloyMultiSink` разводит одну запись по нескольким адресатам, и упавший приёмник не заглушает
+остальных — консоль плюс крашрепортинг это нормальная продакшен-пара:
+
+```dart
+AlloyLogObserver(
+  const AlloyMultiSink([AlloyDeveloperLogSink(), _CrashReporterSink()]),
+)
+```
+
+Два приёмника поставляются в самом `alloy` и не тянут зависимостей: `AlloyDeveloperLogSink`
+(`dart:developer`, правильный дефолт во Flutter-приложении) и `AlloyPrintLogSink` (stdout, для CLI
+и первого взгляда).
+
+Этот же канал закрыл реальную дыру: когда старт падает и Alloy откатывается, bootstrap-шаг,
+который **тоже** не смог освободиться, невозможно сообщить через `AlloyBootstrapError`, не замаскировав
+исходную причину. Раньше он терялся в голом `catch`. Теперь это `onBootstrapStepReleaseFailed`.
+
+## Скоупы флоу
+
+`alloy_go_router` делает время жизни скоупа навигационным флоу — создаётся при входе, разбирается
+при выходе:
+
+```dart
+AlloyFlowRoute(
+  name: 'checkout',
+  identity: (state) => state.pathParameters['orderId'],
+  scope: (state) => CheckoutScope(state.pathParameters['orderId']!),
+  routes: [...],
+)
+```
+
+Это обычный наследник `ShellRoute` — то есть он встаёт в таблицу роутов везде, где принимается
+`RouteBase`, а флоу можно дать собственное имя, унаследовавшись от него. Скоупом владеет виджет
+внутри. Этого достаточно, потому что go_router ключует страницу шелла идентичностью объекта роута,
+так что поддерево переживает любую навигацию *внутри* флоу и уничтожается в тот кадр, когда флоу
+покидает match list. Никто не слушает роутер и не зеркалит его — именно на зеркалировании
+рукописные версии ломаются на кнопке «назад», на deep link и на переключении вкладок.
+
+Вкладки получают то же самое: `AlloyFlowShellRoute` скоупит весь `StatefulShellRoute`, а
+`AlloyFlowShellBranch` — одну вкладку, и они композируются в три уровня. Но ветка держится
+*живой*, а не *видимой*: go_router сохраняет навигаторы веток за кадром, поэтому скоуп вкладки
+живёт до закрытия шелла, а не до ухода с неё.
+
+Единственное, чего роутер не может решить, — считать ли `/orders/1` и `/orders/2` одним флоу; на
+это отвечает `identity`. Флоу, чьи роуты не лежат одним поддеревом, так выразить нельзя, и это
+ограничение осознанное — см. README пакета.
+
+## Примеры
+
+- `examples/counter_manual` — Manual Mode. Чистый Dart, без Flutter и без генерации.
+- `examples/counter_codegen` — минимально возможная генерируемая обвязка.
+- `examples/flow_router` — скоуп со временем жизни навигационного флоу, на go_router.
+- `examples/logging` — собственные события графа, льющиеся в talker, с `TalkerScreen`.
+- `examples/notes_app` — небольшое многоэкранное приложение, по одному экрану на возможность,
+  запускается на Android-эмуляторе или iOS-симуляторе (`cd examples/notes_app && flutter run`):
+
+  | Экран | Случай |
+  |---|---|
+  | Home | обе фазы старта — журнал bootstrap и каждый сервис с `@AlloyInit` |
+  | Property injection | контроллер с пустым конструктором и полями `@injected` |
+  | Widget-owned scope | `AlloyScopeWidget` плюс параметризованная фабрика |
+  | Session scope | выход из аккаунта разбирает скоуп; никто не реализует `reset()` |
+  | Named and multi-injection | три форматтера за одним интерфейсом |
+  | Scope tree | живая иерархия, отрисованная из `AlloyScope.children` |
+  | Environments | один интерфейс, разный класс в разных сборках |
+
+  Первым стоит читать экран сессии: выход — это `await scope.dispose()`, и всё, что построила
+  сессия, уходит вместе с ним. Ни одного слушателя сессии, ни одного `reset()` ни в одном
+  репозитории.
+
+## Плагин линтера
+
+`alloy_lint` — это `analysis_server_plugin`, а не плагин `custom_lint` (см. «Инструментарий»). Он
+поставляет семь warning-правил, все построены на том же слое разбора `alloy_analyzer`, что и
+генератор, поэтому ошибка всплывает в IDE, а не только на прогоне `build_runner`:
+
+| Правило | Что ловит |
+|---|---|
+| `alloy_missing_injection_mixin` | поля `@injected` без `with _$ClassName` |
+| `alloy_injected_field_must_be_late_final` | `@injected` на изменяемом, не-late или статическом поле |
+| `alloy_injectable_must_be_constructible` | `@AlloyInject` на абстрактном классе или на классе без публичного генеративного конструктора |
+| `alloy_init_requires_init_method` | `@AlloyInit` на классе без `init()` |
+| `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` на классе без `run()` |
+| `alloy_bootstrap_step_cannot_inject` | bootstrap-шаг, чей конструктор требует параметры |
+| `alloy_environment_needs_a_registration` | `@AlloyEnvironment` на классе, который никто не регистрирует, где она молча ничего не делает |
+
+Две вещи при подключении стоят реального времени и легко делаются неправильно:
+
+1. Секция `plugins:` **работает только в корне пакета или workspace**. Положите её во вложенный
+   `analysis_options.yaml` — и она молча проигнорируется: ни ошибки, ни диагностик. По той же
+   причине `dart analyze <nested/dir>` её не применяет; анализируйте корень workspace.
+2. Сервер анализа резолвит плагины в изолированном pub-контексте, поэтому неопубликованные соседи
+   по workspace ему невидимы. Каждой неопубликованной транзитивной зависимости нужна запись в
+   `plugins: dependency_overrides:` — см. корневой `analysis_options.yaml` этого репозитория.
+
+Поведение правил покрыто тестами на `analyzer_testing` в `packages/alloy_lint/test`: они гоняют
+правила напрямую и не требуют никакой обвязки плагина.
+
+## Линтинг
+
+`custom_lint` не используется. Его последний релиз (0.8.1) прибит к `analyzer ^8.0.0` и не может
+сосуществовать с современным анализатором; `riverpod_lint` ушёл с него на первопартийный
+`analysis_server_plugin`, и `alloy_lint` следует за ним.

@@ -7,11 +7,13 @@ import 'package:notes_app/features/environments/data/fake_api_client.dart';
 import 'package:notes_app/features/environments/data/live_api_client.dart';
 import 'package:notes_app/features/environments/domain/api_client.dart';
 
+import 'support.dart';
+
 void main() {
   setUp(BootLog.reset);
 
   Future<AlloyScope> start(AlloyEnvironment environment) async {
-    final app = await startNotesApp(environment: environment);
+    final app = await startNotesGraph(environment: environment);
     addTearDown(app.dispose);
     return app;
   }

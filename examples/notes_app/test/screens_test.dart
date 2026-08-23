@@ -4,13 +4,14 @@ import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:notes_app/app/app_routes.dart';
-import 'package:notes_app/app/app_startup.dart';
 import 'package:notes_app/app/notes_app.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/core/event_log.dart';
 import 'package:notes_app/features/session/data/session_activity_log.dart';
 import 'package:notes_app/features/session/domain/session_user.dart';
 import 'package:notes_app/features/session/session_manager.dart';
+
+import 'support.dart';
 
 void main() {
   /// The graph the mounted app owns. Assigned by [pumpApp], because
@@ -28,12 +29,14 @@ void main() {
     await tester.pumpWidget(const NotesApp());
     await settle(tester);
     await settle(tester);
-    app = AlloyScopeProvider.of(tester.element(find.byType(MaterialApp)));
+    // Below MaterialApp, not above it: AlloyAppScope.builder publishes the
+    // scope inside the app so the splash and the error screen get its theme.
+    app = AlloyScopeProvider.of(tester.element(find.byType(Navigator).first));
   }
 
   /// A graph without widgets, for assertions that are about the graph alone.
   Future<AlloyScope> startGraph() async {
-    final scope = await startNotesApp();
+    final scope = await startNotesGraph();
     addTearDown(scope.dispose);
     return scope;
   }

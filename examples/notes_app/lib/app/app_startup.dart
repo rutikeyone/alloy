@@ -17,12 +17,22 @@ const notesEnvironment = _requestedEnvironment == ''
     ? AlloyEnvironment.dev
     : AlloyEnvironment(_requestedEnvironment);
 
-Future<AlloyScope> startNotesApp({
-  AlloyEnvironment environment = notesEnvironment,
-}) async {
-  final app = await $startAlloy(environment: environment);
-  app
-    ..registerSingleton<AlloyEnvironment>(environment)
-    ..registerSingleton<SessionManager>(SessionManager(app));
-  return app;
+/// The whole root scope: what the generator found, plus the two things it
+/// cannot know about.
+///
+/// Composing a builder rather than registering after `$startAlloy` returns is
+/// what keeps these two inside phase 1 — registered before async initializers
+/// run, not bolted on after the graph is already up.
+class NotesScope implements AlloyScopeBuilder {
+  const NotesScope(this.environment);
+
+  final AlloyEnvironment environment;
+
+  @override
+  void build(AlloyScope scope) {
+    $AlloyRootScope(environment: environment).build(scope);
+    scope
+      ..registerSingleton<AlloyEnvironment>(environment)
+      ..registerSingleton<SessionManager>(SessionManager(scope));
+  }
 }

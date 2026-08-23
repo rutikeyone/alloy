@@ -11,7 +11,7 @@ topics:
 
 environment:
   sdk: ^3.13.0
-  flutter: ">=3.24.0"
+  flutter: ">=3.47.0"
 
 resolution: workspace
 

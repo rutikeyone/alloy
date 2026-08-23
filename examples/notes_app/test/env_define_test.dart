@@ -4,6 +4,8 @@ import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/features/environments/data/live_api_client.dart';
 import 'package:notes_app/features/environments/domain/api_client.dart';
 
+import 'support.dart';
+
 void main() {
   setUp(BootLog.reset);
 
@@ -12,7 +14,7 @@ void main() {
     () async {
       expect(notesEnvironment.name, 'prod');
 
-      final app = await startNotesApp();
+      final app = await startNotesGraph();
       addTearDown(app.dispose);
 
       expect(app.get<ApiClient>(), isA<LiveApiClient>());

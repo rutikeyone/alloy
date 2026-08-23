@@ -1,7 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:alloy_talker/alloy_talker.dart';
 import 'package:logging_example/core/telemetry.dart';
-import 'package:talker/talker.dart';
 
 /// What the app owns for as long as it runs.
 class AppScope implements AlloyScopeBuilder {
@@ -26,11 +24,3 @@ class WarmUp implements AlloyBootstrapStep, Disposable {
   @override
   void dispose() {}
 }
-
-/// Builds the graph with talker watching it.
-Future<AlloyScope> startLoggingExample(Talker talker) => AlloyApplication.start(
-  root: const AppScope(),
-  bootstrap: [WarmUp()],
-  rootName: 'app',
-  observers: [AlloyTalkerObserver(talker, verbose: true)],
-);

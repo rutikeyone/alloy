@@ -23,7 +23,9 @@ void main() {
     await tester.pumpWidget(FlowRouterApp(router: router));
     await settle(tester);
     await settle(tester);
-    app = AlloyScopeProvider.of(tester.element(find.byType(MaterialApp)));
+    // Below the app, not above it: AlloyAppScope.builder publishes the scope
+    // inside MaterialApp so loading and error screens get its theme.
+    app = AlloyScopeProvider.of(tester.element(find.byType(Navigator).first));
   }
 
   Future<void> go(WidgetTester tester, String location) async {

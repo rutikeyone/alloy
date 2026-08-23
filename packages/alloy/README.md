@@ -86,3 +86,17 @@ await scope.dispose();
 Ownership is explicit: a parent holds its children strongly, and whoever creates a scope closes it.
 A scope that is dropped without `dispose()` leaks by design — that is the price of a deterministic
 teardown order, and it is what makes `dispose()` reliable.
+
+## One graph per isolate
+
+Alloy is single-threaded by construction. There are no locks anywhere in the
+runtime, and `AlloyResolutionTracker` — the cycle detector — is one object
+shared by a whole scope tree. Nothing here is safe to touch from two isolates
+at once.
+
+In practice that is not a restriction, because a scope cannot cross an isolate
+boundary anyway: it holds live objects, and only sendable values cross. So the
+rule is simply that each isolate builds its own graph.
+
+If you offload work with `Isolate.run` or `compute`, pass the *data* the work
+needs, not the scope or anything resolved from it.

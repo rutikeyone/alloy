@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_talker/alloy_talker.dart';
 import 'package:flutter/material.dart';
 import 'package:logging_example/app/app_scope.dart';
 import 'package:logging_example/features/home/ui/home_screen.dart';
@@ -10,17 +11,18 @@ class LoggingApp extends StatelessWidget {
   final Talker talker;
 
   @override
-  Widget build(BuildContext context) => AlloyAppScope(
-    start: () => startLoggingExample(talker),
-    loading: const MaterialApp(
-      home: Scaffold(body: Center(child: CircularProgressIndicator())),
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Alloy observability',
+    theme: ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
     ),
-    child: MaterialApp(
-      title: 'Alloy observability',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-      ),
-      home: HomeScreen(talker: talker),
+    builder: AlloyAppScope.builder(
+      root: const AppScope(),
+      bootstrap: () => [WarmUp()],
+      rootName: 'app',
+      observers: [AlloyTalkerObserver(talker, verbose: true)],
+      loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
     ),
+    home: HomeScreen(talker: talker),
   );
 }

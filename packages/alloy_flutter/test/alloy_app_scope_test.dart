@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui' show AppExitResponse;
 
 import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class Marker implements Disposable {
@@ -57,6 +57,20 @@ final class _NameFactory implements AlloyFactory<String> {
   String create(AlloyResolver resolver) => resolver.get<Marker>().label;
 }
 
+/// Records the identity of every step instance that ever ran, which is how
+/// the freshness test tells a re-run from a re-use.
+class CountingStep implements AlloyBootstrapStep {
+  CountingStep(this.ran);
+
+  final List<int> ran;
+
+  @override
+  String get name => 'counting';
+
+  @override
+  void run() => ran.add(identityHashCode(this));
+}
+
 class RootBuilder implements AlloyScopeBuilder {
   const RootBuilder(this.label, this.log);
 
@@ -93,7 +107,8 @@ void main() {
     ) async {
       await tester.pumpWidget(
         AlloyAppScope(
-          start: startOk,
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
           loading: const Text('loading', textDirection: TextDirection.ltr),
           child: const Probe(),
         ),
@@ -112,7 +127,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        AlloyAppScope(
+        AlloyAppScope.start(
           start: startBoom,
           errorBuilder: (context, error, retry) =>
               Text('failed: $error', textDirection: TextDirection.ltr),
@@ -128,7 +143,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        AlloyAppScope(start: startBoom, child: const Probe()),
+        AlloyAppScope.start(start: startBoom, child: const Probe()),
       );
       await tester.pumpAndSettle();
 
@@ -146,7 +161,7 @@ void main() {
       }
 
       await tester.pumpWidget(
-        AlloyAppScope(
+        AlloyAppScope.start(
           start: flaky,
           errorBuilder: (context, error, retry) => GestureDetector(
             onTap: retry,
@@ -169,7 +184,11 @@ void main() {
   group('unmounting', () {
     testWidgets('disposes the root it owned', (tester) async {
       await tester.pumpWidget(
-        AlloyAppScope(start: startOk, child: const Probe()),
+        AlloyAppScope(
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
+          child: const Probe(),
+        ),
       );
       await tester.pumpAndSettle();
       expect(disposeLog, isEmpty);
@@ -189,7 +208,9 @@ void main() {
         return startOk();
       }
 
-      await tester.pumpWidget(AlloyAppScope(start: slow, child: const Probe()));
+      await tester.pumpWidget(
+        AlloyAppScope.start(start: slow, child: const Probe()),
+      );
       await tester.pump();
 
       await tester.pumpWidget(const SizedBox.shrink());
@@ -206,7 +227,8 @@ void main() {
     testWidgets('disposes the old graph and builds a new one', (tester) async {
       await tester.pumpWidget(
         AlloyAppScope(
-          start: startOk,
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
           loading: const Text('loading', textDirection: TextDirection.ltr),
           child: const Probe(),
         ),
@@ -227,7 +249,8 @@ void main() {
     ) async {
       await tester.pumpWidget(
         AlloyAppScope(
-          start: startOk,
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
           child: const AlloyScopeWidget(
             name: 'child',
             builder: ChildScope(),
@@ -256,7 +279,11 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        AlloyAppScope(start: startOk, child: const Probe()),
+        AlloyAppScope(
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
+          child: const Probe(),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -269,7 +296,8 @@ void main() {
     ) async {
       await tester.pumpWidget(
         AlloyAppScope(
-          start: startOk,
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
           disposeOnExitRequest: true,
           child: const Probe(),
         ),
@@ -282,6 +310,130 @@ void main() {
       expect(disposeLog, ['root']);
     });
   });
+
+  group('the declarative form', () {
+    testWidgets('builds the same graph AlloyAppScope.start would', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        AlloyAppScope(
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
+          child: const Probe(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(rendered(), startsWith('root:'));
+      expect(
+        AlloyScopeProvider.of(tester.element(find.byType(Probe))).name,
+        'app',
+      );
+    });
+
+    testWidgets('asks bootstrap for fresh steps on every start', (
+      tester,
+    ) async {
+      final ran = <int>[];
+
+      await tester.pumpWidget(
+        AlloyAppScope(
+          root: RootBuilder('root', disposeLog),
+          bootstrap: () => [CountingStep(ran)],
+          child: const Probe(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await AlloyAppScope.of(tester.element(find.byType(Probe))).restart();
+      await tester.pumpAndSettle();
+
+      expect(ran, hasLength(2));
+      expect(
+        ran.first,
+        isNot(ran.last),
+        reason:
+            'a restart must get new step instances — the released ones hold '
+            'resources they already gave back',
+      );
+    });
+
+    testWidgets('passes observers to the graph', (tester) async {
+      final observer = RecordingObserver();
+
+      await tester.pumpWidget(
+        AlloyAppScope(
+          root: RootBuilder('root', disposeLog),
+          rootName: 'app',
+          observers: [observer],
+          child: const Probe(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+
+      expect(observer.disposed, ['app']);
+    });
+  });
+
+  group('AlloyAppScope.builder', () {
+    testWidgets('publishes the scope above the navigator, under the theme', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: AlloyAppScope.builder(
+            root: RootBuilder('root', disposeLog),
+            rootName: 'app',
+            // A bare Scaffold, not a second MaterialApp: inside builder the
+            // theme and directionality are already there.
+            loading: const Scaffold(body: Text('loading')),
+          ),
+          home: const Probe(),
+        ),
+      );
+
+      expect(find.text('loading'), findsOneWidget);
+      await tester.pumpAndSettle();
+
+      expect(find.text('loading'), findsNothing);
+      expect(rendered(), startsWith('root:'));
+      expect(
+        find.byType(Navigator),
+        findsWidgets,
+        reason: 'the navigator is the child the builder wraps',
+      );
+    });
+
+    testWidgets('refuses an app with no routing to wrap', (tester) async {
+      late BuildContext context;
+      await tester.pumpWidget(
+        Builder(
+          builder: (inner) {
+            context = inner;
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+
+      final build = AlloyAppScope.builder(
+        root: RootBuilder('root', disposeLog),
+      );
+
+      expect(() => build(context, null), throwsAssertionError);
+    });
+  });
+}
+
+/// Watches teardown rather than creation: [RootBuilder] registers an
+/// already-built value, and `onInstanceCreated` only fires when the scope
+/// itself constructs something.
+final class RecordingObserver extends AlloyObserver {
+  final disposed = <String>[];
+
+  @override
+  void onScopeDisposeStarted(AlloyScopeRef scope) => disposed.add(scope.name);
 }
 
 /// Climbs to the root: the probe sits below the child scope, so the nearest

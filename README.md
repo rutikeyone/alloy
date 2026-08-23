@@ -1,3 +1,5 @@
+[English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md)
+
 # Alloy
 
 Dependency injection framework for Dart and Flutter. Dual-mode: declarative code generation
@@ -5,6 +7,10 @@ and a pure-Dart manual API over the same runtime.
 
 Status: **Phase 1 complete.** Runtime, Flutter bindings, annotations, analysis layer, both
 generators and the lint plugin are implemented and tested.
+
+New here with an existing `get_it` or `injectable` setup? Start with
+[MIGRATION.md](MIGRATION.md) — it covers what maps onto what, and, more usefully,
+what does not.
 
 ## Packages
 
@@ -31,6 +37,11 @@ needs something Manual Mode cannot express, these are two frameworks sharing a n
 ## Toolchain
 
 Built and tested on **Flutter 3.47.1 / Dart 3.13.1**, with analyzer 13.3.0.
+
+Every package requires Dart `^3.13.0`, and no Flutter below **3.47** ships it — so
+that is the floor, uniformly, and there is no version spread between packages to
+watch out for. CI runs `stable` and `beta` rather than a matrix of past releases:
+the useful failure to catch is the one that has not shipped yet.
 
 Do not use a Homebrew `dart` on PATH — put the Flutter SDK first. An older `dart` does not fail
 loudly: `dart analyze .` reports dozens of phantom issues against the wrong analyzer, and `dart
@@ -221,11 +232,26 @@ annotated classes in one package is a generation error.
 `AlloyAppScope` owns it: builds the graph, publishes it, disposes it on unmount, and turns a
 startup failure into a screen with a retry instead of an app that dies before its first frame.
 
+It takes the graph the same way `AlloyApplication.start` does, and lives in `MaterialApp.builder`,
+so `loading` and `errorBuilder` are ordinary screens with the app's theme rather than a second
+`MaterialApp`:
+
 ```dart
 void main() => runApp(
-  AlloyAppScope(start: startMyApp, child: const MyApp()),
+  MaterialApp(
+    builder: AlloyAppScope.builder(
+      root: $AlloyRootScope(environment: environment),
+      bootstrap: () => $alloyBootstrap(environment),
+      rootName: $alloyRootScopeName,
+      loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
+    ),
+    home: const HomeScreen(),
+  ),
 );
 ```
+
+`bootstrap` is a function rather than a list on purpose: steps hold resources, and a restart has to
+get new ones. `AlloyAppScope.start(start: ...)` remains for a graph this shape cannot express.
 
 `AlloyAppScope.of(context).restart()` rebuilds the graph — the same call retries a failed start.
 Disposing on app termination is opt-in (`disposeOnExitRequest`) and desktop-only in practice; see

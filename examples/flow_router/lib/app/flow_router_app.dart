@@ -24,17 +24,14 @@ class _FlowRouterAppState extends State<FlowRouterApp> {
   }
 
   @override
-  Widget build(BuildContext context) => AlloyAppScope(
-    start: startFlowRouter,
-    loading: const MaterialApp(
-      home: Scaffold(body: Center(child: CircularProgressIndicator())),
+  Widget build(BuildContext context) => MaterialApp.router(
+    title: 'Alloy flow scopes',
+    theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal)),
+    builder: AlloyAppScope.builder(
+      root: const AppScope(),
+      rootName: 'app',
+      loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
     ),
-    child: MaterialApp.router(
-      title: 'Alloy flow scopes',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-      ),
-      routerConfig: _router,
-    ),
+    routerConfig: _router,
   );
 }

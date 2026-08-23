@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_talker/alloy_talker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging_example/app/app_scope.dart';
@@ -20,7 +21,9 @@ void main() {
     await tester.pumpWidget(LoggingApp(talker: talker));
     await settle(tester);
     await settle(tester);
-    app = AlloyScopeProvider.of(tester.element(find.byType(MaterialApp)));
+    // Below MaterialApp now: AlloyAppScope.builder publishes the scope inside
+    // it, so loading and error screens are rendered with the app's theme.
+    app = AlloyScopeProvider.of(tester.element(find.byType(Navigator).first));
   }
 
   List<String> titles() => [
@@ -31,7 +34,12 @@ void main() {
 
   group('startup reports itself', () {
     test('the bootstrap step and the init graph are both in the log', () async {
-      final scope = await startLoggingExample(talker);
+      final scope = await AlloyApplication.start(
+        root: const AppScope(),
+        bootstrap: [WarmUp()],
+        rootName: 'app',
+        observers: [AlloyTalkerObserver(talker, verbose: true)],
+      );
       addTearDown(scope.dispose);
 
       expect(titles(), contains('alloy-startup'));
