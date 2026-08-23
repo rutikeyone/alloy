@@ -1,0 +1,29 @@
+include: package:lints/recommended.yaml
+
+plugins:
+  alloy_lint:
+    path: packages/alloy_lint
+  dependency_overrides:
+    alloy_lint:
+      path: packages/alloy_lint
+    alloy_analyzer:
+      path: packages/alloy_analyzer
+    alloy:
+      path: packages/alloy
+    alloy_annotations:
+      path: packages/alloy_annotations
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    todo: ignore
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_dynamic_calls
+    - prefer_final_locals
+    - unawaited_futures

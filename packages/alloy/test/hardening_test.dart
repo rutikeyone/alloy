@@ -1,0 +1,214 @@
+import 'package:alloy/alloy.dart';
+import 'package:test/test.dart';
+
+import 'support.dart';
+
+class Alpha {
+  Alpha(this.beta);
+
+  final Beta beta;
+}
+
+class Beta {
+  Beta(this.alpha);
+
+  final Alpha alpha;
+}
+
+class AlphaFactory implements AlloyFactory<Alpha> {
+  const AlphaFactory();
+
+  @override
+  Alpha create(AlloyResolver resolver) => Alpha(resolver.get<Beta>());
+}
+
+class BetaFactory implements AlloyFactory<Beta> {
+  const BetaFactory();
+
+  @override
+  Beta create(AlloyResolver resolver) => Beta(resolver.get<Alpha>());
+}
+
+class SelfHungry {
+  SelfHungry(this.other);
+
+  final SelfHungry other;
+}
+
+class SelfHungryFactory implements AlloyFactory<SelfHungry> {
+  const SelfHungryFactory();
+
+  @override
+  SelfHungry create(AlloyResolver resolver) =>
+      SelfHungry(resolver.get<SelfHungry>());
+}
+
+class Counter {
+  Counter() {
+    instances++;
+  }
+
+  static var instances = 0;
+}
+
+class CountingFactory implements AlloyAsyncFactory<Counter> {
+  const CountingFactory();
+
+  @override
+  Future<Counter> create(AlloyResolver resolver) async {
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    return Counter();
+  }
+}
+
+class Exploding implements AlloyAsyncFactory<Counter> {
+  const Exploding();
+
+  @override
+  Future<Counter> create(AlloyResolver resolver) async =>
+      throw StateError('init failed');
+}
+
+void main() {
+  setUp(() {
+    resetLogs();
+    Counter.instances = 0;
+  });
+
+  group('runtime cycle detection', () {
+    test('a two-node cycle throws instead of overflowing the stack', () {
+      final scope = AlloyScope.root()
+        ..registerLazySingleton<Alpha>(const AlphaFactory())
+        ..registerLazySingleton<Beta>(const BetaFactory());
+
+      expect(() => scope.get<Alpha>(), throwsA(isA<AlloyCycleError>()));
+    });
+
+    test('the error names the resolution path', () {
+      final scope = AlloyScope.root()
+        ..registerLazySingleton<Alpha>(const AlphaFactory())
+        ..registerLazySingleton<Beta>(const BetaFactory());
+
+      try {
+        scope.get<Alpha>();
+        fail('expected AlloyCycleError');
+      } on AlloyCycleError catch (error) {
+        expect(error.cycle.first, error.cycle.last);
+        expect(error.cycle, containsAllInOrder(['Alpha', 'Beta', 'Alpha']));
+      }
+    });
+
+    test('self dependency is caught', () {
+      final scope = AlloyScope.root()
+        ..registerFactory<SelfHungry>(const SelfHungryFactory());
+
+      expect(() => scope.get<SelfHungry>(), throwsA(isA<AlloyCycleError>()));
+    });
+
+    test('the tracker is shared across the scope tree', () {
+      final root = AlloyScope.root()
+        ..registerLazySingleton<Alpha>(const AlphaFactory())
+        ..registerLazySingleton<Beta>(const BetaFactory());
+      final child = root.push('child');
+
+      expect(() => child.get<Alpha>(), throwsA(isA<AlloyCycleError>()));
+    });
+
+    test('a parent still cannot see what only the child registered', () {
+      final root = AlloyScope.root()
+        ..registerLazySingleton<Alpha>(const AlphaFactory());
+      final child = root.push('child')
+        ..registerLazySingleton<Beta>(const BetaFactory());
+
+      expect(
+        () => child.get<Beta>(),
+        throwsA(isA<AlloyNotRegisteredError>()),
+        reason: 'resolution never walks downwards',
+      );
+    });
+
+    test('the tracker unwinds so later resolves still work', () {
+      final scope = AlloyScope.root()
+        ..registerLazySingleton<Alpha>(const AlphaFactory())
+        ..registerLazySingleton<Beta>(const BetaFactory())
+        ..registerLazySingleton<Logger>(const LoggerFactory());
+
+      expect(() => scope.get<Alpha>(), throwsA(isA<AlloyCycleError>()));
+      expect(scope.get<Logger>(), isNotNull);
+    });
+
+    test('a diamond is not mistaken for a cycle', () {
+      final scope = AlloyScope.root()
+        ..registerLazySingleton<Logger>(const LoggerFactory())
+        ..registerLazySingleton<ApiClient>(const ApiClientFactory());
+
+      expect(scope.get<ApiClient>().logger, same(scope.get<Logger>()));
+    });
+  });
+
+  group('init is safe to call more than once', () {
+    test('concurrent init calls build the graph exactly once', () async {
+      final scope = AlloyScope.root()
+        ..registerAsyncSingleton<Counter>(const CountingFactory());
+
+      await Future.wait([scope.init(), scope.init(), scope.init()]);
+
+      expect(Counter.instances, 1);
+      expect(scope.state, AlloyScopeState.active);
+    });
+
+    test('sequential init calls are a no-op after the first', () async {
+      final scope = AlloyScope.root()
+        ..registerAsyncSingleton<Counter>(const CountingFactory());
+
+      await scope.init();
+      await scope.init();
+
+      expect(Counter.instances, 1);
+    });
+
+    test('init after dispose is rejected', () async {
+      final scope = AlloyScope.root()
+        ..registerAsyncSingleton<Counter>(const CountingFactory());
+      await scope.init();
+      await scope.dispose();
+
+      expect(scope.init, throwsA(isA<AlloyScopeStateError>()));
+    });
+  });
+
+  group('dispose racing init', () {
+    test('dispose waits for a running init and still ends disposed', () async {
+      final scope = AlloyScope.root()
+        ..registerAsyncSingleton<Counter>(const CountingFactory());
+
+      final init = scope.init();
+      final dispose = scope.dispose();
+      await Future.wait([init, dispose]);
+
+      expect(scope.state, AlloyScopeState.disposed);
+    });
+
+    test('what a racing init built is still torn down', () async {
+      final scope = AlloyScope.root()
+        ..registerAsyncSingleton<AsyncRecorder>(const RecorderFactory());
+
+      final init = scope.init();
+      final dispose = scope.dispose();
+      await Future.wait([init, dispose]);
+
+      expect(disposeLog, ['async-singleton']);
+      expect(scope.state, AlloyScopeState.disposed);
+    });
+
+    test('a failed init still lets the scope be disposed', () async {
+      final scope = AlloyScope.root()
+        ..registerAsyncSingleton<Counter>(const Exploding());
+
+      await expectLater(scope.init(), throwsA(isA<StateError>()));
+      await scope.dispose();
+
+      expect(scope.state, AlloyScopeState.disposed);
+    });
+  });
+}

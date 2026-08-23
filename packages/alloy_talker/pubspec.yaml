@@ -1,0 +1,22 @@
+name: alloy_talker
+description: Alloy adapter for talker — reports the DI graph's events as talker logs, each kind with its own title and colour.
+version: 0.1.0
+repository: https://github.com/rutikeyone/alloy
+issue_tracker: https://github.com/rutikeyone/alloy/issues
+topics:
+  - dependency-injection
+  - di
+  - logging
+  - observability
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  alloy: ^0.1.0
+  talker: ^5.1.0
+
+dev_dependencies:
+  test: ^1.25.0

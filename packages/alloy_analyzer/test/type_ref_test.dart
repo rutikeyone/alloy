@@ -1,0 +1,80 @@
+import 'package:alloy_analyzer/alloy_analyzer.dart';
+import 'package:test/test.dart';
+
+AlloyTypeRef ref(
+  String name, {
+  List<AlloyTypeRef> of = const [],
+  bool isNullable = false,
+}) => AlloyTypeRef(
+  name: name,
+  import: 'package:app/app.dart',
+  typeArguments: of,
+  isNullable: isNullable,
+);
+
+void main() {
+  group('signature', () {
+    test('separates instantiations of the same generic', () {
+      expect(
+        ref('Repository', of: [ref('User')]).signature,
+        isNot(ref('Repository', of: [ref('Order')]).signature),
+      );
+    });
+
+    test('ignores nullability, which is never emitted into a resolve', () {
+      expect(ref('Foo', isNullable: true).signature, ref('Foo').signature);
+    });
+
+    test('is recursive', () {
+      expect(
+        ref(
+          'Box',
+          of: [
+            ref('List', of: [ref('User')]),
+          ],
+        ).signature,
+        isNot(
+          ref(
+            'Box',
+            of: [
+              ref('List', of: [ref('Order')]),
+            ],
+          ).signature,
+        ),
+      );
+    });
+
+    test('separates same-named types from different libraries', () {
+      const here = AlloyTypeRef(name: 'Clock', import: 'package:a/a.dart');
+      const there = AlloyTypeRef(name: 'Clock', import: 'package:b/b.dart');
+      expect(here.signature, isNot(there.signature));
+    });
+  });
+
+  group('equality', () {
+    test('follows the signature', () {
+      expect(
+        ref('Repository', of: [ref('User')]),
+        ref('Repository', of: [ref('User')]),
+      );
+      expect(
+        ref('Repository', of: [ref('User')]),
+        isNot(ref('Repository', of: [ref('Order')])),
+      );
+      expect(
+        ref('Repository', of: [ref('User')]).hashCode,
+        isNot(ref('Repository', of: [ref('Order')]).hashCode),
+      );
+    });
+  });
+
+  group('toString', () {
+    test('shows type arguments and nullability', () {
+      expect(
+        ref('Repository', of: [ref('User')]).toString(),
+        'Repository<User>',
+      );
+      expect(ref('Foo', isNullable: true).toString(), 'Foo?');
+    });
+  });
+}

@@ -1,0 +1,31 @@
+name: alloy_external_consumer
+description: >-
+  Compatibility stand: consumes Alloy from outside the pub workspace, the way a
+  third-party project does.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  alloy: ^0.1.0
+
+dev_dependencies:
+  alloy_generator: ^0.1.0
+  alloy_lint: ^0.1.0
+  build_runner: ^2.15.0
+  lints: ^6.0.0
+  test: ^1.28.0
+
+dependency_overrides:
+  alloy:
+    path: ../../packages/alloy
+  alloy_annotations:
+    path: ../../packages/alloy_annotations
+  alloy_analyzer:
+    path: ../../packages/alloy_analyzer
+  alloy_generator:
+    path: ../../packages/alloy_generator
+  alloy_lint:
+    path: ../../packages/alloy_lint

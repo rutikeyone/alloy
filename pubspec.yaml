@@ -1,0 +1,25 @@
+name: alloy_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - packages/alloy_annotations
+  - packages/alloy
+  - packages/alloy_flutter
+  - packages/alloy_go_router
+  - packages/alloy_logging
+  - packages/alloy_logger
+  - packages/alloy_talker
+  - packages/alloy_analyzer
+  - packages/alloy_generator
+  - packages/alloy_lint
+  - examples/counter_manual
+  - examples/counter_codegen
+  - examples/notes_app
+  - examples/flow_router
+  - examples/logging
+
+dev_dependencies:
+  lints: ^6.0.0

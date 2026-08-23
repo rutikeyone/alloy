@@ -1,0 +1,29 @@
+# Dart / pub
+.dart_tool/
+.packages
+pubspec.lock
+build/
+doc/api/
+
+# Flutter tooling — each generated example also carries its own .gitignore,
+# but counter_codegen and the compat stand do not, so cover it here too.
+.flutter-plugins
+.flutter-plugins-dependencies
+**/generated_plugin_registrant.dart
+**/android/local.properties
+**/android/.gradle/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+**/ios/Pods/
+**/ios/.symlinks/
+
+# Editors
+*.iml
+.idea/
+.vscode/
+*.xcuserdatad/
+xcuserdata/
+
+# macOS
+.DS_Store

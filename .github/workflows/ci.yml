@@ -1,0 +1,66 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.1
+          channel: stable
+
+      - name: Resolve workspace
+        run: flutter pub get
+
+      # Not a workspace member on purpose — it resolves standalone, the way a
+      # third-party project does. Must run before `dart analyze .`, which would
+      # otherwise hit an unresolved analysis context.
+      - name: Resolve external consumer
+        run: dart pub get
+        working-directory: compat/external_consumer
+
+      - name: Analyze
+        run: dart analyze --fatal-infos .
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Verify generated code is current
+        run: |
+          for package in examples/counter_codegen examples/notes_app \
+                         compat/external_consumer; do
+            (cd "$package" && dart run build_runner build)
+          done
+          git diff --exit-code
+
+      - name: Test pure Dart packages
+        run: |
+          for package in packages/alloy packages/alloy_analyzer \
+                         packages/alloy_generator packages/alloy_lint \
+                         packages/alloy_talker packages/alloy_logging \
+                         packages/alloy_logger examples/counter_manual \
+                         compat/external_consumer; do
+            (cd "$package" && dart test)
+          done
+
+      - name: Test Flutter packages
+        run: |
+          for package in packages/alloy_flutter packages/alloy_go_router \
+                         examples/counter_codegen examples/notes_app \
+                         examples/flow_router examples/logging; do
+            (cd "$package" && flutter test)
+          done
+
+      - name: Publish dry run
+        run: |
+          for package in packages/alloy_annotations packages/alloy \
+                         packages/alloy_analyzer packages/alloy_generator; do
+            (cd "$package" && dart pub publish --dry-run)
+          done

@@ -1,0 +1,25 @@
+name: alloy_flutter
+description: Flutter bindings for Alloy — scope providers, widget-owned child scopes and BuildContext resolution helpers.
+version: 0.1.0
+repository: https://github.com/rutikeyone/alloy
+issue_tracker: https://github.com/rutikeyone/alloy/issues
+topics:
+  - dependency-injection
+  - di
+  - flutter
+  - scopes
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.24.0"
+
+resolution: workspace
+
+dependencies:
+  alloy: ^0.1.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

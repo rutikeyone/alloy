@@ -1,0 +1,590 @@
+import 'dart:async';
+
+import 'package:alloy/src/errors/alloy_dispose_error.dart';
+import 'package:alloy/src/errors/alloy_dispose_failure.dart';
+import 'package:alloy/src/errors/alloy_dispose_stage.dart';
+import 'package:alloy/src/errors/alloy_duplicate_registration_error.dart';
+import 'package:alloy/src/errors/alloy_error.dart';
+import 'package:alloy/src/errors/alloy_not_ready_error.dart';
+import 'package:alloy/src/errors/alloy_not_registered_error.dart';
+import 'package:alloy/src/errors/alloy_scope_state_error.dart';
+import 'package:alloy/src/factory/alloy_async_factory.dart';
+import 'package:alloy/src/factory/alloy_factory.dart';
+import 'package:alloy/src/factory/alloy_param_factory.dart';
+import 'package:alloy/src/graph/topological_sort.dart';
+import 'package:alloy/src/key/alloy_key.dart';
+import 'package:alloy/src/lifecycle/alloy_injectable.dart';
+import 'package:alloy/src/lifecycle/alloy_resolver.dart';
+import 'package:alloy/src/lifecycle/async_disposable.dart';
+import 'package:alloy/src/lifecycle/disposable.dart';
+import 'package:alloy/src/observer/alloy_observer.dart';
+import 'package:alloy/src/observer/alloy_scope_ref.dart';
+import 'package:alloy/src/registration/alloy_registration.dart';
+import 'package:alloy/src/scope/alloy_scope_state.dart';
+import 'package:alloy/src/scope/resolution_tracker.dart';
+
+/// A container of registrations with a lifetime of its own.
+///
+/// Scopes form a tree. A child sees everything its ancestors registered and
+/// can shadow any of it; resolution never walks downwards. Disposing a scope
+/// disposes its children first, then its own instances in reverse creation
+/// order, so nothing is torn down before what depends on it.
+///
+/// A parent holds its children strongly, which is what makes that ordering
+/// guaranteed. The flip side is an explicit ownership contract: whoever
+/// creates a scope closes it. A scope dropped without [dispose] leaks, by
+/// design — the alternative is a teardown that may silently never run.
+///
+/// ```dart
+/// final app = AlloyScope.root(name: 'app')
+///   ..registerLazySingleton<Logger>(const LoggerFactory());
+/// await app.init();
+///
+/// final session = app.push('session');
+/// // ... use it ...
+/// await session.dispose();
+/// ```
+final class AlloyScope implements AlloyResolver {
+  AlloyScope._(this.name, this.parent, this._tracker, this._observers)
+    : depth = parent == null ? 0 : parent.depth + 1;
+
+  /// Creates a detached root scope.
+  ///
+  /// [name] appears in error messages and when inspecting the tree. The
+  /// caller owns the result and must [dispose] it.
+  ///
+  /// [observers] watch this scope and every scope pushed from it.
+  factory AlloyScope.root({
+    String name = 'root',
+    List<AlloyObserver> observers = const [],
+  }) => AlloyScope._(
+    name,
+    null,
+    AlloyResolutionTracker(),
+    List.unmodifiable(observers),
+  );
+
+  /// This scope's name, used in diagnostics.
+  final String name;
+
+  /// The scope this one was pushed from, or `null` for a root.
+  final AlloyScope? parent;
+
+  /// How far below the root this scope sits. `0` for a root.
+  final int depth;
+
+  final _children = <AlloyScope>[];
+  final _registrations = <AlloyKey, AlloyRegistration>{};
+  final _owned = <Object>[];
+  final AlloyResolutionTracker _tracker;
+  final List<AlloyObserver> _observers;
+
+  Future<void>? _initFuture;
+  AlloyScopeState _state = AlloyScopeState.open;
+  int _order = 0;
+
+  /// Where this scope is in its lifecycle.
+  AlloyScopeState get state => _state;
+
+  /// The child scopes currently alive, in the order they were pushed.
+  List<AlloyScope> get children => List.unmodifiable(_children);
+
+  /// Whether the scope still accepts registrations and resolutions.
+  ///
+  /// False once teardown has begun, which is what turns later use into an
+  /// `AlloyScopeStateError` instead of work against half-cleared state.
+  bool get isUsable =>
+      _state == AlloyScopeState.open ||
+      _state == AlloyScopeState.initializing ||
+      _state == AlloyScopeState.active;
+
+  /// Creates a child scope that resolves through this one.
+  ///
+  /// The child is retained until it is disposed, either directly or as part of
+  /// disposing this scope. Use it for anything with a shorter life than the
+  /// parent — a session, a screen, a request — and to override a dependency
+  /// without touching the parent.
+  AlloyScope push(String childName) {
+    _assertUsable();
+    final child = AlloyScope._(childName, this, _tracker, _observers);
+    _children.add(child);
+    child._notify((observer) => observer.onScopePushed(child.ref));
+    return child;
+  }
+
+  /// Registers [T] so every resolution builds a new instance.
+  ///
+  /// The scope does not retain what it builds, so transient instances are the
+  /// caller's to dispose.
+  void registerFactory<T extends Object>(
+    AlloyFactory<T> factory, {
+    String? name,
+  }) {
+    _put(
+      TransientRegistration(
+        key: AlloyKey(T, name: name),
+        order: _order++,
+        factory: factory,
+      ),
+    );
+  }
+
+  /// Registers an already-built [value] as the single instance of [T].
+  ///
+  /// The scope takes ownership immediately: if [value] is disposable it is
+  /// torn down with the scope, in registration order relative to everything
+  /// else it owns.
+  void registerSingleton<T extends Object>(T value, {String? name}) {
+    _put(
+      SingletonRegistration(
+        key: AlloyKey(T, name: name),
+        order: _order++,
+        value: value,
+      ),
+    );
+    _own(value);
+  }
+
+  /// Registers [T] so the first resolution builds it and later ones reuse it.
+  ///
+  /// The instance is retained and disposed with the scope. Because it is built
+  /// on demand, its position in the teardown order follows when it was
+  /// *created*, not when it was registered.
+  void registerLazySingleton<T extends Object>(
+    AlloyFactory<T> factory, {
+    String? name,
+  }) {
+    _put(
+      LazySingletonRegistration(
+        key: AlloyKey(T, name: name),
+        order: _order++,
+        factory: factory,
+      ),
+    );
+  }
+
+  /// Registers [T] as a single instance built during [init].
+  ///
+  /// [dependsOn] declares which other async registrations must finish first.
+  /// The graph is sorted into levels: everything in a level runs through
+  /// `Future.wait`, and the next level waits for it. A cycle throws
+  /// `AlloyCycleError`.
+  ///
+  /// Resolving [T] before [init] completes throws `AlloyNotReadyError`.
+  void registerAsyncSingleton<T extends Object>(
+    AlloyAsyncFactory<T> factory, {
+    String? name,
+    Set<AlloyKey> dependsOn = const {},
+  }) {
+    _put(
+      AsyncSingletonRegistration(
+        key: AlloyKey(T, name: name),
+        order: _order++,
+        factory: factory,
+        dependsOn: dependsOn,
+      ),
+    );
+  }
+
+  /// Registers [T] as a factory taking a runtime argument of type [P].
+  ///
+  /// Resolve it with [getWithParam]; a plain [get] throws, because the
+  /// container has no value to pass.
+  void registerParamFactory<T extends Object, P extends Object>(
+    AlloyParamFactory<T, P> factory, {
+    String? name,
+  }) {
+    _put(
+      ParamRegistration(
+        key: AlloyKey(T, name: name),
+        order: _order++,
+        factory: factory,
+      ),
+    );
+  }
+
+  @override
+  bool isRegistered<T extends Object>({String? name}) =>
+      _lookup(AlloyKey(T, name: name)) != null;
+
+  @override
+  T get<T extends Object>({String? name}) {
+    _assertUsable();
+    final key = AlloyKey(T, name: name);
+    final found = _lookup(key);
+    if (found == null) throw AlloyNotRegisteredError(key, this.name);
+    return found.scope._materialize(found.registration) as T;
+  }
+
+  @override
+  T getWithParam<T extends Object, P extends Object>(P param, {String? name}) {
+    _assertUsable();
+    final key = AlloyKey(T, name: name);
+    final found = _lookup(key);
+    if (found == null) throw AlloyNotRegisteredError(key, this.name);
+    final registration = found.registration;
+    if (registration is! ParamRegistration) {
+      throw AlloyError('$key is not registered as a parameterized factory.');
+    }
+    return found.scope._tracker.guard(key, () {
+      final instance = registration.factory.create(found.scope, param);
+      found.scope._afterCreate(instance, key, retain: false);
+      return instance as T;
+    });
+  }
+
+  @override
+  List<T> getAll<T extends Object>() {
+    _assertUsable();
+    final seen = <AlloyKey>{};
+    final result = <T>[];
+    for (AlloyScope? scope = this; scope != null; scope = scope.parent) {
+      final matching =
+          scope._registrations.values.where((r) => r.key.type == T).toList()
+            ..sort((a, b) => a.order.compareTo(b.order));
+      for (final registration in matching) {
+        if (!seen.add(registration.key)) continue;
+        result.add(scope._materialize(registration) as T);
+      }
+    }
+    return result;
+  }
+
+  /// Builds every async singleton registered in this scope.
+  ///
+  /// Safe to call more than once and from several places at once: the work
+  /// runs exactly once and every caller awaits the same future. Returns
+  /// immediately for a scope that is already active.
+  ///
+  /// If it throws, the scope stays usable enough to be disposed, and whatever
+  /// was built before the failure is still torn down.
+  Future<void> init() {
+    final pending = _initFuture;
+    if (pending != null) return pending;
+    if (_state == AlloyScopeState.active) return Future<void>.value();
+    _assertUsable();
+    return _initFuture = _run();
+  }
+
+  Future<void> _run() async {
+    _state = AlloyScopeState.initializing;
+
+    final pending =
+        _registrations.values.whereType<AsyncSingletonRegistration>().toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
+
+    if (pending.isNotEmpty) {
+      final byKey = {for (final r in pending) r.key: r};
+      final levels = layeredTopologicalSort<AsyncSingletonRegistration>(
+        pending,
+        (r) => [for (final dep in r.dependsOn) ?byKey[dep]],
+        labelOf: (r) => r.key.toString(),
+      );
+
+      final building = Stopwatch()..start();
+      _notify((observer) => observer.onScopeInitStarted(ref, levels.length));
+      try {
+        for (final level in levels) {
+          await Future.wait([for (final r in level) _createAsync(r)]);
+        }
+      } catch (error, stackTrace) {
+        _notify(
+          (observer) => observer.onScopeInitFailed(ref, error, stackTrace),
+        );
+        rethrow;
+      }
+      _notify(
+        (observer) => observer.onScopeInitCompleted(ref, building.elapsed),
+      );
+    }
+
+    if (_state == AlloyScopeState.initializing) {
+      _state = AlloyScopeState.active;
+    }
+  }
+
+  /// Ties [instance]'s lifetime to this scope without registering it.
+  ///
+  /// The scope disposes it along with everything else it owns, in the same
+  /// reverse-creation order, but nothing can resolve it — use this for objects
+  /// that belong to the scope's lifetime yet are not dependencies. Bootstrap
+  /// steps are the built-in case: they run before any container exists, so
+  /// they cannot be registered, but whatever they opened still has to be
+  /// closed.
+  ///
+  /// Objects that implement neither [Disposable] nor [AsyncDisposable] are
+  /// returned unchanged and not retained, since there would be nothing to do
+  /// with them at teardown.
+  ///
+  /// Returns [instance], so it can be adopted inline.
+  T adopt<T extends Object>(T instance) {
+    _assertUsable();
+    _own(instance);
+    return instance;
+  }
+
+  /// The budget [dispose] uses when the caller does not pass one.
+  static const defaultDisposeTimeout = Duration(seconds: 30);
+
+  /// Tears the scope down and detaches it from its parent.
+  ///
+  /// Children go first, in reverse push order, then this scope's own
+  /// instances in reverse creation order. `AsyncDisposable.dispose` is
+  /// awaited before moving on, so ordering holds even when teardown does I/O.
+  ///
+  /// Idempotent, and safe to call while [init] is still running — it waits for
+  /// it, so nothing that init built escapes teardown. After this the scope is
+  /// permanently unusable.
+  ///
+  /// Teardown is best-effort. A step that throws, or that runs past the
+  /// deadline, is recorded and the remaining steps still run, so one broken
+  /// object cannot strand everything registered after it. [timeout] is a
+  /// deadline for the whole teardown rather than per step, so this returns
+  /// within roughly that long however many objects are involved.
+  ///
+  /// The scope always reaches [AlloyScopeState.disposed]. If anything went
+  /// wrong, [AlloyDisposeError] is thrown afterwards listing every failure.
+  /// Timed-out steps were abandoned, not cancelled — Dart cannot cancel a
+  /// future — which is why they are reported rather than ignored.
+  ///
+  /// An `init()` still running when this is called is waited for. If it
+  /// *threw*, that is not a teardown failure and does not make this throw on
+  /// its own — the error belongs to whoever called `init()` and was already
+  /// delivered there. It is still recorded, tagged
+  /// [AlloyDisposeStage.awaitingInit], so that when teardown does fail the
+  /// report says the scope was only half-built. If instead the wait ran past
+  /// the deadline, that is teardown failing to finish, and it is reported like
+  /// any other overrun.
+  Future<void> dispose({Duration timeout = defaultDisposeTimeout}) async {
+    if (_state == AlloyScopeState.disposed ||
+        _state == AlloyScopeState.disposing) {
+      return;
+    }
+
+    final elapsed = Stopwatch()..start();
+    final failures = <AlloyDisposeFailure>[];
+
+    Duration remaining() => timeout - elapsed.elapsed;
+
+    Future<void> within(
+      String label,
+      Future<void> Function() step, {
+      AlloyDisposeStage stage = AlloyDisposeStage.releasing,
+    }) async {
+      final left = remaining();
+      if (left <= Duration.zero) {
+        failures.add(
+          AlloyDisposeFailure(
+            label,
+            TimeoutException('the teardown deadline had already passed'),
+            StackTrace.current,
+            stage: stage,
+          ),
+        );
+        return;
+      }
+      try {
+        await step().timeout(left);
+      } catch (error, stackTrace) {
+        failures.add(
+          AlloyDisposeFailure(label, error, stackTrace, stage: stage),
+        );
+      }
+    }
+
+    final pendingInit = _initFuture;
+    if (pendingInit != null) {
+      // Awaiting this future makes Alloy its error listener, which would
+      // suppress the unhandled-error report Dart makes for an init() nobody
+      // awaited. The failure is recorded instead of dropped, tagged so a
+      // caller that already handled it can tell it apart from teardown.
+      await within(
+        'init',
+        () => pendingInit,
+        stage: AlloyDisposeStage.awaitingInit,
+      );
+      if (_state == AlloyScopeState.disposed ||
+          _state == AlloyScopeState.disposing) {
+        return;
+      }
+    }
+
+    _state = AlloyScopeState.disposing;
+    _notify((observer) => observer.onScopeDisposeStarted(ref));
+
+    for (final child in _children.reversed.toList(growable: false)) {
+      try {
+        await child.dispose(timeout: remaining());
+      } on AlloyDisposeError catch (error) {
+        failures.addAll([
+          for (final failure in error.failures)
+            AlloyDisposeFailure(
+              '${child.name}/${failure.label}',
+              failure.error,
+              failure.stackTrace,
+            ),
+        ]);
+      } catch (error, stackTrace) {
+        failures.add(
+          AlloyDisposeFailure('${child.name}/dispose', error, stackTrace),
+        );
+      }
+    }
+    _children.clear();
+
+    for (final instance in _owned.reversed.toList(growable: false)) {
+      final label = '${instance.runtimeType}.dispose';
+      switch (instance) {
+        case AsyncDisposable():
+          final before = failures.length;
+          await within(label, instance.dispose);
+          if (failures.length == before) {
+            _notify(
+              (observer) =>
+                  observer.onInstanceDisposed(ref, '${instance.runtimeType}'),
+            );
+          }
+        case Disposable():
+          try {
+            instance.dispose();
+            _notify(
+              (observer) =>
+                  observer.onInstanceDisposed(ref, '${instance.runtimeType}'),
+            );
+          } catch (error, stackTrace) {
+            failures.add(AlloyDisposeFailure(label, error, stackTrace));
+          }
+      }
+    }
+
+    _owned.clear();
+    _registrations.clear();
+    _initFuture = null;
+    parent?._children.remove(this);
+    _state = AlloyScopeState.disposed;
+
+    // An init that threw belongs to whoever called init(); an init that ran
+    // past the deadline is teardown failing to finish its own wait.
+    _notify(
+      (observer) => observer.onScopeDisposed(
+        ref,
+        elapsed.elapsed,
+        List.unmodifiable(failures),
+      ),
+    );
+
+    final couldNotRelease = failures.any(
+      (failure) => !failure.isInitFailure || failure.isTimeout,
+    );
+    if (couldNotRelease) {
+      throw AlloyDisposeError(name, failures);
+    }
+  }
+
+  void _put(AlloyRegistration registration) {
+    _assertUsable();
+    if (_registrations.containsKey(registration.key)) {
+      throw AlloyDuplicateRegistrationError(registration.key, name);
+    }
+    _registrations[registration.key] = registration;
+  }
+
+  ({AlloyScope scope, AlloyRegistration registration})? _lookup(AlloyKey key) {
+    for (AlloyScope? scope = this; scope != null; scope = scope.parent) {
+      final registration = scope._registrations[key];
+      if (registration != null) {
+        return (scope: scope, registration: registration);
+      }
+    }
+    return null;
+  }
+
+  Object _materialize(AlloyRegistration registration) {
+    switch (registration) {
+      case SingletonRegistration():
+        return registration.value;
+
+      case TransientRegistration():
+        return _tracker.guard(registration.key, () {
+          final instance = registration.factory.create(this);
+          _afterCreate(instance, registration.key, retain: false);
+          return instance;
+        });
+
+      case LazySingletonRegistration():
+        final existing = registration.instance;
+        if (existing != null) return existing;
+        return _tracker.guard(registration.key, () {
+          final instance = registration.factory.create(this);
+          registration.instance = instance;
+          _afterCreate(instance, registration.key, retain: true);
+          return instance;
+        });
+
+      case AsyncSingletonRegistration():
+        final existing = registration.instance;
+        if (existing == null || !registration.isReady) {
+          throw AlloyNotReadyError(registration.key);
+        }
+        return existing;
+
+      case ParamRegistration():
+        throw AlloyError(
+          '${registration.key} requires a parameter; use getWithParam.',
+        );
+    }
+  }
+
+  Future<void> _createAsync(AsyncSingletonRegistration registration) =>
+      _tracker.guardAsync(registration.key, () async {
+        final instance = await registration.factory.create(this);
+        registration.instance = instance;
+        registration.isReady = true;
+        _afterCreate(instance, registration.key, retain: true);
+      });
+
+  void _afterCreate(Object instance, AlloyKey key, {required bool retain}) {
+    if (instance is AlloyInjectable) instance.onInject(this);
+    if (retain) _own(instance);
+    _notify(
+      (observer) => observer.onInstanceCreated(ref, key, retained: retain),
+    );
+  }
+
+  void _own(Object instance) {
+    if (instance is Disposable || instance is AsyncDisposable) {
+      _owned.add(instance);
+    }
+  }
+
+  /// How this scope is described to an [AlloyObserver].
+  AlloyScopeRef get ref =>
+      AlloyScopeRef(name: name, depth: depth, parentName: parent?.name);
+
+  /// Runs [event] on every observer, swallowing anything it throws.
+  ///
+  /// Watching must not be able to break the graph being watched, and there is
+  /// nowhere to report an observer's own failure to — reporting is the thing
+  /// that just failed.
+  void _notify(void Function(AlloyObserver observer) event) {
+    if (_observers.isEmpty) return;
+    for (final observer in _observers) {
+      try {
+        event(observer);
+      } catch (_) {
+        // Deliberately ignored; see above.
+      }
+    }
+  }
+
+  void _assertUsable() {
+    if (!isUsable) {
+      throw AlloyScopeStateError(
+        'Scope "$name" is $_state and cannot be used.',
+      );
+    }
+  }
+
+  @override
+  String toString() => 'AlloyScope($name, $_state)';
+}

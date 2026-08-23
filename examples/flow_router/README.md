@@ -1,0 +1,68 @@
+# flow_router
+
+An Alloy example built around one idea: a scope whose lifetime is a navigation flow, wired with
+[go_router](https://pub.dev/packages/go_router) through `alloy_go_router`.
+
+```
+flutter pub get
+flutter run
+```
+
+Manual Mode — there is no code generation here, because the subject is navigation, not the
+generator. See `examples/counter_codegen` and `examples/notes_app` for that.
+
+## What to try
+
+| Step | What it proves |
+|---|---|
+| Open order 1 | a scope named `order:1` appears under the root |
+| Continue to payment | same flow, so the draft instance is unchanged |
+| Switch to order 2 | the identity changed, so order 1's draft is disposed and a new one built |
+| Leave the flow | the scope and everything in it are gone |
+| Workspace (tabs) | a shell scope plus a scope per tab — three levels |
+| Switch tabs | a scope appears for the new tab and **nothing is disposed** |
+| Leave the workspace | all three go at once |
+| Scope tree (app bar) | the live hierarchy, read from `AlloyScope.children` |
+
+The event log on the home screen survives all of it — it lives in the root scope, which is why a
+flow can write to it and the entry outlives the flow.
+
+## The whole integration
+
+The flow is a route type of its own — `lib/features/orders/order_flow_route.dart`:
+
+```dart
+class OrderFlowRoute extends AlloyFlowRoute {
+  OrderFlowRoute()
+    : super(
+        name: 'order',
+        identity: _orderId,
+        scope: (state) => OrderFlowScope(_orderId(state)),
+        shell: (_, _, child) => OrderFlowChrome(child: child),
+        routes: [...],
+      );
+}
+```
+
+so the route table just names it:
+
+```dart
+GoRouter(routes: [homeRoute, scopeTreeRoute, OrderFlowRoute()]);
+```
+
+Nothing inside the flow knows it is scoped. `OrderSummaryScreen` calls `context.alloy<OrderDraft>()`
+exactly like any other screen resolves anything.
+
+## Layout
+
+```
+lib/
+  main.dart
+  app/                    app_scope.dart, app_router.dart, app_routes.dart, flow_router_app.dart
+  core/                   event_log.dart — root-scoped, outlives every flow
+  features/
+    home/ui/              the hub and the event log
+    orders/               order_flow_route.dart, order_flow_scope.dart, domain/, ui/
+    workspace/            workspace_shell_route.dart, workspace_scope.dart, domain/, ui/
+    diagnostics/ui/       the live scope tree
+```

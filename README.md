@@ -1,0 +1,390 @@
+# Alloy
+
+Dependency injection framework for Dart and Flutter. Dual-mode: declarative code generation
+and a pure-Dart manual API over the same runtime.
+
+Status: **Phase 1 complete.** Runtime, Flutter bindings, annotations, analysis layer, both
+generators and the lint plugin are implemented and tested.
+
+## Packages
+
+| Package | Depends on | Ships to apps |
+|---|---|---|
+| `alloy_annotations` | `meta` | yes |
+| `alloy` | `alloy_annotations` | yes, runtime core, no Flutter |
+| `alloy_flutter` | `alloy`, `flutter` | yes |
+| `alloy_go_router` | `alloy_flutter`, `go_router` | yes, optional |
+| `alloy_talker` | `alloy`, `talker` | yes, optional |
+| `alloy_logging` | `alloy`, `logging` | yes, optional |
+| `alloy_logger` | `alloy`, `logger` | yes, optional |
+| `alloy_analyzer` | `alloy_annotations`, `analyzer` | no |
+| `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | dev_dependency only |
+| `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | dev_dependency only |
+
+`alloy_analyzer` exists so the generator and the lint plugin parse Alloy declarations through one
+implementation instead of two that drift apart. It owns the IR and the topological sort, and depends
+on neither `build` nor the plugin API.
+
+**Project invariant:** generated code may only use the public API of `alloy`. The moment generation
+needs something Manual Mode cannot express, these are two frameworks sharing a name.
+
+## Toolchain
+
+Built and tested on **Flutter 3.47.1 / Dart 3.13.1**, with analyzer 13.3.0.
+
+Do not use a Homebrew `dart` on PATH — put the Flutter SDK first. An older `dart` does not fail
+loudly: `dart analyze .` reports dozens of phantom issues against the wrong analyzer, and `dart
+pub get` refuses the SDK constraint outright. Check with `dart --version` before trusting a run.
+
+Pin `dart_style` deliberately: 3.1.7 requires `analyzer <12.0.0` and silently holds the whole
+workspace back three majors. Golden output also shifts between formatter releases.
+
+## Verify
+
+```
+dart analyze --fatal-infos .
+dart format --output=none --set-exit-if-changed .
+(cd packages/alloy && dart test)
+(cd packages/alloy_flutter && flutter test)
+(cd examples/counter_manual && dart test)
+(cd examples/counter_codegen && dart run build_runner build && flutter test)
+(cd examples/notes_app && dart run build_runner build && flutter test)
+(cd packages/alloy_lint && dart test)
+(cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
+```
+
+CI (`.github/workflows/ci.yml`) runs all of the above plus a `git diff --exit-code` after
+regenerating both examples **and `compat/external_consumer`**, so stale generated code fails the
+build. The generator formats its own
+output with the same `dart_style` version the format check uses, so the two never disagree.
+
+## Testing an app built on Alloy
+
+`testWidgets` runs its body inside a fake-async zone, so a `Future.delayed` in an initializer never
+completes there. Build the root scope in `setUp`, not inside `testWidgets`, and keep whole-graph
+assertions in a plain `test`. `examples/notes_app/test/screens_test.dart` uses both.
+
+To override a dependency, push a child scope and register it again — a duplicate registration in
+one scope is an error, but shadowing from a child is the supported way, in tests as in production.
+
+## Known publish warning
+
+`alloy_lint` reports "the name of lib/main.dart should match the name of the package". That entry
+point is fixed by the analysis server plugin API — the server generates code that imports
+`package:alloy_lint/main.dart` and reads its `plugin` variable. `riverpod_lint` carries the same
+warning.
+
+## Layout
+
+One public type per file. The sealed `AlloyRegistration` hierarchy is the deliberate exception: a
+sealed hierarchy must live in one library, so its subclasses are `part` files of
+`src/registration/alloy_registration.dart` rather than separate libraries.
+
+`compat/external_consumer` is the one directory outside this rule of thumb: it is a package that is
+deliberately **not** a workspace member and carries no `resolution: workspace`, so pub resolves it
+standalone the way a third-party project would. It exists to keep the code-generation pipeline
+honest from outside the repository — see its own README.
+
+## Generators
+
+`alloy_generator` ships three builders:
+
+| Builder | Input → output | Purpose |
+|---|---|---|
+| `alloy_property_injection` | `.dart` → `.alloy.g.part` | mixins that inject `late final` fields |
+| `alloy_scan` | `.dart` → `.alloy.json` (cache) | per-library IR |
+| `alloy_container` | `$lib$` → `lib/alloy.g.dart` | `$AlloyRootScope`, `$alloyBootstrap`, `$startAlloy()` |
+
+`alloy_scan` runs before `alloy_container`; the container builder reads every `.alloy.json` through
+`findAssets` because a single build step cannot see the whole program. It emits private const
+factory classes and a `$AlloyRootScope`, with registrations ordered by a compile-time topological
+sort. Property-injected fields count as dependency edges, so a bloc is always registered after what
+it injects. A dependency cycle fails the build naming the cycle, rather than emitting broken code.
+
+Generic types work as dependencies and as `exposeAs` targets: `Repository<User>` and
+`Repository<Order>` are two separate registrations, because at runtime `AlloyKey` is built from
+`Type` and those are different types. The **injectable class itself** may not be generic —
+`@AlloyInject class Cache<T>` is rejected, because nothing tells the generator which instantiations
+to register. Annotate a concrete subtype, or expose one with `exposeAs`.
+
+Nullability is not part of a registration key: a `Foo?` dependency reads the `Foo` registration.
+Alloy has no notion of an optional dependency yet.
+
+`@AlloyBootstrap` classes are collected into `$alloyBootstrap`, ordered by their `order` and then by
+name so the output is stable. They run strictly sequentially, before the container exists, so the
+parser rejects any bootstrap step whose constructor takes required parameters.
+
+`$alloyBootstrap` is emitted as a **getter**, not a stored list: a top-level `final` would build the
+steps once per process, quietly sharing them between a retried startup and between tests, and
+keeping them alive after the scope that adopted them is gone. Once the steps have run, the root
+scope adopts them, so a step that opened something has that closed at teardown — last, after
+everything built on top of it. If a step fails, the ones that already ran are released in reverse
+before the error is rethrown, since there is no scope yet to hand them to.
+
+`@AlloyInit` classes become async singletons: the generated factory constructs the object, awaits
+its `init()`, and registers it with `dependsOn` translated into `AlloyKey`s. Note the set literal is
+built at runtime rather than `const` — `AlloyKey` overrides `==`, and const set elements must have
+primitive equality.
+
+### Environments — optional
+
+Nothing so far needs this. A project that never writes `@AlloyEnvironment` has exactly one graph,
+every registration belongs to it, and `$startAlloy()` takes no environment at all. Reach for the
+rest of this section only when one build needs a different implementation than another.
+
+`@AlloyEnvironment` restricts a registration to one or more environments:
+
+```dart
+@AlloyInject(exposeAs: ApiClient)
+@AlloyEnvironment.prod
+@AlloyEnvironment.stage
+class LiveApiClient implements ApiClient { ... }
+
+@AlloyInject(exposeAs: ApiClient)
+@AlloyEnvironment.dev
+@AlloyEnvironment.test
+class FakeApiClient implements ApiClient { ... }
+```
+
+`dev`, `stage`, `prod` and `test` are constants, not a closed set — `@AlloyEnvironment('canary')`
+declares one of your own and behaves identically. The annotation repeats rather than taking a list,
+so a registration belongs to a *set* of environments while startup picks exactly *one*:
+
+```dart
+final scope = await $startAlloy(environment: AlloyEnvironment.prod);
+```
+
+The generated container takes the choice as a field and guards only the restricted registrations:
+
+```dart
+final class $AlloyRootScope implements AlloyScopeBuilder {
+  const $AlloyRootScope({
+    this.environment = AlloyEnvironment.defaultEnvironment,
+  });
+
+  final AlloyEnvironment environment;
+
+  @override
+  void build(AlloyScope scope) {
+    scope.registerLazySingleton<EventLog>(const _EventLogFactory());
+    if (environment.matches(const <String>{'dev', 'test'})) {
+      scope.registerLazySingleton<ApiClient>(const _FakeApiClientFactory());
+    }
+    if (environment.matches(const <String>{'prod', 'stage'})) {
+      scope.registerLazySingleton<ApiClient>(const _LiveApiClientFactory());
+    }
+  }
+}
+```
+
+Three things follow from that shape:
+
+- **It stays opt-in to the end.** The `environment` parameter appears only once some declaration
+  names an environment, and even then it defaults to `AlloyEnvironment.defaultEnvironment` — the
+  single environment an unsplit graph lives in. That default matches unrestricted registrations and
+  nothing else, so starting a split graph without choosing leaves the split types unregistered, and
+  the first resolution of one fails saying so instead of quietly handing back the wrong class.
+- **Nothing is registered twice.** The generator rejects two registrations of the same type whose
+  environments overlap — including the case where one names no environment at all, since an
+  unrestricted registration is present everywhere. What would otherwise be a silent last-one-wins
+  is a build failure naming both classes and the environment they collide in.
+- **Manual Mode can do the same thing.** `matches` is ordinary public API, so a hand-written
+  builder writes the same `if` the generator emits. Subclass `AlloyEnvironment` and override
+  `matches` to activate several at once, or to match on something other than the name.
+
+`@AlloyBootstrap` steps take environments too. When any of them does, `$alloyBootstrap` becomes a
+function of the chosen environment instead of a getter, and skipped steps never run and never get
+adopted:
+
+```dart
+List<AlloyBootstrapStep> $alloyBootstrap(AlloyEnvironment environment) => [
+  BindPlatform(),
+  if (environment.matches(const <String>{'prod', 'stage'})) ReportCrashes(),
+];
+```
+
+An environment nobody claims is legal and leaves those types unregistered — resolving one then
+fails with the ordinary "not registered" error rather than silently handing back the wrong class.
+
+`@AlloyScopeRoot` names the root scope and collapses startup to one call:
+
+```dart
+final scope = await $startAlloy();
+```
+
+The generator emits `$alloyRootScopeName` plus a `$startAlloy()` that wires the container, the
+bootstrap list and the name together. Without the annotation the name defaults to `root`; two
+annotated classes in one package is a generation error.
+
+## Who owns the root scope
+
+`AlloyAppScope` owns it: builds the graph, publishes it, disposes it on unmount, and turns a
+startup failure into a screen with a retry instead of an app that dies before its first frame.
+
+```dart
+void main() => runApp(
+  AlloyAppScope(start: startMyApp, child: const MyApp()),
+);
+```
+
+`AlloyAppScope.of(context).restart()` rebuilds the graph — the same call retries a failed start.
+Disposing on app termination is opt-in (`disposeOnExitRequest`) and desktop-only in practice; see
+the `alloy_flutter` README for why Flutter cannot promise it on mobile.
+
+## Watching the graph
+
+`AlloyObserver` reports what the graph does — scopes appearing, instances being built, startup
+finishing, teardown failing. Pass observers where the graph is created:
+
+```dart
+final scope = await AlloyApplication.start(
+  root: const AppScope(),
+  observers: [AlloyLogObserver(const AlloyDeveloperLogSink())],
+);
+```
+
+Observers are inherited by every scope pushed below, so one registration covers the tree.
+
+Two things shape the design. Callbacks receive `AlloyScopeRef` and `AlloyKey` — descriptions, not
+live objects — because an observer that could resolve from a scope halfway through teardown, or
+dispose it a second time, is not watching any more. And an exception thrown from a callback is
+swallowed: watching must not be able to break what it watches.
+
+Resolution is not reported. A cache hit is the hot path and an event per `get` would be noise; what
+is worth seeing is an instance being *built*, which `onInstanceCreated` covers. With no observers
+registered the cost of every event is one empty-list check.
+
+`AlloyLogObserver` turns events into `AlloyLogRecord`s and hands them to an `AlloyLogSink`.
+`AlloyDeveloperLogSink` (`dart:developer`, no dependencies) ships in `alloy`; the adapter packages
+connect the rest:
+
+| Package | Shape | Why |
+|---|---|---|
+| `alloy_talker` | `AlloyObserver` | each event kind becomes its own coloured `TalkerLog`, filterable in `TalkerScreen` |
+| `alloy_logging` | `AlloyLogSink` | dart.dev `logging` has no notion of a record kind |
+| `alloy_logger` | `AlloyLogSink` | same, plus its own console printing |
+
+### Any other logger, without a package
+
+A sink is one callback, so nothing is locked out for want of an adapter:
+
+```dart
+AlloyLogObserver(AlloyLogSink.from((record) => myLogger.debug(record.message)))
+```
+
+| Logger | The whole integration |
+|---|---|
+| `loggy` | `AlloyLogSink.from((r) => logDebug(r.message))` |
+| `fimber` | `AlloyLogSink.from((r) => Fimber.d(r.message, ex: r.error))` |
+| `simple_logger` | `AlloyLogSink.from((r) => logger.info(r.message))` |
+| Sentry | `AlloyLogSink.from((r) { if (r.error != null) Sentry.captureException(r.error, stackTrace: r.stackTrace); })` |
+| Crashlytics | `AlloyLogSink.from((r) => FirebaseCrashlytics.instance.log(r.message))` |
+
+The record is not just a string — `level`, `scope`, `key`, `error` and `stackTrace` are all there,
+which is why the two crash-reporting rows can filter on failures alone rather than shipping every
+line of trace to a paid service.
+
+`AlloyMultiSink` fans one record out to several destinations, and a sink that throws does not
+silence the rest — console plus crash reporting is the normal production pair:
+
+```dart
+AlloyLogObserver(
+  const AlloyMultiSink([AlloyDeveloperLogSink(), _CrashReporterSink()]),
+)
+```
+
+Two sinks ship in `alloy` itself with no dependencies: `AlloyDeveloperLogSink` (`dart:developer`,
+the right default in a Flutter app) and `AlloyPrintLogSink` (stdout, for a CLI or a first look).
+
+This is also the channel that fixed a real gap: when startup fails and Alloy rolls back, a bootstrap
+step that *also* fails to release cannot be reported through `AlloyBootstrapError` without masking
+the failure that caused it. It used to be dropped by a bare `catch`. It is now
+`onBootstrapStepReleaseFailed`.
+
+## Flow scopes
+
+`alloy_go_router` makes a scope's lifetime a navigation flow — created when the flow opens,
+disposed when it closes:
+
+```dart
+AlloyFlowRoute(
+  name: 'checkout',
+  identity: (state) => state.pathParameters['orderId'],
+  scope: (state) => CheckoutScope(state.pathParameters['orderId']!),
+  routes: [...],
+)
+```
+
+It is an ordinary `ShellRoute` subclass — so it drops into a route table anywhere a `RouteBase`
+goes, and a flow can be given a name of its own by subclassing it. The scope is owned by a widget
+inside it. That is enough because go_router keys a shell's page by the identity of the route
+object, so the subtree
+survives every navigation *within* the flow and is destroyed the frame the flow leaves the match
+list. Nothing watches the router and mirrors it — mirroring is where hand-rolled versions break on
+the back button, on deep links and on tab switches.
+
+Tabs get the same treatment: `AlloyFlowShellRoute` scopes a whole `StatefulShellRoute` and
+`AlloyFlowShellBranch` scopes one tab, composing into three levels. A branch, though, is kept
+*alive* rather than kept *visible* — go_router preserves branch navigators off-screen, so a tab's
+scope lives until the shell closes, not until you switch away.
+
+The one thing the router cannot decide is whether `/orders/1` and `/orders/2` are the same flow;
+that is what `identity` answers. A flow whose routes are not one subtree cannot be expressed this
+way, and that limitation is deliberate — see the package README.
+
+## Examples
+
+- `examples/counter_manual` — Manual Mode. Pure Dart, no Flutter, no generation.
+- `examples/counter_codegen` — the smallest possible generated setup.
+- `examples/flow_router` — a scope whose lifetime is a navigation flow, wired with go_router.
+- `examples/logging` — the graph's own events streamed into talker, with `TalkerScreen`.
+- `examples/notes_app` — a small multi-screen app with one screen per capability, runnable on an
+  Android emulator or an iOS simulator (`cd examples/notes_app && flutter run`):
+
+  | Screen | Case |
+  |---|---|
+  | Home | both startup phases — the bootstrap log and every `@AlloyInit` service |
+  | Property injection | a controller with an empty constructor and `@injected` fields |
+  | Widget-owned scope | `AlloyScopeWidget` plus a parameterized factory |
+  | Session scope | sign out disposes the scope; nothing implements `reset()` |
+  | Named and multi-injection | three formatters behind one interface |
+  | Scope tree | the live hierarchy, rendered from `AlloyScope.children` |
+  | Environments | one interface, a different class per build |
+
+  The session screen is the one worth reading first: signing out is `await scope.dispose()`, and
+  everything the session built goes with it — no session listener anywhere, no `reset()` on any
+  repository.
+
+## Lint plugin
+
+`alloy_lint` is an `analysis_server_plugin`, not a `custom_lint` plugin (see Toolchain). It ships
+seven warning rules, all built on the same `alloy_analyzer` parsing layer the generator uses, so a
+mistake surfaces in the IDE instead of only when `build_runner` runs:
+
+| Rule | Catches |
+|---|---|
+| `alloy_missing_injection_mixin` | `@injected` fields without `with _$ClassName` |
+| `alloy_injected_field_must_be_late_final` | `@injected` on a mutable, non-late, or static field |
+| `alloy_injectable_must_be_constructible` | `@AlloyInject` on an abstract class or one with no public generative constructor |
+| `alloy_init_requires_init_method` | `@AlloyInit` on a class with no `init()` |
+| `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` on a class with no `run()` |
+| `alloy_bootstrap_step_cannot_inject` | a bootstrap step whose constructor takes required parameters |
+| `alloy_environment_needs_a_registration` | `@AlloyEnvironment` on a class nothing registers, where it silently does nothing |
+
+Two things about wiring it up cost real time and are easy to get wrong:
+
+1. The `plugins:` section **only works at the root of a package or workspace**. Put it in a nested
+   `analysis_options.yaml` and it is silently ignored — no error, no diagnostics. For the same
+   reason `dart analyze <nested/dir>` does not apply it; analyze the workspace root instead.
+2. The analysis server resolves plugins in an isolated pub context, so unpublished workspace
+   siblings are invisible to it. Every unpublished transitive dependency needs an entry under
+   `plugins: dependency_overrides:` — see this repo's root `analysis_options.yaml`.
+
+Rule behaviour is covered by `analyzer_testing` tests in `packages/alloy_lint/test`, which exercise
+the rules directly and need none of the plugin bootstrap.
+
+## Linting
+
+`custom_lint` is not used. Its latest release (0.8.1) is pinned to `analyzer ^8.0.0` and cannot
+coexist with a modern analyzer; `riverpod_lint` migrated off it to the first-party
+`analysis_server_plugin`, and `alloy_lint` follows.

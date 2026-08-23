@@ -1,0 +1,25 @@
+name: notes_app
+description: Full-surface Alloy example covering bootstrap, async init graph, scopes and property injection.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.24.0"
+
+resolution: workspace
+
+dependencies:
+  alloy: ^0.1.0
+  alloy_flutter: ^0.1.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  alloy_generator: ^0.1.0
+  build_runner: ^2.16.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

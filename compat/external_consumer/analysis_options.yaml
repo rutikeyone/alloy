@@ -1,0 +1,20 @@
+include: package:lints/recommended.yaml
+
+# A published alloy_lint needs only the `plugins` entry — the analysis server
+# resolves plugins from pub.dev, not from this package's pubspec. Until the
+# packages are published that resolution fails ("could not find package
+# alloy_lint at https://pub.dev"), so the local sources are named here. This
+# block is scaffolding for the unpublished state, not something a consumer
+# writes.
+plugins:
+  alloy_lint:
+    path: ../../packages/alloy_lint
+  dependency_overrides:
+    alloy_lint:
+      path: ../../packages/alloy_lint
+    alloy_analyzer:
+      path: ../../packages/alloy_analyzer
+    alloy:
+      path: ../../packages/alloy
+    alloy_annotations:
+      path: ../../packages/alloy_annotations
