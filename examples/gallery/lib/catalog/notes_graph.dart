@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gallery/catalog/example_host.dart';
 import 'package:notes_app/alloy.g.dart';
 import 'package:notes_app/app/app_startup.dart';
-import 'package:notes_app/bootstrap/boot_log.dart';
+import 'package:notes_app/bootstrap/bootstrap_state.dart';
 
 /// Mounts one `notes_app` screen with the notes graph beneath it.
 ///
@@ -24,17 +24,15 @@ class _NotesExampleState extends State<_NotesExample> {
   @override
   void initState() {
     super.initState();
-    // The boot log is a process-wide static, and it has to be: phase 0 runs
-    // before the container exists, so nothing can be injected into a bootstrap
-    // step — the generated `$alloyBootstrap` builds them with no arguments at
-    // all. Standing alone that was invisible, because one process meant one
-    // graph. Here a visit builds a graph and leaving disposes it, so without
-    // this every visit would stack another cycle onto the last one's.
+    // Phase 0 writes to statics because it has to — nothing can be injected
+    // into a bootstrap step. Standing alone that was invisible; here a visit
+    // builds a graph and leaving disposes it, so without this every visit
+    // would read the last one's leftovers as its own.
     //
     // Cleared per visit rather than per start, deliberately: a restart should
     // still show "bind-platform released" followed by the next cycle, which is
-    // the point of the restart button on this screen.
-    BootLog.reset();
+    // the point of the restart button on that screen.
+    resetBootstrapState();
   }
 
   @override

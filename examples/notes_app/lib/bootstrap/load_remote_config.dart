@@ -5,7 +5,11 @@ import 'package:notes_app/bootstrap/boot_log.dart';
 class LoadRemoteConfig implements AlloyBootstrapStep {
   LoadRemoteConfig();
 
-  static String apiBaseUrl = 'unset';
+  static const unset = 'unset';
+
+  static String apiBaseUrl = unset;
+
+  static void reset() => apiBaseUrl = unset;
 
   @override
   String get name => 'load-remote-config';

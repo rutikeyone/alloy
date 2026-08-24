@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gallery/catalog/example_entry.dart';
 import 'package:gallery/catalog/example_host.dart';
 import 'package:gallery/catalog/example_section.dart';
+import 'package:gallery/catalog/flow_scopes_host.dart';
 import 'package:gallery/catalog/glyphs.dart';
 import 'package:gallery/catalog/notes_graph.dart';
 import 'package:graph_events/app/app_scope.dart';
@@ -173,6 +174,7 @@ List<ExampleEntry> buildCatalog() => [
     ],
     transcriptLabel: 'Where it lives',
     transcript: 'examples/flow_scopes/lib/app/app_router.dart',
+    open: (_) => const FlowScopesHost(),
   ),
   ExampleEntry(
     id: 'teardown',

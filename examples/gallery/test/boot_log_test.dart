@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gallery/catalog/catalog.dart';
 import 'package:gallery/design/gallery_theme.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
+import 'package:notes_app/bootstrap/load_remote_config.dart';
 
 void main() {
   testWidgets('a second visit does not stack onto the first one’s boot log', (
@@ -40,5 +41,26 @@ void main() {
         reason: '$step appears once per visit, not once per visit ever made',
       );
     }
+  });
+
+  testWidgets('a visit does not read the last one’s remote config', (
+    tester,
+  ) async {
+    final entry = buildCatalog().firstWhere((e) => e.id == 'startup');
+
+    // The value the step writes is a static too. Poisoning it stands in for
+    // "some earlier visit left this behind": a visit must not surface it.
+    LoadRemoteConfig.apiBaseUrl = 'https://stale.example/v0';
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: galleryTheme(),
+        home: Builder(builder: entry.open!),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('stale.example'), findsNothing);
   });
 }
