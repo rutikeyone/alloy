@@ -59,6 +59,7 @@ dart format --output=none --set-exit-if-changed .
 (cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
+(cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ```
 
