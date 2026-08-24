@@ -1,0 +1,26 @@
+name: gallery
+description: >-
+  One app that hosts every Alloy example — each opens with its own graph, built
+  on entry and disposed on exit.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  alloy: ^0.1.0
+  alloy_flutter: ^0.1.0
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

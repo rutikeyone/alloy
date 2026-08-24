@@ -22,6 +22,7 @@ workspace:
   - examples/graph_events
   - examples/teardown
   - examples/testing_patterns
+  - examples/gallery
 
 dev_dependencies:
   lints: ^6.0.0
