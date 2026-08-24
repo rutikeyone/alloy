@@ -1,0 +1,50 @@
+# graph_events
+
+An Alloy example about one thing: watching the graph report itself, through
+[talker](https://pub.dev/packages/talker).
+
+```
+flutter pub get
+flutter run
+```
+
+## What to try
+
+| Step | What appears in the log |
+|---|---|
+| launch | `bootstrap "warm-up" started/done`, then `scope "app" ready in …ms` |
+| Open a session scope | `scope "app/session" pushed`, an init level, the instances it built |
+| Close the session | `scope "app/session" disposing`, each release, then `disposed` |
+| Open one that will not close | same, until teardown — then an `alloy-failure` entry naming `StubbornResource.dispose` |
+| The log button (app bar) | `TalkerScreen`, where the four titles can be filtered apart |
+
+The last row is the point. A teardown that cannot release something used to be visible only as a
+thrown `AlloyDisposeError` that somebody had to catch and print; now it is a log line with the
+failing label, the original error and its stack trace.
+
+## The whole integration
+
+```dart
+final talker = Talker();
+
+await AlloyApplication.start(
+  root: const AppScope(),
+  bootstrap: [WarmUp()],
+  observers: [AlloyTalkerObserver(talker, verbose: true)],
+);
+```
+
+`verbose: true` here because the example is small and per-instance lines are the interesting part.
+In a real app leave it off — see the `alloy_talker` README.
+
+## Layout
+
+```
+lib/
+  main.dart
+  app/                  app_scope.dart (graph + startup), logging_app.dart
+  core/                 telemetry.dart — an async service and one that refuses to close
+  features/
+    home/ui/            the buttons that drive the graph
+    session/            the child scope they open and close
+```

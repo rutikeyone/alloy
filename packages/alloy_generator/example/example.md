@@ -41,4 +41,4 @@ Start it with the generated `$startAlloy()`, or hand the pieces to
 emitting code that would deadlock.
 
 Full setup:
-[`examples/counter_codegen`](https://github.com/rutikeyone/alloy/tree/main/examples/counter_codegen).
+[`examples/codegen_basics`](https://github.com/rutikeyone/alloy/tree/main/examples/codegen_basics).

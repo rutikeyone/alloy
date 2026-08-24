@@ -1,0 +1,15 @@
+name: teardown
+description: What disposal actually guarantees — order, failures, timeouts, and adoption.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  alloy: ^0.1.0
+
+dev_dependencies:
+  test: ^1.25.0

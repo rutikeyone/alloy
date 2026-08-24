@@ -24,7 +24,7 @@ application:
 | generic dependencies | `lib/src/repository.dart` |
 
 `lib/alloy.g.dart` is committed and verified by `git diff --exit-code` in CI,
-the same way `examples/counter_codegen` is.
+the same way `examples/codegen_basics` is.
 
 ## What it does not prove
 

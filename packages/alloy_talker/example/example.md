@@ -27,4 +27,4 @@ AlloyTalkerObserver(talker, verbose: true)
 ```
 
 With `talker_flutter`, `TalkerScreen` shows the whole thing live; that is what
-[`examples/logging`](https://github.com/rutikeyone/alloy/tree/main/examples/logging) does.
+[`examples/graph_events`](https://github.com/rutikeyone/alloy/tree/main/examples/graph_events) does.

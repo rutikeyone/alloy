@@ -1,0 +1,20 @@
+name: testing_patterns
+description: How to test an app built on Alloy — overriding dependencies and the traps.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  alloy: ^0.1.0
+  alloy_flutter: ^0.1.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

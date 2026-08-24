@@ -1,0 +1,25 @@
+name: graph_events
+description: Alloy example — the DI graph's own events, streamed into talker.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.24.0"
+
+resolution: workspace
+
+dependencies:
+  alloy_flutter: ^0.1.0
+  alloy_talker: ^0.1.0
+  flutter:
+    sdk: flutter
+  talker: ^5.1.0
+  talker_flutter: ^5.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

@@ -57,8 +57,8 @@ dart analyze --fatal-infos .
 dart format --output=none --set-exit-if-changed .
 (cd packages/alloy && dart test)
 (cd packages/alloy_flutter && flutter test)
-(cd examples/counter_manual && dart test)
-(cd examples/counter_codegen && dart run build_runner build && flutter test)
+(cd examples/manual_mode && dart test)
+(cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
@@ -360,10 +360,15 @@ way, and that limitation is deliberate — see the package README.
 
 ## Examples
 
-- `examples/counter_manual` — Manual Mode. Pure Dart, no Flutter, no generation.
-- `examples/counter_codegen` — the smallest possible generated setup.
-- `examples/flow_router` — a scope whose lifetime is a navigation flow, wired with go_router.
-- `examples/logging` — the graph's own events streamed into talker, with `TalkerScreen`.
+- `examples/manual_mode` — Manual Mode. Pure Dart, no Flutter, no generation; `dart run bin/main.dart`.
+- `examples/codegen_basics` — the smallest generated setup, and a runnable starting template.
+- `examples/flow_scopes` — a scope whose lifetime is a navigation flow, wired with go_router.
+- `examples/graph_events` — the graph's own events, fanned out to talker, the console and a logger
+  with no adapter.
+- `examples/teardown` — what disposal guarantees: order, failures, timeouts, adoption. Pure Dart,
+  and its output is the lesson.
+- `examples/testing_patterns` — how to test an app built on Alloy, and the one thing about
+  overriding that surprises everyone.
 - `examples/notes_app` — a small multi-screen app with one screen per capability, runnable on an
   Android emulator or an iOS simulator (`cd examples/notes_app && flutter run`):
 

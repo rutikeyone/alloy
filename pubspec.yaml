@@ -15,11 +15,13 @@ workspace:
   - packages/alloy_analyzer
   - packages/alloy_generator
   - packages/alloy_lint
-  - examples/counter_manual
-  - examples/counter_codegen
+  - examples/manual_mode
+  - examples/codegen_basics
   - examples/notes_app
-  - examples/flow_router
-  - examples/logging
+  - examples/flow_scopes
+  - examples/graph_events
+  - examples/teardown
+  - examples/testing_patterns
 
 dev_dependencies:
   lints: ^6.0.0

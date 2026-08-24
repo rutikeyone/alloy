@@ -55,8 +55,8 @@ dart analyze --fatal-infos .
 dart format --output=none --set-exit-if-changed .
 (cd packages/alloy && dart test)
 (cd packages/alloy_flutter && flutter test)
-(cd examples/counter_manual && dart test)
-(cd examples/counter_codegen && dart run build_runner build && flutter test)
+(cd examples/manual_mode && dart test)
+(cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
@@ -328,10 +328,12 @@ AlloyFlowRoute(
 
 ## 示例
 
-- `examples/counter_manual` —— Manual Mode。纯 Dart，无 Flutter，无生成。
-- `examples/counter_codegen` —— 尽可能小的生成式配置。
-- `examples/flow_router` —— 生命周期等于导航流程的作用域，基于 go_router。
-- `examples/logging` —— 图自身的事件流入 talker，配合 `TalkerScreen`。
+- `examples/manual_mode` —— Manual Mode。纯 Dart，无 Flutter，无生成；`dart run bin/main.dart`。
+- `examples/codegen_basics` —— 最小的生成式配置，同时是一个可运行的起步模板。
+- `examples/flow_scopes` —— 生命周期等于导航流程的作用域，基于 go_router。
+- `examples/graph_events` —— 图自身的事件，分发给 talker、控制台，以及一个没有适配器的日志库。
+- `examples/teardown` —— 释放到底保证了什么：顺序、失败、超时、收养。纯 Dart，它的输出就是这一课。
+- `examples/testing_patterns` —— 如何测试基于 Alloy 的应用，以及覆盖依赖时那个人人都会中招一次的点。
 - `examples/notes_app` —— 一个小型多屏应用，每屏演示一项能力，可在 Android 模拟器或 iOS 模拟器上运行
   （`cd examples/notes_app && flutter run`）：
 

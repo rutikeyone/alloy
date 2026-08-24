@@ -61,8 +61,8 @@ dart analyze --fatal-infos .
 dart format --output=none --set-exit-if-changed .
 (cd packages/alloy && dart test)
 (cd packages/alloy_flutter && flutter test)
-(cd examples/counter_manual && dart test)
-(cd examples/counter_codegen && dart run build_runner build && flutter test)
+(cd examples/manual_mode && dart test)
+(cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
@@ -368,10 +368,15 @@ AlloyFlowRoute(
 
 ## Примеры
 
-- `examples/counter_manual` — Manual Mode. Чистый Dart, без Flutter и без генерации.
-- `examples/counter_codegen` — минимально возможная генерируемая обвязка.
-- `examples/flow_router` — скоуп со временем жизни навигационного флоу, на go_router.
-- `examples/logging` — собственные события графа, льющиеся в talker, с `TalkerScreen`.
+- `examples/manual_mode` — Manual Mode. Чистый Dart, без Flutter и генерации; `dart run bin/main.dart`.
+- `examples/codegen_basics` — минимальная генерируемая обвязка и запускаемый стартовый шаблон.
+- `examples/flow_scopes` — скоуп со временем жизни навигационного флоу, на go_router.
+- `examples/graph_events` — собственные события графа, разведённые в talker, консоль и логгер,
+  под который адаптера нет.
+- `examples/teardown` — что гарантирует разбор: порядок, падения, таймауты, усыновление. Чистый
+  Dart, и его вывод и есть урок.
+- `examples/testing_patterns` — как тестировать приложение на Alloy и что в подмене зависимостей
+  удивляет всех однажды.
 - `examples/notes_app` — небольшое многоэкранное приложение, по одному экрану на возможность,
   запускается на Android-эмуляторе или iOS-симуляторе (`cd examples/notes_app && flutter run`):
 

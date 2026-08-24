@@ -1,0 +1,15 @@
+name: manual_mode
+description: Manual Mode showcase. Pure Dart, proves the core runs without Flutter.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  alloy: ^0.1.0
+
+dev_dependencies:
+  test: ^1.25.0

@@ -43,4 +43,4 @@ Future<void> main() async {
 }
 ```
 
-More: [`examples/counter_manual`](https://github.com/rutikeyone/alloy/tree/main/examples/counter_manual).
+More: [`examples/manual_mode`](https://github.com/rutikeyone/alloy/tree/main/examples/manual_mode).
