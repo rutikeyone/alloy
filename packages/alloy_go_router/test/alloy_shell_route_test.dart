@@ -12,7 +12,7 @@ GoRouter flowRouter({String initialLocation = '/'}) => GoRouter(
       path: '/',
       builder: (_, _) => const Scaffold(body: Text('home')),
     ),
-    alloyFlowRoute(
+    alloyShellRoute(
       name: 'order',
       identity: (state) => state.pathParameters['id'],
       scope: (state) => TrackedScope('order-${state.pathParameters['id']}'),
@@ -131,7 +131,7 @@ void main() {
             path: '/',
             builder: (_, _) => const Scaffold(body: Text('home')),
           ),
-          alloyFlowRoute(
+          alloyShellRoute(
             name: 'wizard',
             scope: (_) => const TrackedScope('wizard'),
             routes: [

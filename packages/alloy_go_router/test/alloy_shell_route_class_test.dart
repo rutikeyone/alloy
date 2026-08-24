@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import 'support.dart';
 
-/// A flow given a name of its own — the reason [AlloyFlowRoute] is a class.
-class OrderFlowRoute extends AlloyFlowRoute {
+/// A flow given a name of its own — the reason [AlloyShellRoute] is a class.
+class OrderFlowRoute extends AlloyShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',
@@ -54,11 +54,11 @@ void main() {
     await settle(tester);
   }
 
-  group('AlloyFlowRoute', () {
+  group('AlloyShellRoute', () {
     testWidgets('is a ShellRoute, so it drops into any route table', (
       tester,
     ) async {
-      final flow = AlloyFlowRoute(
+      final flow = AlloyShellRoute(
         name: 'order',
         scope: (_) => const TrackedScope('order'),
         routes: [
@@ -103,7 +103,7 @@ void main() {
 
   group('the function spelling', () {
     testWidgets('builds the very same type', (tester) async {
-      final built = alloyFlowRoute(
+      final built = alloyShellRoute(
         name: 'order',
         scope: (_) => const TrackedScope('order'),
         routes: [
@@ -114,7 +114,7 @@ void main() {
         ],
       );
 
-      expect(built, isA<AlloyFlowRoute>());
+      expect(built, isA<AlloyShellRoute>());
 
       await run(tester, routerWith(built));
 

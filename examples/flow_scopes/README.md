@@ -32,7 +32,7 @@ flow can write to it and the entry outlives the flow.
 The flow is a route type of its own — `lib/features/orders/order_flow_route.dart`:
 
 ```dart
-class OrderFlowRoute extends AlloyFlowRoute {
+class OrderFlowRoute extends AlloyShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',

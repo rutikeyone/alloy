@@ -342,7 +342,7 @@ AlloyLogObserver(
 при выходе:
 
 ```dart
-AlloyFlowRoute(
+AlloyShellRoute(
   name: 'checkout',
   identity: (state) => state.pathParameters['orderId'],
   scope: (state) => CheckoutScope(state.pathParameters['orderId']!),
@@ -357,8 +357,8 @@ AlloyFlowRoute(
 покидает match list. Никто не слушает роутер и не зеркалит его — именно на зеркалировании
 рукописные версии ломаются на кнопке «назад», на deep link и на переключении вкладок.
 
-Вкладки получают то же самое: `AlloyFlowShellRoute` скоупит весь `StatefulShellRoute`, а
-`AlloyFlowShellBranch` — одну вкладку, и они композируются в три уровня. Но ветка держится
+Вкладки получают то же самое: `AlloyStatefulShellRoute` скоупит весь `StatefulShellRoute`, а
+`AlloyStatefulShellBranch` — одну вкладку, и они композируются в три уровня. Но ветка держится
 *живой*, а не *видимой*: go_router сохраняет навигаторы веток за кадром, поэтому скоуп вкладки
 живёт до закрытия шелла, а не до ухода с неё.
 

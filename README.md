@@ -333,7 +333,7 @@ the failure that caused it. It used to be dropped by a bare `catch`. It is now
 disposed when it closes:
 
 ```dart
-AlloyFlowRoute(
+AlloyShellRoute(
   name: 'checkout',
   identity: (state) => state.pathParameters['orderId'],
   scope: (state) => CheckoutScope(state.pathParameters['orderId']!),
@@ -349,8 +349,8 @@ survives every navigation *within* the flow and is destroyed the frame the flow 
 list. Nothing watches the router and mirrors it — mirroring is where hand-rolled versions break on
 the back button, on deep links and on tab switches.
 
-Tabs get the same treatment: `AlloyFlowShellRoute` scopes a whole `StatefulShellRoute` and
-`AlloyFlowShellBranch` scopes one tab, composing into three levels. A branch, though, is kept
+Tabs get the same treatment: `AlloyStatefulShellRoute` scopes a whole `StatefulShellRoute` and
+`AlloyStatefulShellBranch` scopes one tab, composing into three levels. A branch, though, is kept
 *alive* rather than kept *visible* — go_router preserves branch navigators off-screen, so a tab's
 scope lives until the shell closes, not until you switch away.
 

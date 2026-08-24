@@ -306,7 +306,7 @@ AlloyLogObserver(
 `alloy_go_router` 让作用域的生命周期等于一段导航流程——流程打开时创建，关闭时释放：
 
 ```dart
-AlloyFlowRoute(
+AlloyShellRoute(
   name: 'checkout',
   identity: (state) => state.pathParameters['orderId'],
   scope: (state) => CheckoutScope(state.pathParameters['orderId']!),
@@ -319,8 +319,8 @@ AlloyFlowRoute(
 为 shell 的 page 生成 key，所以子树能挺过流程*内部*的每一次导航，并在流程离开 match list 的那一帧被销毁。
 没有任何东西去监听路由器并镜像它的状态——手写版本正是在镜像这一步上，栽在返回键、深链接和标签切换上。
 
-标签页也是同样的待遇：`AlloyFlowShellRoute` 为整个 `StatefulShellRoute` 划定作用域，
-`AlloyFlowShellBranch` 为单个标签划定作用域，两者组合成三层。不过分支是被保持*存活*而非保持*可见*的
+标签页也是同样的待遇：`AlloyStatefulShellRoute` 为整个 `StatefulShellRoute` 划定作用域，
+`AlloyStatefulShellBranch` 为单个标签划定作用域，两者组合成三层。不过分支是被保持*存活*而非保持*可见*的
 ——go_router 会在屏幕外保留分支的导航器，所以一个标签的作用域活到 shell 关闭为止，而不是活到你切走为止。
 
 路由器唯一无法决定的是：`/orders/1` 和 `/orders/2` 算不算同一段流程；这由 `identity` 回答。路由不位于

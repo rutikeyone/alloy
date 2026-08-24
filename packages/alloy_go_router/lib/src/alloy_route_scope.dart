@@ -16,7 +16,7 @@ import 'package:flutter/widgets.dart';
 /// changes:
 ///
 /// ```dart
-/// AlloyFlowScope(
+/// AlloyRouteScope(
 ///   name: 'checkout',
 ///   identity: state.pathParameters['orderId'],
 ///   builder: CheckoutScope(state.pathParameters['orderId']!),
@@ -30,9 +30,9 @@ import 'package:flutter/widgets.dart';
 /// its scope only once `init()` has finished — even for a fully synchronous
 /// graph. Teardown of the outgoing scope is not awaited either, so briefly
 /// both scopes are children of the parent.
-class AlloyFlowScope extends StatelessWidget {
+class AlloyRouteScope extends StatelessWidget {
   /// Creates a flow-scoped subtree.
-  const AlloyFlowScope({
+  const AlloyRouteScope({
     required this.name,
     required this.builder,
     required this.child,

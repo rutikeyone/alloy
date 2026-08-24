@@ -24,11 +24,11 @@ void main() {
             path: '/',
             builder: (_, _) => const Scaffold(body: Text('home')),
           ),
-          alloyFlowRoute(
+          alloyShellRoute(
             name: 'outer',
             scope: (_) => const TrackedScope('outer'),
             routes: [
-              alloyFlowRoute(
+              alloyShellRoute(
                 name: 'inner',
                 scope: (_) => const TrackedScope('inner'),
                 routes: [
@@ -86,7 +86,7 @@ void main() {
             branches: [
               StatefulShellBranch(
                 routes: [
-                  alloyFlowRoute(
+                  alloyShellRoute(
                     name: 'branch-a',
                     scope: (_) => const TrackedScope('a'),
                     routes: [
@@ -97,7 +97,7 @@ void main() {
               ),
               StatefulShellBranch(
                 routes: [
-                  alloyFlowRoute(
+                  alloyShellRoute(
                     name: 'branch-b',
                     scope: (_) => const TrackedScope('b'),
                     routes: [

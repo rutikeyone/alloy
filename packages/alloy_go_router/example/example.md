@@ -7,12 +7,12 @@ and disposed when the user leaves it. Navigating *inside* the flow keeps it.
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:go_router/go_router.dart';
 
-// Build the router once. A new AlloyFlowRoute instance is a different flow as
+// Build the router once. A new AlloyShellRoute instance is a different flow as
 // far as go_router is concerned, because a shell page is keyed by identity.
 final router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-    AlloyFlowRoute(
+    AlloyShellRoute(
       name: 'order',
       // The scope is rebuilt when this changes, and only when it changes.
       identity: (state) => state.pathParameters['id'],
@@ -29,7 +29,7 @@ final router = GoRouter(
 Inside the flow nothing new is needed — `context.alloy<OrderDraft>()` resolves
 from the nearest scope, so the flow shadows the root automatically.
 
-For tabs there are `AlloyFlowShellRoute` and `AlloyFlowShellBranch`; note that a
+For tabs there are `AlloyStatefulShellRoute` and `AlloyStatefulShellBranch`; note that a
 branch is kept **alive**, not **visible**, so switching tabs disposes nothing.
 Runnable version:
 [`examples/flow_scopes`](https://github.com/rutikeyone/alloy/tree/main/examples/flow_scopes).

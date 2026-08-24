@@ -1,10 +1,10 @@
-import 'package:alloy_go_router/src/alloy_flow_route.dart';
+import 'package:alloy_go_router/src/alloy_shell_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 /// A [StatefulShellBranch] whose routes own a scope.
 ///
-/// One tab, one scope. The branch's routes are wrapped in an [AlloyFlowRoute],
+/// One tab, one scope. The branch's routes are wrapped in an [AlloyShellRoute],
 /// so everything in the branch resolves from a scope of its own and the other
 /// branches cannot see it.
 ///
@@ -12,12 +12,12 @@ import 'package:go_router/go_router.dart';
 /// StatefulShellRoute.indexedStack(
 ///   builder: (_, _, shell) => Scaffold(body: shell, bottomNavigationBar: ...),
 ///   branches: [
-///     AlloyFlowShellBranch(
+///     AlloyStatefulShellBranch(
 ///       name: 'feed',
 ///       scope: (_) => const FeedScope(),
 ///       routes: [GoRoute(path: '/feed', builder: (_, _) => const FeedScreen())],
 ///     ),
-///     AlloyFlowShellBranch(
+///     AlloyStatefulShellBranch(
 ///       name: 'profile',
 ///       scope: (_) => const ProfileScope(),
 ///       routes: [GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen())],
@@ -33,13 +33,13 @@ import 'package:go_router/go_router.dart';
 /// stateful shell: the tab keeps its state, and its dependencies are part of
 /// that state. If a tab's dependencies must die when it is deselected, they do
 /// not belong to the tab — give them a flow of their own inside it.
-class AlloyFlowShellBranch extends StatefulShellBranch {
+class AlloyStatefulShellBranch extends StatefulShellBranch {
   /// Declares a branch that owns a scope.
-  AlloyFlowShellBranch({
+  AlloyStatefulShellBranch({
     required String name,
-    required AlloyFlowScopeBuilder scope,
+    required AlloyRouteScopeBuilder scope,
     required List<RouteBase> routes,
-    AlloyFlowIdentity? identity,
+    AlloyRouteIdentity? identity,
     ShellRouteBuilder? shell,
     Widget? loading,
     Widget Function(BuildContext context, Object error)? errorBuilder,
@@ -51,7 +51,7 @@ class AlloyFlowShellBranch extends StatefulShellBranch {
   }) : super(
          navigatorKey: branchNavigatorKey,
          routes: [
-           AlloyFlowRoute(
+           AlloyShellRoute(
              name: name,
              scope: scope,
              routes: routes,

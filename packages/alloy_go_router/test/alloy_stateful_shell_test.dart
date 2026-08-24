@@ -24,7 +24,7 @@ void main() {
     await settle(tester);
   }
 
-  group('AlloyFlowShellBranch', () {
+  group('AlloyStatefulShellBranch', () {
     GoRouter branchRouter() => GoRouter(
       initialLocation: '/feed',
       routes: [
@@ -36,14 +36,14 @@ void main() {
           key: shellKey,
           builder: (_, _, shell) => shell,
           branches: [
-            AlloyFlowShellBranch(
+            AlloyStatefulShellBranch(
               name: 'feed',
               scope: (_) => const TrackedScope('feed'),
               routes: [
                 GoRoute(path: '/feed', builder: (_, _) => const Probe()),
               ],
             ),
-            AlloyFlowShellBranch(
+            AlloyStatefulShellBranch(
               name: 'profile',
               scope: (_) => const TrackedScope('profile'),
               routes: [
@@ -115,7 +115,7 @@ void main() {
     });
   });
 
-  group('AlloyFlowShellRoute', () {
+  group('AlloyStatefulShellRoute', () {
     testWidgets('the shell scope is the parent of every branch scope', (
       tester,
     ) async {
@@ -126,12 +126,12 @@ void main() {
             path: '/',
             builder: (_, _) => const Scaffold(body: Text('out')),
           ),
-          AlloyFlowShellRoute.indexedStack(
+          AlloyStatefulShellRoute.indexedStack(
             key: shellKey,
             name: 'workspace',
             scope: (_) => const TrackedScope('workspace'),
             branches: [
-              AlloyFlowShellBranch(
+              AlloyStatefulShellBranch(
                 name: 'feed',
                 scope: (_) => const TrackedScope('feed'),
                 routes: [

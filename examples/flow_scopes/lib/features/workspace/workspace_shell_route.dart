@@ -10,7 +10,7 @@ import 'package:go_router/go_router.dart';
 /// Three levels: `app` holds the shell's `workspace`, which holds `feed` and
 /// `profile`. Switching tabs disposes nothing — branch navigators are kept
 /// alive off-screen — and leaving the workspace disposes all three.
-class WorkspaceShellRoute extends AlloyFlowShellRoute {
+class WorkspaceShellRoute extends AlloyStatefulShellRoute {
   WorkspaceShellRoute()
     : super.indexedStack(
         name: 'workspace',
@@ -18,7 +18,7 @@ class WorkspaceShellRoute extends AlloyFlowShellRoute {
         shell: (_, _, navigationShell) =>
             WorkspaceChrome(navigationShell: navigationShell),
         branches: [
-          AlloyFlowShellBranch(
+          AlloyStatefulShellBranch(
             name: 'feed',
             scope: (_) => const WorkspaceScope('feed'),
             routes: [
@@ -28,7 +28,7 @@ class WorkspaceShellRoute extends AlloyFlowShellRoute {
               ),
             ],
           ),
-          AlloyFlowShellBranch(
+          AlloyStatefulShellBranch(
             name: 'profile',
             scope: (_) => const WorkspaceScope('profile'),
             routes: [

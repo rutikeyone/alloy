@@ -1,5 +1,5 @@
-import 'package:alloy_go_router/src/alloy_flow_route.dart';
-import 'package:alloy_go_router/src/alloy_flow_scope.dart';
+import 'package:alloy_go_router/src/alloy_shell_route.dart';
+import 'package:alloy_go_router/src/alloy_route_scope.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,10 +9,10 @@ import 'package:go_router/go_router.dart';
 /// the shell — a signed-in area, an editor, anything whose tabs are views of
 /// one session. The scope sits above every branch navigator, so all branches
 /// resolve from it, and each branch may still add a scope of its own with
-/// [AlloyFlowShellBranch].
+/// [AlloyStatefulShellBranch].
 ///
 /// ```dart
-/// AlloyFlowShellRoute.indexedStack(
+/// AlloyStatefulShellRoute.indexedStack(
 ///   name: 'workspace',
 ///   scope: (state) => WorkspaceScope(state.pathParameters['id']!),
 ///   identity: (state) => state.pathParameters['id'],
@@ -26,17 +26,17 @@ import 'package:go_router/go_router.dart';
 ///
 /// The lifetime is the shell's: created when the shell is entered, disposed
 /// when navigation leaves it. Switching branches does not touch it — see
-/// [AlloyFlowShellBranch] for why a branch is kept alive rather than kept
+/// [AlloyStatefulShellBranch] for why a branch is kept alive rather than kept
 /// visible.
-class AlloyFlowShellRoute extends StatefulShellRoute {
+class AlloyStatefulShellRoute extends StatefulShellRoute {
   /// Declares a stateful shell that owns a scope, with a container of your
   /// own. Mirrors [StatefulShellRoute.new].
-  AlloyFlowShellRoute({
+  AlloyStatefulShellRoute({
     required String name,
-    required AlloyFlowScopeBuilder scope,
+    required AlloyRouteScopeBuilder scope,
     required super.branches,
     required super.navigatorContainerBuilder,
-    AlloyFlowIdentity? identity,
+    AlloyRouteIdentity? identity,
     StatefulShellRouteBuilder? shell,
     Widget? loading,
     Widget Function(BuildContext context, Object error)? errorBuilder,
@@ -46,7 +46,7 @@ class AlloyFlowShellRoute extends StatefulShellRoute {
     super.notifyRootObserver,
     super.key,
   }) : super(
-         builder: (context, state, navigationShell) => AlloyFlowScope(
+         builder: (context, state, navigationShell) => AlloyRouteScope(
            name: name,
            identity: identity?.call(state),
            builder: scope(state),
@@ -60,11 +60,11 @@ class AlloyFlowShellRoute extends StatefulShellRoute {
 
   /// Declares a stateful shell that owns a scope, using an `IndexedStack` for
   /// its branch navigators. Mirrors [StatefulShellRoute.indexedStack].
-  AlloyFlowShellRoute.indexedStack({
+  AlloyStatefulShellRoute.indexedStack({
     required String name,
-    required AlloyFlowScopeBuilder scope,
+    required AlloyRouteScopeBuilder scope,
     required super.branches,
-    AlloyFlowIdentity? identity,
+    AlloyRouteIdentity? identity,
     StatefulShellRouteBuilder? shell,
     Widget? loading,
     Widget Function(BuildContext context, Object error)? errorBuilder,
@@ -74,7 +74,7 @@ class AlloyFlowShellRoute extends StatefulShellRoute {
     super.notifyRootObserver,
     super.key,
   }) : super.indexedStack(
-         builder: (context, state, navigationShell) => AlloyFlowScope(
+         builder: (context, state, navigationShell) => AlloyRouteScope(
            name: name,
            identity: identity?.call(state),
            builder: scope(state),

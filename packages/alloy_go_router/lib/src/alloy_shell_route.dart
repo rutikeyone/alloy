@@ -1,16 +1,18 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:alloy_go_router/src/alloy_flow_scope.dart';
+import 'package:alloy_go_router/src/alloy_route_scope.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 /// Builds the registrations a flow adds, from the route state that opened it.
-typedef AlloyFlowScopeBuilder = AlloyScopeBuilder Function(GoRouterState state);
+typedef AlloyRouteScopeBuilder = AlloyScopeBuilder Function(
+  GoRouterState state,
+);
 
 /// Reads what distinguishes one run of a flow from another.
 ///
 /// Usually a path parameter. Returning a different value tears the flow's
 /// scope down and builds a new one; returning the same value keeps it.
-typedef AlloyFlowIdentity = Object? Function(GoRouterState state);
+typedef AlloyRouteIdentity = Object? Function(GoRouterState state);
 
 /// A [ShellRoute] whose subtree owns an Alloy scope.
 ///
@@ -21,7 +23,7 @@ typedef AlloyFlowIdentity = Object? Function(GoRouterState state);
 /// second source of truth about the flow's lifetime.
 ///
 /// ```dart
-/// AlloyFlowRoute(
+/// AlloyShellRoute(
 ///   name: 'checkout',
 ///   identity: (state) => state.pathParameters['orderId'],
 ///   scope: (state) => CheckoutScope(state.pathParameters['orderId']!),
@@ -39,7 +41,7 @@ typedef AlloyFlowIdentity = Object? Function(GoRouterState state);
 /// and reused:
 ///
 /// ```dart
-/// class CheckoutFlowRoute extends AlloyFlowRoute {
+/// class CheckoutFlowRoute extends AlloyShellRoute {
 ///   CheckoutFlowRoute()
 ///     : super(name: 'checkout', scope: ..., routes: [...]);
 /// }
@@ -54,13 +56,13 @@ typedef AlloyFlowIdentity = Object? Function(GoRouterState state);
 ///
 /// A flow whose routes are not one subtree cannot be expressed this way; see
 /// this package's README for why that case is deliberately not covered.
-class AlloyFlowRoute extends ShellRoute {
+class AlloyShellRoute extends ShellRoute {
   /// Declares a flow that owns a scope.
-  AlloyFlowRoute({
+  AlloyShellRoute({
     required String name,
-    required AlloyFlowScopeBuilder scope,
+    required AlloyRouteScopeBuilder scope,
     required super.routes,
-    AlloyFlowIdentity? identity,
+    AlloyRouteIdentity? identity,
     ShellRouteBuilder? shell,
     Widget? loading,
     Widget Function(BuildContext context, Object error)? errorBuilder,
@@ -71,7 +73,7 @@ class AlloyFlowRoute extends ShellRoute {
     super.restorationScopeId,
     super.notifyRootObserver,
   }) : super(
-         builder: (context, state, child) => AlloyFlowScope(
+         builder: (context, state, child) => AlloyRouteScope(
            name: name,
            identity: identity?.call(state),
            builder: scope(state),
@@ -82,21 +84,21 @@ class AlloyFlowRoute extends ShellRoute {
        );
 }
 
-/// [AlloyFlowRoute] as a function, for route tables written that way.
+/// [AlloyShellRoute] as a function, for route tables written that way.
 ///
 /// Identical in every respect — it builds the same object. Prefer the class:
 /// it reads alongside `GoRoute` and `ShellRoute`, and it can be subclassed.
-AlloyFlowRoute alloyFlowRoute({
+AlloyShellRoute alloyShellRoute({
   required String name,
-  required AlloyFlowScopeBuilder scope,
+  required AlloyRouteScopeBuilder scope,
   required List<RouteBase> routes,
-  AlloyFlowIdentity? identity,
+  AlloyRouteIdentity? identity,
   ShellRouteBuilder? shell,
   Widget? loading,
   Widget Function(BuildContext context, Object error)? errorBuilder,
   GlobalKey<NavigatorState>? navigatorKey,
   List<NavigatorObserver>? observers,
-}) => AlloyFlowRoute(
+}) => AlloyShellRoute(
   name: name,
   scope: scope,
   routes: routes,

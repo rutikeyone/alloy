@@ -4,7 +4,7 @@ go_router bindings for [Alloy](https://github.com/rutikeyone/alloy). A scope who
 navigation flow: created when the flow opens, disposed when it closes.
 
 ```dart
-AlloyFlowRoute(
+AlloyShellRoute(
   name: 'checkout',
   identity: (state) => state.pathParameters['orderId'],
   scope: (state) => CheckoutScope(state.pathParameters['orderId']!),
@@ -19,7 +19,7 @@ It is an ordinary `ShellRoute` subclass, so it drops into a route table wherever
 goes. Being a class, a flow can also be given a name of its own and reused:
 
 ```dart
-class CheckoutFlowRoute extends AlloyFlowRoute {
+class CheckoutFlowRoute extends AlloyShellRoute {
   CheckoutFlowRoute()
     : super(name: 'checkout', scope: ..., routes: [...]);
 }
@@ -27,7 +27,7 @@ class CheckoutFlowRoute extends AlloyFlowRoute {
 GoRouter(routes: [HomeRoute(), CheckoutFlowRoute()]);
 ```
 
-There is also `alloyFlowRoute(...)`, a function that builds the same object, for route tables
+There is also `alloyShellRoute(...)`, a function that builds the same object, for route tables
 written that way. The class is the documented spelling — it reads alongside `GoRoute` and
 `ShellRoute`, and it is the one that can be subclassed.
 
@@ -35,9 +35,25 @@ Inside the flow nothing new applies: `context.alloy<T>()` resolves from the near
 flow shadows the root for exactly as long as it is open. No screen has to remember to clear
 anything, and no repository grows a `reset()`.
 
+## Naming
+
+Each type is named after the go_router type it extends, so a route table reads in one register:
+
+| This package | extends |
+|---|---|
+| `AlloyShellRoute` | `ShellRoute` |
+| `AlloyStatefulShellRoute` | `StatefulShellRoute` (including `.indexedStack`) |
+| `AlloyStatefulShellBranch` | `StatefulShellBranch` |
+
+`AlloyRouteScope` is the odd one out because it extends nothing — it is the widget that actually
+owns the scope, and the route types above use it internally.
+
+"Flow" stays a word for the *concept*, not for a type: the types say what they are, the docs say
+what they are for. Naming your own `CheckoutFlowRoute extends AlloyShellRoute` is exactly right.
+
 ## Why there is no router listener
 
-`AlloyFlowRoute` is an ordinary `ShellRoute`, and the scope is owned by a widget inside it. That is
+`AlloyShellRoute` is an ordinary `ShellRoute`, and the scope is owned by a widget inside it. That is
 enough because of how go_router keys a shell's page:
 
 ```dart
@@ -51,7 +67,7 @@ router and mirror it. That mirroring is exactly where hand-rolled solutions brea
 button, on deep links and on tab switches.
 
 One consequence worth stating: construct the flow route **once**, with the rest of the route table.
-A fresh `AlloyFlowRoute` instance is a different flow as far as go_router is concerned, so rebuilding
+A fresh `AlloyShellRoute` instance is a different flow as far as go_router is concerned, so rebuilding
 the routes list on every frame would tear the scope down every frame.
 
 ## Tabs — `StatefulShellRoute`
@@ -59,7 +75,7 @@ the routes list on every frame would tear the scope down every frame.
 Two levels are available, and they compose:
 
 ```dart
-AlloyFlowShellRoute.indexedStack(
+AlloyStatefulShellRoute.indexedStack(
   name: 'workspace',                       // one scope for the whole shell
   scope: (_) => const WorkspaceScope(),
   shell: (_, _, navigationShell) => Scaffold(
@@ -71,12 +87,12 @@ AlloyFlowShellRoute.indexedStack(
     ),
   ),
   branches: [
-    AlloyFlowShellBranch(                  // and one scope per tab
+    AlloyStatefulShellBranch(                  // and one scope per tab
       name: 'feed',
       scope: (_) => const FeedScope(),
       routes: [GoRoute(path: '/feed', builder: (_, _) => const FeedScreen())],
     ),
-    AlloyFlowShellBranch(
+    AlloyStatefulShellBranch(
       name: 'profile',
       scope: (_) => const ProfileScope(),
       routes: [GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen())],
@@ -86,8 +102,8 @@ AlloyFlowShellRoute.indexedStack(
 ```
 
 That gives three levels: the root, the shell's `workspace`, and `feed` / `profile` under it. Either
-piece works alone — a plain `StatefulShellRoute` with `AlloyFlowShellBranch` branches, or an
-`AlloyFlowShellRoute` with plain branches.
+piece works alone — a plain `StatefulShellRoute` with `AlloyStatefulShellBranch` branches, or an
+`AlloyStatefulShellRoute` with plain branches.
 
 **A branch is kept alive, not kept visible.** This is the one thing to internalise. go_router
 preserves branch navigators off-screen (`IndexedStack` plus `AutomaticKeepAliveClientMixin`), so a
@@ -110,7 +126,7 @@ The default location of a StatefulShellBranch cannot be a parameterized route
 'defaultGoRoute!.pathParameters.isEmpty'
 ```
 
-So `AlloyFlowShellRoute` with an `identity` read from a path parameter — `/workspace/:id` with tabs
+So `AlloyStatefulShellRoute` with an `identity` read from a path parameter — `/workspace/:id` with tabs
 under it — does not work unless every branch declares an explicit, literal `initialLocation`. This
 is go_router's constraint, not ours, and it is worth knowing before designing routes around it.
 

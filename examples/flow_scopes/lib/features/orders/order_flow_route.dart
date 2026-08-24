@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 ///
 /// Everything the flow is — its scope, its identity, its screens and its
 /// chrome — lives here, so the route table just names it.
-class OrderFlowRoute extends AlloyFlowRoute {
+class OrderFlowRoute extends AlloyShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',
