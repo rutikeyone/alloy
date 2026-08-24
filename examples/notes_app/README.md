@@ -3,10 +3,16 @@
 A small multi-screen Flutter app that exercises every capability of
 [Alloy](https://github.com/rutikeyone/alloy), one screen per case.
 
+> **Not a runnable app.** This package is a library the gallery mounts — it has no `main.dart`
+> and no native project of its own. Run it, and everything else, from one place:
+>
+> ```bash
+> cd examples/gallery && flutter run
+> ```
+
 ```
 flutter pub get
 dart run build_runner build
-flutter run
 ```
 
 ## Running on a device

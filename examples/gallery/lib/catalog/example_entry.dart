@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:gallery/catalog/example_section.dart';
 import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/design/node_glyph.dart';
 
@@ -23,6 +24,7 @@ class ExampleEntry {
     required this.id,
     required this.title,
     required this.kind,
+    required this.section,
     required this.teaches,
     required this.glyph,
     required this.points,
@@ -34,6 +36,7 @@ class ExampleEntry {
   final String id;
   final String title;
   final ExampleKind kind;
+  final ExampleSection section;
 
   /// One line: what this example exists to show.
   final String teaches;

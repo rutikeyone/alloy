@@ -14,9 +14,21 @@ resolution: workspace
 dependencies:
   alloy: ^0.1.0
   alloy_flutter: ^0.1.0
+  alloy_go_router: ^0.1.0
+  alloy_talker: ^0.1.0
   flutter:
     sdk: flutter
+  go_router: ^17.0.0
   google_fonts: ^6.2.1
+
+  # The examples themselves. Each stays an ordinary package in this workspace,
+  # so the gallery mounts their screens instead of copying them — and each
+  # keeps its own generated container, which two of them could not share.
+  codegen_basics: ^0.1.0
+  flow_scopes: ^0.1.0
+  graph_events: ^0.1.0
+  notes_app: ^0.1.0
+  talker: ^5.1.0
 
 dev_dependencies:
   flutter_test:

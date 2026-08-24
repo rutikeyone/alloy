@@ -3,9 +3,15 @@
 An Alloy example about one thing: watching the graph report itself, through
 [talker](https://pub.dev/packages/talker).
 
+> **Not a runnable app.** This package is a library the gallery mounts — it has no `main.dart`
+> and no native project of its own. Run it, and everything else, from one place:
+>
+> ```bash
+> cd examples/gallery && flutter run
+> ```
+
 ```
 flutter pub get
-flutter run
 ```
 
 ## What to try

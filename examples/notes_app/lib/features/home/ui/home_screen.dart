@@ -1,10 +1,8 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:notes_app/app/app_routes.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/core/app_config.dart';
 import 'package:notes_app/features/diagnostics/data/telemetry.dart';
-import 'package:notes_app/features/home/ui/case_tile.dart';
 import 'package:notes_app/features/notes/data/note_database.dart';
 import 'package:notes_app/features/notes/data/search_index.dart';
 
@@ -20,7 +18,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alloy showcase'),
+        title: const Text('Two-phase startup'),
         actions: [
           IconButton(
             key: const Key('restart-graph'),
@@ -45,38 +43,6 @@ class HomeScreen extends StatelessWidget {
           _StatusTile('search index built', index.isBuilt),
           _StatusTile('telemetry started', telemetry.isStarted),
           ListTile(dense: true, title: Text('api: ${config.apiBaseUrl}')),
-          const Divider(),
-          const _SectionTitle('Cases'),
-          const CaseTile(
-            title: 'Property injection',
-            subtitle: 'a controller with an empty constructor',
-            route: AppRoutes.notes,
-          ),
-          const CaseTile(
-            title: 'Widget-owned scope',
-            subtitle: 'a draft that dies with the screen',
-            route: AppRoutes.noteDetail,
-          ),
-          const CaseTile(
-            title: 'Session scope',
-            subtitle: 'sign out disposes everything the session built',
-            route: AppRoutes.session,
-          ),
-          const CaseTile(
-            title: 'Named and multi-injection',
-            subtitle: 'three formatters behind one interface',
-            route: AppRoutes.formatters,
-          ),
-          const CaseTile(
-            title: 'Scope tree',
-            subtitle: 'what is alive right now',
-            route: AppRoutes.scopeTree,
-          ),
-          const CaseTile(
-            title: 'Environments',
-            subtitle: 'one interface, a different class per build',
-            route: AppRoutes.environments,
-          ),
         ],
       ),
     );

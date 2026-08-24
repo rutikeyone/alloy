@@ -360,31 +360,35 @@ way, and that limitation is deliberate — see the package README.
 
 ## Examples
 
-- `examples/manual_mode` — Manual Mode. Pure Dart, no Flutter, no generation; `dart run bin/main.dart`.
-- `examples/codegen_basics` — the smallest generated setup, and a runnable starting template.
-- `examples/flow_scopes` — a scope whose lifetime is a navigation flow, wired with go_router.
-- `examples/graph_events` — the graph's own events, fanned out to talker, the console and a logger
-  with no adapter.
-- `examples/teardown` — what disposal guarantees: order, failures, timeouts, adoption. Pure Dart,
-  and its output is the lesson.
-- `examples/testing_patterns` — how to test an app built on Alloy, and the one thing about
-  overriding that surprises everyone.
-- `examples/notes_app` — a small multi-screen app with one screen per capability, runnable on an
-  Android emulator or an iOS simulator (`cd examples/notes_app && flutter run`):
+One app runs them all:
 
-  | Screen | Case |
-  |---|---|
-  | Home | both startup phases — the bootstrap log and every `@AlloyInit` service |
-  | Property injection | a controller with an empty constructor and `@injected` fields |
-  | Widget-owned scope | `AlloyScopeWidget` plus a parameterized factory |
-  | Session scope | sign out disposes the scope; nothing implements `reset()` |
-  | Named and multi-injection | three formatters behind one interface |
-  | Scope tree | the live hierarchy, rendered from `AlloyScope.children` |
-  | Environments | one interface, a different class per build |
+```bash
+cd examples/gallery && flutter run
+```
 
-  The session screen is the one worth reading first: signing out is `await scope.dispose()`, and
-  everything the session built goes with it — no session listener anywhere, no `reset()` on any
-  repository.
+The gallery is organised by **capability**, not by project — a reader arrives wanting to know how
+scopes end, not wanting to see `notes_app`. Thirteen entries in six sections:
+
+| Section | Entries |
+|---|---|
+| Startup | Two-phase startup · Environments |
+| Injection | Property injection · Named and multi-injection |
+| Scopes & lifetime | Widget-owned scope · Session scope · Scope tree · Navigation flows · Teardown |
+| Code generation | Generated container · Manual mode |
+| Observability | Graph events |
+| Testing | Testing patterns |
+
+Each entry that has a UI opens with a graph **of its own**, built when you open it and disposed
+when you leave. Open two and their scope trees are unrelated — which is the thing the gallery is
+really there to show. The three entries with no UI (`Teardown`, `Manual mode`, `Testing patterns`)
+show their console output instead of a button, because a gallery that offered to "open" a CLI would
+be lying.
+
+Behind it, the examples stay ordinary packages under `examples/` — `notes_app`, `flow_scopes`,
+`graph_events`, `codegen_basics` are libraries the gallery mounts, and `manual_mode`, `teardown`,
+`testing_patterns` are pure Dart or test-only. They stay separate for a reason that is not
+tidiness: `alloy_container` aggregates a whole package into one `$AlloyRootScope`, so two generated
+examples in one package would have their graphs merged.
 
 ## Lint plugin
 

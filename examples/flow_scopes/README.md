@@ -3,9 +3,15 @@
 An Alloy example built around one idea: a scope whose lifetime is a navigation flow, wired with
 [go_router](https://pub.dev/packages/go_router) through `alloy_go_router`.
 
+> **Not a runnable app.** This package is a library the gallery mounts — it has no `main.dart`
+> and no native project of its own. Run it, and everything else, from one place:
+>
+> ```bash
+> cd examples/gallery && flutter run
+> ```
+
 ```
 flutter pub get
-flutter run
 ```
 
 Manual Mode — there is no code generation here, because the subject is navigation, not the

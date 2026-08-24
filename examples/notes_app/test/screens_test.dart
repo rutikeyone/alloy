@@ -1,15 +1,18 @@
-import 'dart:async';
-
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:notes_app/app/app_routes.dart';
-import 'package:notes_app/app/notes_app.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/core/event_log.dart';
 import 'package:notes_app/features/session/data/session_activity_log.dart';
 import 'package:notes_app/features/session/domain/session_user.dart';
+import 'package:notes_app/features/diagnostics/ui/scope_tree_screen.dart';
+import 'package:notes_app/features/environments/ui/environments_screen.dart';
+import 'package:notes_app/features/formatting/ui/formatters_screen.dart';
+import 'package:notes_app/features/home/ui/home_screen.dart';
+import 'package:notes_app/features/note_detail/ui/note_detail_screen.dart';
+import 'package:notes_app/features/notes/ui/notes_screen.dart';
 import 'package:notes_app/features/session/session_manager.dart';
+import 'package:notes_app/features/session/ui/session_screen.dart';
 
 import 'support.dart';
 
@@ -25,26 +28,29 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   }
 
-  Future<void> pumpApp(WidgetTester tester) async {
-    await tester.pumpWidget(const NotesApp());
+  /// Mounts [screen] with its own graph and records the graph as [app].
+  Future<void> open(WidgetTester tester, Widget screen) async {
+    await tester.pumpWidget(notesScreenUnderTest(screen));
     await settle(tester);
     await settle(tester);
-    // Below MaterialApp, not above it: AlloyAppScope.builder publishes the
-    // scope inside the app so the splash and the error screen get its theme.
-    app = AlloyScopeProvider.of(tester.element(find.byType(Navigator).first));
+    // Climbs to the root: a screen that owns a scope publishes its own
+    // provider, so the nearest one is the screen's, not the graph's.
+    var scope = AlloyScopeProvider.of(
+      tester.element(find.byType(Scaffold).first),
+    );
+    for (var parent = scope.parent; parent != null; parent = scope.parent) {
+      scope = parent;
+    }
+    app = scope;
   }
+
+  Future<void> pumpApp(WidgetTester tester) => open(tester, const HomeScreen());
 
   /// A graph without widgets, for assertions that are about the graph alone.
   Future<AlloyScope> startGraph() async {
     final scope = await startNotesGraph();
     addTearDown(scope.dispose);
     return scope;
-  }
-
-  Future<void> openCase(WidgetTester tester, String route) async {
-    final navigator = tester.firstState<NavigatorState>(find.byType(Navigator));
-    unawaited(navigator.pushNamed(route));
-    await settle(tester);
   }
 
   group('home — the two startup phases', () {
@@ -68,23 +74,11 @@ void main() {
     });
   });
 
-  group('home navigation', () {
-    testWidgets('tapping a case tile opens its screen', (tester) async {
-      await pumpApp(tester);
-
-      await tester.tap(find.text('Property injection'));
-      await settle(tester);
-
-      expect(find.text('count: 0'), findsOneWidget);
-    });
-  });
-
   group('property injection', () {
     testWidgets('a controller with no constructor arguments works', (
       tester,
     ) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.notes);
+      await open(tester, const NotesScreen());
 
       expect(find.byKey(const Key('note-count')), findsOneWidget);
       expect(find.text('count: 0'), findsOneWidget);
@@ -96,8 +90,7 @@ void main() {
     });
 
     testWidgets('search runs through the initialized index', (tester) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.notes);
+      await open(tester, const NotesScreen());
 
       await tester.tap(find.byKey(const Key('add-note')));
       await settle(tester);
@@ -112,8 +105,7 @@ void main() {
     testWidgets('the screen creates a child scope named after itself', (
       tester,
     ) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.noteDetail);
+      await open(tester, const NoteDetailScreen());
 
       expect(find.text('scope: NoteDetailScreen'), findsOneWidget);
       expect(app.children.single.name, 'NoteDetailScreen');
@@ -122,8 +114,7 @@ void main() {
     testWidgets('a parameterized factory renders through a named formatter', (
       tester,
     ) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.noteDetail);
+      await open(tester, const NoteDetailScreen());
 
       await tester.enterText(find.byKey(const Key('draft-field')), 'milk');
       await settle(tester);
@@ -134,11 +125,13 @@ void main() {
     testWidgets('leaving the screen disposes the scope it owned', (
       tester,
     ) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.noteDetail);
+      await open(tester, const NoteDetailScreen());
       expect(app.children, hasLength(1));
 
-      await tester.pageBack();
+      // Swapping the child while the root stays put: AlloyAppScope reads its
+      // graph once, so reusing the same element keeps the graph and unmounts
+      // only the screen — which is the thing under test.
+      await tester.pumpWidget(notesScreenUnderTest(const Scaffold()));
       await settle(tester);
       await settle(tester);
 
@@ -151,8 +144,7 @@ void main() {
     testWidgets('signing in pushes a scope, signing out disposes it', (
       tester,
     ) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.session);
+      await open(tester, const SessionScreen());
 
       expect(find.text('signed out'), findsOneWidget);
 
@@ -203,8 +195,7 @@ void main() {
 
   group('named and multi-injection', () {
     testWidgets('getAll collects every formatter', (tester) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.formatters);
+      await open(tester, const FormattersScreen());
 
       expect(find.text('3 registrations'), findsOneWidget);
       expect(find.byKey(const Key('formatter-plain')), findsOneWidget);
@@ -213,8 +204,7 @@ void main() {
     });
 
     testWidgets('a named lookup picks exactly one', (tester) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.formatters);
+      await open(tester, const FormattersScreen());
 
       expect(find.text('# shopping list'), findsNWidgets(2));
       expect(find.text('SHOPPING LIST!'), findsOneWidget);
@@ -234,7 +224,7 @@ void main() {
     testWidgets('renders every scope that is alive right now', (tester) async {
       await pumpApp(tester);
       await signIn(tester);
-      await openCase(tester, AppRoutes.scopeTree);
+      await open(tester, const ScopeTreeScreen());
 
       expect(find.text('app  [active]'), findsOneWidget);
       expect(find.text('  session:u-9  [active]'), findsOneWidget);
@@ -245,8 +235,8 @@ void main() {
     ) async {
       await pumpApp(tester);
       await signIn(tester);
-      await openCase(tester, AppRoutes.noteDetail);
-      await openCase(tester, AppRoutes.scopeTree);
+      await open(tester, const NoteDetailScreen());
+      await open(tester, const ScopeTreeScreen());
 
       expect(find.text('  NoteDetailScreen  [active]'), findsOneWidget);
     });
@@ -254,8 +244,7 @@ void main() {
 
   group('environments', () {
     testWidgets('shows which implementation this build got', (tester) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.environments);
+      await open(tester, const EnvironmentsScreen());
 
       expect(
         find.descendant(
@@ -268,8 +257,7 @@ void main() {
     });
 
     testWidgets('reports the bootstrap step it did not run', (tester) async {
-      await pumpApp(tester);
-      await openCase(tester, AppRoutes.environments);
+      await open(tester, const EnvironmentsScreen());
 
       expect(find.text('skipped in this environment'), findsOneWidget);
     });
@@ -279,11 +267,13 @@ void main() {
         tester,
       ) async {
         await tester.pumpWidget(
-          const NotesApp(environment: AlloyEnvironment.defaultEnvironment),
+          notesScreenUnderTest(
+            const EnvironmentsScreen(),
+            environment: AlloyEnvironment.defaultEnvironment,
+          ),
         );
         await settle(tester);
         await settle(tester);
-        await openCase(tester, AppRoutes.environments);
 
         expect(find.textContaining('nothing registered'), findsOneWidget);
         expect(

@@ -123,6 +123,23 @@ call that retries a failed start. The published provider is keyed by the scope, 
 rebuilds the subtree — a child scope cannot be reparented, and would otherwise be left pointing at
 a root that is gone.
 
+### Changing the graph needs a key, or `restart()`
+
+`AlloyAppScope` reads `root` and `bootstrap` once, when it mounts. It has no
+`didUpdateWidget`, so putting a *different* graph in the same slot leaves the
+widget owning the graph it already built — and the next `context.alloy<T>()`
+looks in the wrong one, failing with "not registered" for something that is
+plainly registered in the graph you thought you passed.
+
+Two ways out, depending on what you meant. To replace one graph with another,
+give the widget a `key` that changes with the graph, so Flutter builds a new
+element instead of updating the old one. To rebuild the *same* graph, call
+`AlloyAppScope.of(context).restart()`, which disposes the old root first.
+
+This mostly does not come up, because a route push builds a new element
+anyway. It bites in tests that pump one graph after another into the same
+position.
+
 ### Hot reload keeps the graph; hot restart rebuilds it
 
 Measured on the iOS simulator, because the behaviour is easy to assume and

@@ -95,6 +95,12 @@ class AlloyAppScope extends StatefulWidget {
   final List<AlloyObserver> observers;
 
   /// Builds the root scope. Null unless built with [AlloyAppScope.start].
+  ///
+  /// Read once, when the widget first mounts. There is no `didUpdateWidget`:
+  /// handed a different graph in the same slot, this widget keeps the one it
+  /// already owns, and the next resolve looks in the wrong graph. Give it a
+  /// `key` when the graph can change — [AlloyAppScopeController.restart] is
+  /// how you replace a graph deliberately.
   final Future<AlloyScope> Function()? start;
 
   /// Shown once the graph is ready, below an [AlloyScopeProvider].

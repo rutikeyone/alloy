@@ -71,7 +71,7 @@ jobs:
           for package in packages/alloy_flutter packages/alloy_go_router \
                          examples/codegen_basics examples/notes_app \
                          examples/flow_scopes examples/graph_events \
-                         examples/testing_patterns; do
+                         examples/testing_patterns examples/gallery; do
             (cd "$package" && flutter test)
           done
 
