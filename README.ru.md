@@ -237,6 +237,38 @@ final scope = await $startAlloy();
 имя. Без аннотации имя по умолчанию `root`; два аннотированных класса в одном пакете — ошибка
 генерации.
 
+### Граф обязан быть полным до того, как соберётся
+
+Зависимость, которую никто не регистрирует, валит сборку и перечисляет сразу все пробелы:
+
+```
+Diagnostics requires DeviceInfo, which nothing registers. Annotate the class that
+provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) when
+something outside the generated container registers it.
+```
+
+Считаются параметры конструктора, поля `@injected` и `@AlloyInit(dependsOn:)`, а имя из `@Named`
+входит в ключ: запрос `@Named('audit') Logger` при одном лишь безымянном `Logger` — тоже пробел.
+Каждое окружение проверяется отдельно, поэтому регистрация только для `dev` не удовлетворяет
+потребителя, который работает ещё и в `prod`.
+
+Контейнер видит аннотации только своего пакета. Всё, что зарегистрировано руками — билдер скоупа
+поверх `$AlloyRootScope` или провайдер из другого пакета, — нужно пообещать:
+
+```dart
+@AlloyScopeRoot(name: 'app', provides: [SessionManager])
+class AppScope {
+  const AppScope();
+}
+```
+
+Обещание ничего не регистрирует, оно лишь сообщает проверке, что это сделает кто-то другой.
+`AlloyProvided(Logger, name: 'audit')` обещает именованную регистрацию.
+
+Это гарантия Code-Gen Mode. Рукописная фабрика резолвит внутри `create`, и статически увидеть, что
+она попросит, нельзя — графы Manual Mode по-прежнему падают в рантайме с
+`AlloyNotRegisteredError`.
+
 ## Кто владеет корневым скоупом
 
 `AlloyAppScope`. Он строит граф, публикует его, разбирает при размонтировании и превращает падение

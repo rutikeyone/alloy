@@ -58,4 +58,20 @@ void main() {
     expect(catalog.users.all().single.name, 'ada');
     expect(catalog.orders.all().map((order) => order.id), [1, 2]);
   });
+
+  group('a registration promised through provides', () {
+    test('is not emitted by the generator, only trusted', () {
+      expect(scope.isRegistered<DeviceInfo>(), isFalse);
+    });
+
+    test(
+      'resolves once a builder composes it with the generated one',
+      () async {
+        await scope.dispose();
+        scope = await startConsumer(device: const DeviceInfo('pixel'));
+
+        expect(scope.get<Diagnostics>().describe(), startsWith('pixel at '));
+      },
+    );
+  });
 }

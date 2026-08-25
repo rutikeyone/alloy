@@ -7,6 +7,8 @@ import 'package:alloy/alloy.dart' as _i178;
 import 'package:alloy_external_consumer/src/bind_platform.dart' as _i978;
 import 'package:alloy_external_consumer/src/clock.dart' as _i713;
 import 'package:alloy_external_consumer/src/database.dart' as _i629;
+import 'package:alloy_external_consumer/src/device_info.dart' as _i28;
+import 'package:alloy_external_consumer/src/diagnostics.dart' as _i628;
 import 'package:alloy_external_consumer/src/report.dart' as _i552;
 import 'package:alloy_external_consumer/src/repository.dart' as _i309;
 import 'package:alloy_external_consumer/src/search_index.dart' as _i115;
@@ -29,6 +31,17 @@ final class _DatabaseFactory
     await instance.init();
     return instance;
   }
+}
+
+final class _DiagnosticsFactory
+    implements _i178.AlloyFactory<_i628.Diagnostics> {
+  const _DiagnosticsFactory();
+
+  @override
+  _i628.Diagnostics create(_i178.AlloyResolver resolver) => _i628.Diagnostics(
+    resolver.get<_i28.DeviceInfo>(),
+    resolver.get<_i713.Clock>(),
+  );
 }
 
 final class _ReportFactory implements _i178.AlloyFactory<_i552.Report> {
@@ -91,6 +104,7 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
     scope.registerLazySingleton<_i309.Repository<_i309.User>>(
       const _UserRepositoryFactory(),
     );
+    scope.registerLazySingleton<_i628.Diagnostics>(const _DiagnosticsFactory());
     scope.registerLazySingleton<_i309.Catalog>(const _CatalogFactory());
     scope.registerAsyncSingleton<_i115.SearchIndex>(
       const _SearchIndexFactory(),

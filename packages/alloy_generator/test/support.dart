@@ -15,9 +15,13 @@ AlloyTypeRef ref(
   isNullable: isNullable,
 );
 
-AlloyInjectedProperty dep(String type, {String? name}) => AlloyInjectedProperty(
+AlloyInjectedProperty dep(
+  String type, {
+  String? name,
+  bool isNullable = false,
+}) => AlloyInjectedProperty(
   field: type.toLowerCase(),
-  type: ref(type),
+  type: ref(type, isNullable: isNullable),
   name: name,
 );
 
@@ -53,8 +57,14 @@ AlloyBootstrapStepClass step(
   environments: environments,
 );
 
-AlloyScopeRootClass scopeRoot(String type, {String name = 'root'}) =>
-    AlloyScopeRootClass(type: ref(type), name: name);
+AlloyProvidedRef provided(String type, {String? name}) =>
+    AlloyProvidedRef(type: ref(type), name: name);
+
+AlloyScopeRootClass scopeRoot(
+  String type, {
+  String name = 'root',
+  List<AlloyProvidedRef> provides = const [],
+}) => AlloyScopeRootClass(type: ref(type), name: name, provides: provides);
 
 String generate(
   List<AlloyInjectableClass> injectables, {

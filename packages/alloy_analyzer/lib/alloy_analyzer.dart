@@ -14,6 +14,7 @@ export 'package:alloy_analyzer/src/model/bootstrap_step_class.dart';
 export 'package:alloy_analyzer/src/model/injectable_class.dart';
 export 'package:alloy_analyzer/src/model/injected_property.dart';
 export 'package:alloy_analyzer/src/model/library_declarations.dart';
+export 'package:alloy_analyzer/src/model/provided_ref.dart';
 export 'package:alloy_analyzer/src/model/scope_root_class.dart';
 export 'package:alloy_analyzer/src/model/type_ref.dart';
 export 'package:alloy_analyzer/src/parser/alloy_matchers.dart';

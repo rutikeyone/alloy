@@ -228,6 +228,38 @@ The generator emits `$alloyRootScopeName` plus a `$startAlloy()` that wires the 
 bootstrap list and the name together. Without the annotation the name defaults to `root`; two
 annotated classes in one package is a generation error.
 
+### The graph has to be complete before it builds
+
+A dependency nothing registers fails the build, naming every gap at once:
+
+```
+Diagnostics requires DeviceInfo, which nothing registers. Annotate the class that
+provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) when
+something outside the generated container registers it.
+```
+
+Constructor parameters, `@injected` fields and `@AlloyInit(dependsOn:)` all count, and a
+`@Named` qualifier is part of the key — asking for `@Named('audit') Logger` where only an unnamed
+`Logger` exists is a gap. Each environment is checked separately, so a `dev`-only registration
+cannot satisfy a dependent that also runs in `prod`.
+
+The container only sees its own package's annotations. Anything registered by hand — a scope
+builder wrapping `$AlloyRootScope`, or a provider from another package — has to be promised:
+
+```dart
+@AlloyScopeRoot(name: 'app', provides: [SessionManager])
+class AppScope {
+  const AppScope();
+}
+```
+
+A promise registers nothing; it only tells the check that something else will.
+`AlloyProvided(Logger, name: 'audit')` promises a named one.
+
+This is a Code-Gen Mode guarantee. A hand-written factory resolves inside `create`, so nothing
+static can see what it will ask for — Manual Mode graphs still fail at runtime with
+`AlloyNotRegisteredError`.
+
 ## Who owns the root scope
 
 `AlloyAppScope` owns it: builds the graph, publishes it, disposes it on unmount, and turns a

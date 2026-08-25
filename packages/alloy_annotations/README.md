@@ -15,5 +15,6 @@ re-exports everything here.
 | `@Named` | parameter or field | selects a named registration |
 | `@AlloyBootstrap` | class | a phase-0 step, run before the container exists |
 | `@AlloyInit` | class | an async singleton, with `dependsOn` |
-| `@AlloyScopeRoot` | class | names the root scope |
+| `@AlloyScopeRoot` | class | names the root scope; `provides` declares registrations made by hand |
+| `AlloyProvided` | inside `provides` | a hand-made registration that carries a `@Named` qualifier |
 | `@AlloyEnvironment` | class | optional — restricts the registration to an environment; repeat it for several |

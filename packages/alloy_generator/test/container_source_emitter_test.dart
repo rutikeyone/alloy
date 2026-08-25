@@ -102,14 +102,6 @@ void main() {
         throwsA(isA<AlloyCycleError>()),
       );
     });
-
-    test('unregistered dependencies do not block generation', () {
-      final source = generate([
-        declare('Api', constructor: [dep('HttpClient')]),
-      ]);
-
-      expect(registrationsOf(source), hasLength(1));
-    });
   });
 
   test('import prefixes are stable across runs', () {

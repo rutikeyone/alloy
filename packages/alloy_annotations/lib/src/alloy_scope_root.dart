@@ -1,3 +1,4 @@
+import 'package:alloy_annotations/src/alloy_provided.dart';
 import 'package:meta/meta_meta.dart';
 
 /// Names the root scope and makes the generator emit a start function.
@@ -22,9 +23,33 @@ import 'package:meta/meta_meta.dart';
 @Target({TargetKind.classType})
 class AlloyScopeRoot {
   /// Creates an annotation naming the root scope.
-  const AlloyScopeRoot({this.name = 'root'});
+  const AlloyScopeRoot({this.name = 'root', this.provides = const []});
 
   /// The name the root scope reports, used in error messages and when
   /// inspecting the scope tree.
   final String name;
+
+  /// Registrations the generated container does not make, but may depend on.
+  ///
+  /// The generator rejects a graph where an injected dependency is registered
+  /// by nothing, which is how a missing registration becomes a build failure
+  /// instead of a `AlloyNotRegisteredError` at startup. It only sees this
+  /// package's annotations, so anything registered by hand is invisible to it:
+  /// a scope builder that wraps `$AlloyRootScope` and adds to it, or a
+  /// provider from another package. Name those here.
+  ///
+  /// An element is either a `Type`, or an [AlloyProvided] when the
+  /// hand-written registration is named:
+  ///
+  /// ```dart
+  /// @AlloyScopeRoot(name: 'app', provides: [SessionManager])
+  /// class AppScope {
+  ///   const AppScope();
+  /// }
+  /// ```
+  ///
+  /// This is a promise, not a registration — nothing is emitted for it. Listing
+  /// something nothing registers moves the failure back to startup, which is
+  /// where it was before.
+  final List<Object> provides;
 }

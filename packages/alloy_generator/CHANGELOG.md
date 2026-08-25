@@ -10,6 +10,9 @@
   dependency edges.
 - Import aliases come from a hash of the URL, so adding one import does not
   renumber the rest and produce a whole-file diff.
+- Rejects a graph with a dependency nothing registers, listing every gap in one
+  message and checking each environment separately. Registrations made by hand
+  are declared through `@AlloyScopeRoot(provides: [...])`.
 - Rejects at build time what would otherwise be silent: a dependency cycle, two
   registrations of one key whose environments overlap, and `@AlloyInject` on a
   class with type parameters.

@@ -1,4 +1,5 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
+import 'package:alloy_annotations/alloy_annotations.dart';
 import 'package:alloy_generator/src/emitters/bootstrap_emitter.dart';
 import 'package:alloy_generator/src/emitters/injectable_factory_emitter.dart';
 import 'package:alloy_generator/src/emitters/root_scope_emitter.dart';
@@ -28,6 +29,9 @@ class ContainerSourceEmitter {
     _assertNoEnvironmentConflicts(injectables);
 
     final scopeName = _start.resolveName(declarations.scopeRoots);
+
+    _assertNoMissingDependencies(injectables, declarations.scopeRoots);
+
     final hasBootstrap = declarations.bootstrapSteps.isNotEmpty;
     final scopeUsesEnvironments = injectables.any(
       (declaration) => declaration.environments.isNotEmpty,
@@ -80,13 +84,109 @@ class ContainerSourceEmitter {
       injectables,
       (declaration) => [
         for (final dependency in _dependenciesOf(declaration))
-          ...?byKey[dependency],
+          ...?byKey[dependency.key],
       ],
       labelOf: (declaration) => declaration.type.name,
     );
 
     return [for (final level in levels) ...level];
   }
+
+  /// Rejects a graph where something is injected that nothing registers.
+  ///
+  /// This is the whole point of generating a container rather than resolving
+  /// by hand: a dependency nobody supplies is a build failure, not an
+  /// `AlloyNotRegisteredError` on the device.
+  ///
+  /// It runs once per environment, because a registration restricted to one
+  /// is absent from the others — a `prod` class may only depend on something
+  /// every `prod` build has. The environments considered are the ones the
+  /// package declares; [AlloyEnvironment.defaultEnvironment] joins them only
+  /// when there are none, since a split graph started without choosing is
+  /// deliberately a runtime failure rather than a build one.
+  void _assertNoMissingDependencies(
+    List<AlloyInjectableClass> injectables,
+    List<AlloyScopeRootClass> roots,
+  ) {
+    final provided = {
+      for (final root in roots)
+        for (final ref in root.provides) _refKey(ref.type, ref.name),
+    };
+    final universe = _environmentUniverse(injectables);
+    final missing = <String, _MissingDependency>{};
+
+    for (final environment in universe) {
+      final active = [
+        for (final declaration in injectables)
+          if (declaration.environments.isEmpty ||
+              declaration.environments.contains(environment))
+            declaration,
+      ];
+      final available = {
+        ...provided,
+        for (final declaration in active) _keyOf(declaration),
+      };
+
+      for (final declaration in active) {
+        for (final dependency in _dependenciesOf(declaration)) {
+          if (available.contains(dependency.key)) continue;
+          missing
+              .putIfAbsent(
+                '${declaration.type.name}#${dependency.key}',
+                () =>
+                    _MissingDependency(declaration.type.name, dependency.label),
+              )
+              .environments
+              .add(environment);
+        }
+      }
+    }
+
+    if (missing.isEmpty) return;
+    throw AlloyGenerationError(
+      _missingMessage(missing.values.toList(), universe),
+    );
+  }
+
+  static List<String> _environmentUniverse(
+    List<AlloyInjectableClass> injectables,
+  ) {
+    final declared = {
+      for (final declaration in injectables) ...declaration.environments,
+    };
+    if (declared.isEmpty) return [AlloyEnvironment.defaultEnvironment.name];
+    return declared.toList()..sort();
+  }
+
+  static String _missingMessage(
+    List<_MissingDependency> missing,
+    List<String> universe,
+  ) {
+    if (missing.length == 1) {
+      final only = missing.single;
+      return '${only.dependent} requires ${only.label}'
+          '${_whereMissing(only, universe)}, which nothing registers. '
+          'Annotate the class that provides it with @AlloyInject, or name it '
+          'in @AlloyScopeRoot(provides: [...]) when something outside the '
+          'generated container registers it.';
+    }
+    final lines = [
+      for (final entry in missing)
+        '  ${entry.dependent} requires ${entry.label}'
+            '${_whereMissing(entry, universe)}',
+    ].join('\n');
+    return 'The graph is missing ${missing.length} registrations.\n$lines\n'
+        'Annotate the classes that provide them with @AlloyInject, or name '
+        'them in @AlloyScopeRoot(provides: [...]) when something outside the '
+        'generated container registers them.';
+  }
+
+  static String _whereMissing(
+    _MissingDependency entry,
+    List<String> universe,
+  ) => entry.environments.length == universe.length
+      ? ''
+      : ' in ${(entry.environments.toList()..sort()).join(', ')}';
 
   /// Rejects a graph where two registrations of the same type could be active
   /// at once.
@@ -144,17 +244,43 @@ class ContainerSourceEmitter {
     return byKey;
   }
 
-  Iterable<String> _dependenciesOf(AlloyInjectableClass declaration) => [
+  Iterable<_Dependency> _dependenciesOf(AlloyInjectableClass declaration) => [
     for (final parameter in declaration.constructorParameters)
-      _refKey(parameter.type, parameter.name),
+      _dependency(parameter.type, parameter.name),
     for (final property in declaration.properties)
-      _refKey(property.type, property.name),
-    for (final dependency in declaration.dependsOn) _refKey(dependency, null),
+      _dependency(property.type, property.name),
+    for (final dependency in declaration.dependsOn)
+      _dependency(dependency, null),
   ];
+
+  static _Dependency _dependency(AlloyTypeRef type, String? name) => (
+    key: _refKey(type, name),
+    label: name == null ? _display(type) : "${_display(type)} named '$name'",
+  );
+
+  /// The type as a reader recognises it, without nullability.
+  ///
+  /// A `Foo?` dependency reads the `Foo` registration, so saying nothing
+  /// registers `Foo?` would name something that never exists as a key.
+  static String _display(AlloyTypeRef type) {
+    if (type.typeArguments.isEmpty) return type.name;
+    final arguments = type.typeArguments.map(_display).join(', ');
+    return '${type.name}<$arguments>';
+  }
 
   static String _keyOf(AlloyInjectableClass declaration) =>
       _refKey(declaration.exposedType, declaration.name);
 
   static String _refKey(AlloyTypeRef type, String? name) =>
       '${type.signature}#${name ?? ''}';
+}
+
+typedef _Dependency = ({String key, String label});
+
+class _MissingDependency {
+  _MissingDependency(this.dependent, this.label);
+
+  final String dependent;
+  final String label;
+  final Set<String> environments = {};
 }

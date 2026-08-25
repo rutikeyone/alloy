@@ -87,5 +87,38 @@ void main() {
 
       expect(result.injectables.single.environments, isEmpty);
     });
+
+    test('a scope root keeps what it promises is provided elsewhere', () {
+      final result = roundTrip(
+        AlloyLibraryDeclarations(
+          scopeRoots: [
+            AlloyScopeRootClass(
+              type: ref('AppScope'),
+              name: 'app',
+              provides: [
+                AlloyProvidedRef(type: ref('SessionManager')),
+                AlloyProvidedRef(type: ref('Logger'), name: 'audit'),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      final provides = result.scopeRoots.single.provides;
+      expect(provides.map((p) => p.type.name), ['SessionManager', 'Logger']);
+      expect(provides.map((p) => p.name), [null, 'audit']);
+    });
+
+    test('IR written before provides existed still reads', () {
+      final legacy = {
+        'scopeRoots': [
+          {'type': ref('AppScope').toJson(), 'name': 'app'},
+        ],
+      };
+
+      final result = AlloyLibraryDeclarations.fromJson(legacy);
+
+      expect(result.scopeRoots.single.provides, isEmpty);
+    });
   });
 }

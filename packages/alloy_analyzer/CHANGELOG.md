@@ -11,3 +11,6 @@
 - Annotations are matched by class name and owning package rather than by exact
   library path, so moving a declaration inside `alloy_annotations` does not
   break consumers, and test stubs still resolve.
+- `AlloyScopeRootClass.provides` carries the registrations a package makes by
+  hand, as `AlloyProvidedRef` pairs of type and optional name. IR written before
+  the field existed still reads.

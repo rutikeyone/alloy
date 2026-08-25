@@ -7,3 +7,6 @@
   `@AlloyBootstrap`, `@AlloyInit`, `@AlloyScopeRoot` and `@AlloyEnvironment`.
 - `AlloyEnvironment.matches` lives here rather than in the runtime: it is pure
   logic over strings, and both generated and hand-written code need it.
+- `@AlloyScopeRoot(provides: [...])` and `AlloyProvided` declare registrations
+  the generator cannot see, so its completeness check does not report them
+  missing.

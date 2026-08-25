@@ -28,6 +28,47 @@ Generated registrations are ordered by a compile-time topological sort, and prop
 fields count as dependency edges. A dependency cycle fails the build naming the cycle instead of
 emitting code that would deadlock at runtime.
 
+## A missing registration is a build failure
+
+Every dependency the container resolves — constructor parameters, `@injected` fields and
+`@AlloyInit(dependsOn:)` — has to be registered by something, or the build fails:
+
+```
+Diagnostics requires DeviceInfo, which nothing registers. Annotate the class that
+provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) when
+something outside the generated container registers it.
+```
+
+All gaps are reported together, so a graph is fixed in one pass rather than one rebuild per
+missing type. A `@Named('audit')` dependency with only an unnamed registration counts as a gap:
+the qualifier is part of the key.
+
+**Registrations made by hand have to be declared.** The container only sees this package's
+annotations, so a scope builder that wraps `$AlloyRootScope` and adds to it — or a provider from
+another package — is invisible to the check. Name those in the root:
+
+```dart
+@AlloyScopeRoot(name: 'app', provides: [SessionManager])
+class AppScope {
+  const AppScope();
+}
+```
+
+Nothing is emitted for a promise; it only stops the build from failing. Use
+`AlloyProvided(Logger, name: 'audit')` in the same list when the hand-written registration is
+named.
+
+**Environments are checked one at a time.** A registration restricted to `prod` is absent from
+`dev`, so a dependent that is not equally restricted fails naming where the gap is (`in dev`).
+Only the environments the package declares are considered — `default` joins them only when there
+are none, because starting a split graph without choosing one is deliberately a runtime failure
+(see the environments section of the root README). A custom `AlloyEnvironment.matches` override is
+not modelled.
+
+**Manual Mode is not covered.** A hand-written `AlloyFactory` resolves inside `create`, and nothing
+static can see what it will ask for. Registrations written by hand still fail at runtime with
+`AlloyNotRegisteredError`, exactly as before.
+
 ## Generic types
 
 `Repository<User>` and `Repository<Order>` are two separate registrations — as dependencies and as

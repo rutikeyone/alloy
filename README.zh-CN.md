@@ -209,6 +209,36 @@ final scope = await $startAlloy();
 生成器会产出 `$alloyRootScopeName`，以及把容器、引导列表和名称接在一起的 `$startAlloy()`。没有该注解时
 名称默认为 `root`；同一个包中出现两个被注解的类是生成错误。
 
+### 图必须在构建之前就是完整的
+
+没有任何东西注册的依赖会让构建失败，并一次性列出全部缺口：
+
+```
+Diagnostics requires DeviceInfo, which nothing registers. Annotate the class that
+provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) when
+something outside the generated container registers it.
+```
+
+构造函数参数、`@injected` 字段和 `@AlloyInit(dependsOn:)` 都算在内；`@Named` 限定名是键的一部分，
+因此在只有匿名 `Logger` 时请求 `@Named('audit') Logger` 同样是缺口。每个环境单独检查，所以只在
+`dev` 下注册的东西无法满足同时运行于 `prod` 的消费者。
+
+容器只看得见本包的注解。任何手写注册——包裹 `$AlloyRootScope` 的作用域构建器，或来自另一个包的
+提供者——都必须事先声明：
+
+```dart
+@AlloyScopeRoot(name: 'app', provides: [SessionManager])
+class AppScope {
+  const AppScope();
+}
+```
+
+声明本身不注册任何东西，它只是告诉检查：这件事由别人来做。`AlloyProvided(Logger, name: 'audit')`
+用来声明带名字的注册。
+
+这是 Code-Gen Mode 的保证。手写工厂在 `create` 内部解析，静态无法看出它会索取什么——Manual Mode
+的图仍然会在运行时以 `AlloyNotRegisteredError` 失败。
+
 ## 谁拥有根作用域
 
 `AlloyAppScope`。它构建图、发布图、在卸载时释放图，并把启动失败变成一个带重试按钮的界面，而不是一个
