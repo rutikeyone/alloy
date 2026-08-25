@@ -461,7 +461,7 @@ examples in one package would have their graphs merged.
 ## Lint plugin
 
 `alloy_lint` is an `analysis_server_plugin`, not a `custom_lint` plugin (see Toolchain). It ships
-seven warning rules, all built on the same `alloy_analyzer` parsing layer the generator uses, so a
+eight warning rules, all built on the same `alloy_analyzer` parsing layer the generator uses, so a
 mistake surfaces in the IDE instead of only when `build_runner` runs:
 
 | Rule | Catches |
@@ -473,6 +473,7 @@ mistake surfaces in the IDE instead of only when `build_runner` runs:
 | `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` on a class with no `run()` |
 | `alloy_bootstrap_step_cannot_inject` | a bootstrap step whose constructor takes required parameters |
 | `alloy_environment_needs_a_registration` | `@AlloyEnvironment` on a class nothing registers, where it silently does nothing |
+| `alloy_dependency_is_not_registered` | an injected dependency nothing in the package registers |
 
 Two things about wiring it up cost real time and are easy to get wrong:
 

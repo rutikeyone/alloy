@@ -420,7 +420,7 @@ cd examples/gallery && flutter run
 
 ## Lint 插件
 
-`alloy_lint` 是一个 `analysis_server_plugin`，而不是 `custom_lint` 插件（见"工具链"）。它提供七条 warning
+`alloy_lint` 是一个 `analysis_server_plugin`，而不是 `custom_lint` 插件（见"工具链"）。它提供八条 warning
 级别的规则，全部构建在生成器所用的同一个 `alloy_analyzer` 解析层之上，因此错误会在 IDE 中浮现，而不是
 只在跑 `build_runner` 时才出现：
 
@@ -432,6 +432,7 @@ cd examples/gallery && flutter run
 | `alloy_init_requires_init_method` | `@AlloyInit` 用在没有 `init()` 的类上 |
 | `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` 用在没有 `run()` 的类上 |
 | `alloy_bootstrap_step_cannot_inject` | 构造函数需要参数的引导步骤 |
+| `alloy_dependency_is_not_registered` | 包内无人注册的被注入依赖 |
 | `alloy_environment_needs_a_registration` | `@AlloyEnvironment` 用在没人注册的类上，此时它什么也不做 |
 
 接入时有两件事会实实在在地耗掉时间，而且很容易弄错：
