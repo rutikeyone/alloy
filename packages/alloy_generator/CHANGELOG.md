@@ -18,3 +18,6 @@
   class with type parameters.
 - Generic types work as dependencies and as `exposeAs` targets:
   `Repository<User>` and `Repository<Order>` are separate registrations.
+- Emits factories for `@AlloyModule` members, calling the member on a const
+  module instance. Async ordering between module members is derived from the
+  graph rather than declared.

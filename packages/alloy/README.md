@@ -87,6 +87,32 @@ Ownership is explicit: a parent holds its children strongly, and whoever creates
 A scope that is dropped without `dispose()` leaks by design — that is the price of a deterministic
 teardown order, and it is what makes `dispose()` reliable.
 
+## Closing what the scope cannot recognise
+
+A scope tears down what it built, in reverse creation order, by looking for
+`Disposable` or `AsyncDisposable`. A type from another package implements
+neither, so it says nothing about how to close — pass `dispose` and the scope
+calls it at teardown, in the same order as everything else:
+
+```dart
+scope.registerLazySingleton<http.Client>(
+  const ClientFactory(),
+  dispose: (client) => client.close(),
+);
+
+scope.adopt(controller, dispose: (it) => it.close());
+```
+
+It is available on every registration the scope retains — `registerSingleton`,
+`registerLazySingleton`, `registerAsyncSingleton` and `adopt`. It is deliberately
+**not** on `registerFactory` or `registerParamFactory`: a transient is not
+retained, so a callback there could never run, and a signature that accepts one
+would be lying.
+
+For a class you own, implement `Disposable` instead. Keeping the knowledge on
+the object rather than at each registration means it cannot be forgotten at one
+of them.
+
 ## One graph per isolate
 
 Alloy is single-threaded by construction. There are no locks anywhere in the

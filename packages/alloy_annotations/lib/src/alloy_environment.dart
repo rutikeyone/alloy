@@ -30,7 +30,7 @@ import 'package:meta/meta_meta.dart';
 /// Two registrations of the same type may not be active together. The
 /// generator rejects a graph where they could be, so a missing or overlapping
 /// environment is a build failure rather than a silent last-one-wins.
-@Target({TargetKind.classType})
+@Target({TargetKind.classType, TargetKind.method, TargetKind.getter})
 class AlloyEnvironment {
   /// Creates an environment called [name].
   const AlloyEnvironment(this.name);

@@ -18,3 +18,7 @@
   `AlloyLogObserver` turning them into records, and sinks —
   `AlloyDeveloperLogSink`, `AlloyPrintLogSink`, `AlloyMultiSink`, and
   `AlloyLogSink.from` to adapt any logger in one line.
+- A retained registration can name a `dispose` callback, so the scope can
+  close a type that implements neither `Disposable` nor `AsyncDisposable` —
+  a client from another package, say. `adopt` takes one too. Absent from
+  `registerFactory` and `registerParamFactory`, which retain nothing.

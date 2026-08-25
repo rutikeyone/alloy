@@ -7,6 +7,7 @@ export 'package:alloy_external_consumer/src/consumer_scope.dart';
 export 'package:alloy_external_consumer/src/database.dart';
 export 'package:alloy_external_consumer/src/device_info.dart';
 export 'package:alloy_external_consumer/src/diagnostics.dart';
+export 'package:alloy_external_consumer/src/platform_module.dart';
 export 'package:alloy_external_consumer/src/report.dart';
 export 'package:alloy_external_consumer/src/repository.dart';
 export 'package:alloy_external_consumer/src/search_index.dart';

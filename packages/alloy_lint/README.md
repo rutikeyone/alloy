@@ -52,9 +52,10 @@ server does not offer that view: it hands a rule one library at a time, and the 
 window onto the others is their **parsed**, unresolved source.
 
 So the rule keeps its own index of every type name the package registers — `@AlloyInject` classes,
-their `exposeAs` targets, and `@AlloyScopeRoot(provides: [...])` entries — read from syntax. It
-holds bare names: no library, no type arguments, no `@Named` qualifier. Each of those omissions
-makes the index match **more**, so the rule stays quiet where the build still objects:
+their `exposeAs` targets, `@AlloyModule` members (indexed by return type, with one `Future` layer
+removed) and `@AlloyScopeRoot(provides: [...])` entries — read from syntax. It holds bare names: no
+library, no type arguments, no `@Named` qualifier. Each of those omissions makes the index match
+**more**, so the rule stays quiet where the build still objects:
 
 | Case | Build | Rule |
 |---|---|---|

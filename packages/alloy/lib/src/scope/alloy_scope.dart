@@ -75,7 +75,7 @@ final class AlloyScope implements AlloyResolver {
 
   final _children = <AlloyScope>[];
   final _registrations = <AlloyKey, AlloyRegistration>{};
-  final _owned = <Object>[];
+  final _owned = <_OwnedInstance>[];
   final AlloyResolutionTracker _tracker;
   final List<AlloyObserver> _observers;
 
@@ -134,7 +134,16 @@ final class AlloyScope implements AlloyResolver {
   /// The scope takes ownership immediately: if [value] is disposable it is
   /// torn down with the scope, in registration order relative to everything
   /// else it owns.
-  void registerSingleton<T extends Object>(T value, {String? name}) {
+  ///
+  /// [dispose] closes a [value] whose type implements neither [Disposable] nor
+  /// [AsyncDisposable] — a client from another package, say. Without it such a
+  /// value is registered but never closed, because the scope has no way to
+  /// know how.
+  void registerSingleton<T extends Object>(
+    T value, {
+    String? name,
+    FutureOr<void> Function(T instance)? dispose,
+  }) {
     _put(
       SingletonRegistration(
         key: AlloyKey(T, name: name),
@@ -142,7 +151,7 @@ final class AlloyScope implements AlloyResolver {
         value: value,
       ),
     );
-    _own(value);
+    _own(value, teardown: _teardownOf(dispose));
   }
 
   /// Registers [T] so the first resolution builds it and later ones reuse it.
@@ -150,15 +159,19 @@ final class AlloyScope implements AlloyResolver {
   /// The instance is retained and disposed with the scope. Because it is built
   /// on demand, its position in the teardown order follows when it was
   /// *created*, not when it was registered.
+  /// [dispose] closes an instance whose type implements neither [Disposable]
+  /// nor [AsyncDisposable].
   void registerLazySingleton<T extends Object>(
     AlloyFactory<T> factory, {
     String? name,
+    FutureOr<void> Function(T instance)? dispose,
   }) {
     _put(
       LazySingletonRegistration(
         key: AlloyKey(T, name: name),
         order: _order++,
         factory: factory,
+        teardown: _teardownOf(dispose),
       ),
     );
   }
@@ -171,10 +184,13 @@ final class AlloyScope implements AlloyResolver {
   /// `AlloyCycleError`.
   ///
   /// Resolving [T] before [init] completes throws `AlloyNotReadyError`.
+  /// [dispose] closes an instance whose type implements neither [Disposable]
+  /// nor [AsyncDisposable].
   void registerAsyncSingleton<T extends Object>(
     AlloyAsyncFactory<T> factory, {
     String? name,
     Set<AlloyKey> dependsOn = const {},
+    FutureOr<void> Function(T instance)? dispose,
   }) {
     _put(
       AsyncSingletonRegistration(
@@ -182,6 +198,7 @@ final class AlloyScope implements AlloyResolver {
         order: _order++,
         factory: factory,
         dependsOn: dependsOn,
+        teardown: _teardownOf(dispose),
       ),
     );
   }
@@ -314,12 +331,16 @@ final class AlloyScope implements AlloyResolver {
   ///
   /// Objects that implement neither [Disposable] nor [AsyncDisposable] are
   /// returned unchanged and not retained, since there would be nothing to do
-  /// with them at teardown.
+  /// with them at teardown — unless [dispose] says what to do, in which case
+  /// they are retained and it is called.
   ///
   /// Returns [instance], so it can be adopted inline.
-  T adopt<T extends Object>(T instance) {
+  T adopt<T extends Object>(
+    T instance, {
+    FutureOr<void> Function(T instance)? dispose,
+  }) {
     _assertUsable();
-    _own(instance);
+    _own(instance, teardown: _teardownOf(dispose));
     return instance;
   }
 
@@ -432,8 +453,23 @@ final class AlloyScope implements AlloyResolver {
     }
     _children.clear();
 
-    for (final instance in _owned.reversed.toList(growable: false)) {
+    for (final owned in _owned.reversed.toList(growable: false)) {
+      final instance = owned.instance;
       final label = '${instance.runtimeType}.dispose';
+
+      final teardown = owned.teardown;
+      if (teardown != null) {
+        final before = failures.length;
+        await within(label, () async => teardown(instance));
+        if (failures.length == before) {
+          _notify(
+            (observer) =>
+                observer.onInstanceDisposed(ref, '${instance.runtimeType}'),
+          );
+        }
+        continue;
+      }
+
       switch (instance) {
         case AsyncDisposable():
           final before = failures.length;
@@ -517,7 +553,12 @@ final class AlloyScope implements AlloyResolver {
         return _tracker.guard(registration.key, () {
           final instance = registration.factory.create(this);
           registration.instance = instance;
-          _afterCreate(instance, registration.key, retain: true);
+          _afterCreate(
+            instance,
+            registration.key,
+            retain: true,
+            teardown: registration.teardown,
+          );
           return instance;
         });
 
@@ -540,20 +581,40 @@ final class AlloyScope implements AlloyResolver {
         final instance = await registration.factory.create(this);
         registration.instance = instance;
         registration.isReady = true;
-        _afterCreate(instance, registration.key, retain: true);
+        _afterCreate(
+          instance,
+          registration.key,
+          retain: true,
+          teardown: registration.teardown,
+        );
       });
 
-  void _afterCreate(Object instance, AlloyKey key, {required bool retain}) {
+  void _afterCreate(
+    Object instance,
+    AlloyKey key, {
+    required bool retain,
+    AlloyTeardown? teardown,
+  }) {
     if (instance is AlloyInjectable) instance.onInject(this);
-    if (retain) _own(instance);
+    if (retain) _own(instance, teardown: teardown);
     _notify(
       (observer) => observer.onInstanceCreated(ref, key, retained: retain),
     );
   }
 
-  void _own(Object instance) {
-    if (instance is Disposable || instance is AsyncDisposable) {
-      _owned.add(instance);
+  /// Erases the caller's typed callback down to what a registration can hold.
+  ///
+  /// The cast is safe: the callback only ever reaches the instance registered
+  /// under its own `T`.
+  static AlloyTeardown? _teardownOf<T extends Object>(
+    FutureOr<void> Function(T instance)? dispose,
+  ) => dispose == null ? null : (instance) => dispose(instance as T);
+
+  void _own(Object instance, {AlloyTeardown? teardown}) {
+    if (teardown != null ||
+        instance is Disposable ||
+        instance is AsyncDisposable) {
+      _owned.add(_OwnedInstance(instance, teardown));
     }
   }
 
@@ -587,4 +648,15 @@ final class AlloyScope implements AlloyResolver {
 
   @override
   String toString() => 'AlloyScope($name, $_state)';
+}
+
+/// An instance the scope owns, with whatever closes it.
+///
+/// [teardown] is null for the common case, where the instance says how to
+/// close itself by implementing [Disposable] or [AsyncDisposable].
+class _OwnedInstance {
+  _OwnedInstance(this.instance, this.teardown);
+
+  final Object instance;
+  final AlloyTeardown? teardown;
 }

@@ -5,9 +5,11 @@ final class LazySingletonRegistration extends AlloyRegistration {
     required super.key,
     required super.order,
     required this.factory,
+    this.teardown,
   });
 
   final AlloyFactory<Object> factory;
+  final AlloyTeardown? teardown;
 
   Object? instance;
 }

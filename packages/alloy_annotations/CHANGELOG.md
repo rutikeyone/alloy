@@ -10,3 +10,5 @@
 - `@AlloyScopeRoot(provides: [...])` and `AlloyProvided` declare registrations
   the generator cannot see, so its completeness check does not report them
   missing.
+- `@AlloyModule` marks a class whose members register types the package does
+  not own, and `@AlloyInject` gained `dispose` for closing them.

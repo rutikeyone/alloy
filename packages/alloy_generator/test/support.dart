@@ -57,6 +57,35 @@ AlloyBootstrapStepClass step(
   environments: environments,
 );
 
+AlloyInjectableClass provide(
+  String module,
+  String member,
+  String returns, {
+  AlloyLifetime lifetime = AlloyLifetime.lazySingleton,
+  List<AlloyInjectedProperty> parameters = const [],
+  String? name,
+  AlloyTypeRef? exposeAs,
+  bool isAsyncInit = false,
+  bool isGetter = false,
+  Set<String> environments = const {},
+  AlloyFunctionRef? dispose,
+}) => AlloyInjectableClass(
+  type: ref(returns),
+  lifetime: lifetime,
+  constructorParameters: parameters,
+  properties: const [],
+  name: name,
+  exposeAs: exposeAs,
+  isAsyncInit: isAsyncInit,
+  environments: environments,
+  provider: AlloyProviderRef(
+    module: ref(module),
+    member: member,
+    isGetter: isGetter,
+  ),
+  dispose: dispose,
+);
+
 AlloyProvidedRef provided(String type, {String? name}) =>
     AlloyProvidedRef(type: ref(type), name: name);
 

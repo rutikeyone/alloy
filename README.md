@@ -228,6 +228,47 @@ The generator emits `$alloyRootScopeName` plus a `$startAlloy()` that wires the 
 bootstrap list and the name together. Without the annotation the name defaults to `root`; two
 annotated classes in one package is a generation error.
 
+### Registering types you did not write
+
+`@AlloyInject` goes on a class, so it only reaches classes you own. A module is the way in for
+everything else — a client from another package, a value the SDK hands you:
+
+```dart
+@alloyModule
+class NetworkModule {
+  const NetworkModule();
+
+  @alloyInject
+  Dio dio(AppConfig config) => Dio(BaseOptions(baseUrl: config.apiBase));
+
+  @AlloyInject(dispose: closeClient)
+  http.Client client() => http.Client();
+
+  @alloySingleton
+  Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+}
+```
+
+The annotation carries nothing: every member configures its own registration with the same
+annotations a class uses, and its parameters are resolved like constructor parameters. The class
+needs a public `const` constructor taking no arguments, so the emitted factory holds
+`const NetworkModule()` and carries no state.
+
+`Future<T>` is the only async signal — a member returning it becomes an async singleton, and the
+ordering between async members is worked out by the generator rather than written by hand. A member
+cannot be abstract: building a class from its own constructor is what `@AlloyInject` already means.
+
+`dispose` is how a foreign type gets closed. The scope owns what it builds, but a type from another
+package implements neither `Disposable` nor `AsyncDisposable`, so it cannot say how to close
+itself. It is available on any retained registration, in Manual Mode too:
+
+```dart
+scope.registerLazySingleton<http.Client>(
+  const ClientFactory(),
+  dispose: (client) => client.close(),
+);
+```
+
 ### The graph has to be complete before it builds
 
 A dependency nothing registers fails the build, naming every gap at once:

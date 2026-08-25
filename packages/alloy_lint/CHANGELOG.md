@@ -16,3 +16,5 @@
 - The analysis server resolves plugins from pub.dev rather than from your
   pubspec, so a `dependency_override` in `pubspec.yaml` does not affect which
   version loads. See the README for pointing it at local sources.
+- The registration index reads `@AlloyModule` members too, so a graph using
+  modules does not produce false reports.

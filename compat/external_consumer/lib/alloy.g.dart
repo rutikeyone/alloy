@@ -9,6 +9,7 @@ import 'package:alloy_external_consumer/src/clock.dart' as _i713;
 import 'package:alloy_external_consumer/src/database.dart' as _i629;
 import 'package:alloy_external_consumer/src/device_info.dart' as _i28;
 import 'package:alloy_external_consumer/src/diagnostics.dart' as _i628;
+import 'package:alloy_external_consumer/src/platform_module.dart' as _i505;
 import 'package:alloy_external_consumer/src/report.dart' as _i552;
 import 'package:alloy_external_consumer/src/repository.dart' as _i309;
 import 'package:alloy_external_consumer/src/search_index.dart' as _i115;
@@ -42,6 +43,26 @@ final class _DiagnosticsFactory
     resolver.get<_i28.DeviceInfo>(),
     resolver.get<_i713.Clock>(),
   );
+}
+
+final class _PlatformModuleChannelFactory
+    implements _i178.AlloyFactory<_i505.Channel> {
+  const _PlatformModuleChannelFactory();
+
+  @override
+  _i505.Channel create(_i178.AlloyResolver resolver) =>
+      const _i505.PlatformModule().channel();
+}
+
+final class _PlatformModuleEnvelopeFactory
+    implements _i178.AlloyAsyncFactory<_i505.Envelope> {
+  const _PlatformModuleEnvelopeFactory();
+
+  @override
+  _i687.Future<_i505.Envelope> create(_i178.AlloyResolver resolver) async =>
+      await const _i505.PlatformModule().envelope(
+        resolver.get<_i505.Channel>(),
+      );
 }
 
 final class _ReportFactory implements _i178.AlloyFactory<_i552.Report> {
@@ -98,6 +119,10 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
   void build(_i178.AlloyScope scope) {
     scope.registerLazySingleton<_i713.Clock>(const _SystemClockFactory());
     scope.registerAsyncSingleton<_i629.Database>(const _DatabaseFactory());
+    scope.registerLazySingleton<_i505.Channel>(
+      const _PlatformModuleChannelFactory(),
+      dispose: _i505.closeChannel,
+    );
     scope.registerLazySingleton<_i309.Repository<_i309.Order>>(
       const _OrderRepositoryFactory(),
     );
@@ -105,6 +130,9 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
       const _UserRepositoryFactory(),
     );
     scope.registerLazySingleton<_i628.Diagnostics>(const _DiagnosticsFactory());
+    scope.registerAsyncSingleton<_i505.Envelope>(
+      const _PlatformModuleEnvelopeFactory(),
+    );
     scope.registerLazySingleton<_i309.Catalog>(const _CatalogFactory());
     scope.registerAsyncSingleton<_i115.SearchIndex>(
       const _SearchIndexFactory(),

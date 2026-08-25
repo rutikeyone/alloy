@@ -6,12 +6,11 @@ class InjectableFactoryEmitter {
   const InjectableFactoryEmitter();
 
   Class emit(AlloyInjectableClass declaration) {
-    final concrete = typeReferenceOf(declaration.type);
     final exposed = typeReferenceOf(declaration.exposedType);
-    final construction = concrete.newInstance([
-      for (final parameter in declaration.constructorParameters)
-        resolveCall(parameter),
-    ]);
+    final provider = declaration.provider;
+    final construction = provider == null
+        ? _construct(declaration)
+        : _callProvider(declaration, provider);
 
     return Class(
       (b) => b
@@ -24,13 +23,50 @@ class InjectableFactoryEmitter {
           ),
         )
         ..constructors.add(Constructor((c) => c..constant = true))
-        ..methods.add(
-          declaration.isAsyncInit
-              ? _asyncCreate(exposed, construction)
-              : _syncCreate(exposed, construction),
-        ),
+        ..methods.add(switch ((declaration.isAsyncInit, provider)) {
+          (false, _) => _syncCreate(exposed, construction),
+          // A module member is the whole job already: awaiting the call is
+          // all there is. A class is constructed first and initialised after.
+          (true, != null) => _awaitCreate(exposed, construction),
+          (true, _) => _asyncCreate(exposed, construction),
+        }),
     );
   }
+
+  Expression _construct(AlloyInjectableClass declaration) =>
+      typeReferenceOf(declaration.type).newInstance([
+        for (final parameter in declaration.constructorParameters)
+          resolveCall(parameter),
+      ]);
+
+  Expression _callProvider(
+    AlloyInjectableClass declaration,
+    AlloyProviderRef provider,
+  ) {
+    final module = typeReferenceOf(provider.module).constInstance(const []);
+    final member = module.property(provider.member);
+    if (provider.isGetter) return member;
+    return member.call([
+      for (final parameter in declaration.constructorParameters)
+        resolveCall(parameter),
+    ]);
+  }
+
+  Method _awaitCreate(Reference exposed, Expression call) => Method(
+    (m) => m
+      ..name = 'create'
+      ..annotations.add(refer('override'))
+      ..modifier = MethodModifier.async
+      ..returns = TypeReference(
+        (b) => b
+          ..symbol = 'Future'
+          ..url = 'dart:async'
+          ..types.add(exposed),
+      )
+      ..requiredParameters.add(_resolverParameter)
+      ..lambda = true
+      ..body = call.awaited.code,
+  );
 
   Method _syncCreate(Reference exposed, Expression construction) => Method(
     (m) => m

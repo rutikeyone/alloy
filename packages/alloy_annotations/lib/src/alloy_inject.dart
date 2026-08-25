@@ -13,13 +13,14 @@ import 'package:meta/meta_meta.dart';
 ///   final Database database;
 /// }
 /// ```
-@Target({TargetKind.classType})
+@Target({TargetKind.classType, TargetKind.method, TargetKind.getter})
 class AlloyInject {
-  /// Creates an annotation describing how the class is registered.
+  /// Creates an annotation describing how the registration behaves.
   const AlloyInject({
     this.lifetime = AlloyLifetime.lazySingleton,
     this.name,
     this.exposeAs,
+    this.dispose,
   });
 
   /// How long the instance lives. Defaults to [AlloyLifetime.lazySingleton].
@@ -36,6 +37,18 @@ class AlloyInject {
   /// `@AlloyInject(exposeAs: NoteStore)` on `NoteRepository` means
   /// `get<NoteStore>()` works and `get<NoteRepository>()` does not.
   final Type? exposeAs;
+
+  /// Closes the instance at teardown, for a type that cannot say how itself.
+  ///
+  /// Point it at a top-level or static function taking the registered type:
+  /// `@AlloyInject(dispose: closeClient)`. Reach for it on a
+  /// [AlloyModule] member, where the type belongs to somebody else; a class
+  /// you own should implement `Disposable` or `AsyncDisposable` instead, which
+  /// keeps the knowledge on the object rather than at the registration.
+  ///
+  /// A transient is never retained by the scope, so it cannot be closed by it
+  /// — pairing this with [AlloyLifetime.transient] is a build error.
+  final Function? dispose;
 }
 
 /// Registers the class as a lazy singleton — one instance per scope, built on

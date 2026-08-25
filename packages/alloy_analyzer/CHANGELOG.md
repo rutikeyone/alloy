@@ -14,3 +14,6 @@
 - `AlloyScopeRootClass.provides` carries the registrations a package makes by
   hand, as `AlloyProvidedRef` pairs of type and optional name. IR written before
   the field existed still reads.
+- `AlloyModuleParser` reads an `@AlloyModule` class into one registration per
+  member — the only parser that is one-to-many. A member returning `Future<T>`
+  registers `T`.

@@ -2,10 +2,30 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i687;
+import 'dart:math' as _i407;
 
 import 'package:alloy/alloy.dart' as _i178;
 import 'package:codegen_basics/counter_bloc.dart' as _i1015;
+import 'package:codegen_basics/platform_module.dart' as _i122;
 import 'package:codegen_basics/services.dart' as _i700;
+
+final class _PlatformModuleEventsFactory
+    implements _i178.AlloyFactory<_i687.StreamController<String>> {
+  const _PlatformModuleEventsFactory();
+
+  @override
+  _i687.StreamController<String> create(_i178.AlloyResolver resolver) =>
+      const _i122.PlatformModule().events();
+}
+
+final class _PlatformModuleRandomFactory
+    implements _i178.AlloyFactory<_i407.Random> {
+  const _PlatformModuleRandomFactory();
+
+  @override
+  _i407.Random create(_i178.AlloyResolver resolver) =>
+      const _i122.PlatformModule().random;
+}
 
 final class _CounterBlocFactory
     implements _i178.AlloyFactory<_i1015.CounterBloc> {
@@ -43,6 +63,13 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
 
   @override
   void build(_i178.AlloyScope scope) {
+    scope.registerLazySingleton<_i687.StreamController<String>>(
+      const _PlatformModuleEventsFactory(),
+      dispose: _i122.closeEvents,
+    );
+    scope.registerLazySingleton<_i407.Random>(
+      const _PlatformModuleRandomFactory(),
+    );
     scope.registerLazySingleton<_i700.Config>(const _ConfigFactory());
     scope.registerLazySingleton<_i700.Telemetry>(const _TelemetryFactory());
     scope.registerLazySingleton<_i700.Repository>(const _RepositoryFactory());

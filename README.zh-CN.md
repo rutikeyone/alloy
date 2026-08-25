@@ -209,6 +209,43 @@ final scope = await $startAlloy();
 生成器会产出 `$alloyRootScopeName`，以及把容器、引导列表和名称接在一起的 `$startAlloy()`。没有该注解时
 名称默认为 `root`；同一个包中出现两个被注解的类是生成错误。
 
+### 注册并非你编写的类型
+
+`@AlloyInject` 只能加在类上，因此只覆盖你自己的类。其余的一切——来自其他包的客户端、SDK 交给你的
+值——都通过模块进入图：
+
+```dart
+@alloyModule
+class NetworkModule {
+  const NetworkModule();
+
+  @alloyInject
+  Dio dio(AppConfig config) => Dio(BaseOptions(baseUrl: config.apiBase));
+
+  @AlloyInject(dispose: closeClient)
+  http.Client client() => http.Client();
+
+  @alloySingleton
+  Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+}
+```
+
+注解本身不携带任何配置：每个成员用与类相同的注解配置自己的注册，其参数像构造函数参数一样被解析。
+该类需要一个不带参数的公开 `const` 构造函数，这样生成的工厂持有 `const NetworkModule()`，不携带状态。
+
+`Future<T>` 是唯一的异步信号：这样的成员成为异步单例，而异步成员之间的顺序由生成器推导，而不是要你
+手写。成员不能是抽象的：「用类自己的构造函数来构建」正是 `@AlloyInject` 已有的含义。
+
+`dispose` 是外来类型的关闭方式。作用域拥有它构建的东西，但来自其他包的类型既不实现 `Disposable`
+也不实现 `AsyncDisposable`，无法说明如何关闭自己。该参数对任何被保留的注册都可用，Manual Mode 亦然：
+
+```dart
+scope.registerLazySingleton<http.Client>(
+  const ClientFactory(),
+  dispose: (client) => client.close(),
+);
+```
+
 ### 图必须在构建之前就是完整的
 
 没有任何东西注册的依赖会让构建失败，并一次性列出全部缺口：

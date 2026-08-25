@@ -28,6 +28,56 @@ Generated registrations are ordered by a compile-time topological sort, and prop
 fields count as dependency edges. A dependency cycle fails the build naming the cycle instead of
 emitting code that would deadlock at runtime.
 
+## Registering types you did not write
+
+`@AlloyInject` goes on a class, so it only reaches classes you own. A module is
+the way in for everything else — a client from another package, a value the SDK
+hands you, an object built by a factory function:
+
+```dart
+@alloyModule
+class NetworkModule {
+  const NetworkModule();
+
+  @alloyInject
+  Dio dio(AppConfig config) => Dio(BaseOptions(baseUrl: config.apiBase));
+
+  @AlloyInject(dispose: closeClient)
+  http.Client client() => http.Client();
+
+  @alloySingleton
+  Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+}
+```
+
+The annotation carries nothing. Every member configures its own registration
+with the same annotations a class uses, so lifetimes, `@Named`, `exposeAs` and
+`@AlloyEnvironment` all work unchanged, and each member's parameters are
+resolved from the scope like constructor parameters.
+
+The class needs a public `const` constructor taking no arguments — the emitted
+factory holds `const NetworkModule()`, so it allocates nothing and carries no
+state. Members must be public instance members taking only positional
+parameters.
+
+**`Future<T>` is the only async signal.** A member returning it registers `T`
+as an async singleton built during startup; there is no `@AlloyInit` on a
+member, because the return type already says it. Ordering between async members
+is **worked out, not written**: the generator sees the whole package, so it
+emits the `dependsOn` a hand-written registration would have stated.
+
+**A member cannot be abstract.** "Build it from its own constructor" is what
+`@AlloyInject` on the class already means, and publishing it under an interface
+is what `exposeAs` means.
+
+**`dispose` is how a foreign type gets closed.** The scope owns what it builds,
+but a type from another package implements neither `Disposable` nor
+`AsyncDisposable`, so it cannot say how to close itself. Point `dispose` at a
+top-level or static function taking the registered type and the scope calls it
+at teardown, in the same reverse-creation order as everything else. Pairing it
+with a transient is a build error: the scope does not retain a transient, so it
+could never call it.
+
 ## A missing registration is a build failure
 
 Every dependency the container resolves — constructor parameters, `@injected` fields and
@@ -35,17 +85,18 @@ Every dependency the container resolves — constructor parameters, `@injected` 
 
 ```
 Diagnostics requires DeviceInfo, which nothing registers. Annotate the class that
-provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) when
-something outside the generated container registers it.
+provides it with @AlloyInject, add an @AlloyModule member returning it when the
+type is not yours, or name it in @AlloyScopeRoot(provides: [...]) when something
+outside the generated container registers it.
 ```
 
 All gaps are reported together, so a graph is fixed in one pass rather than one rebuild per
 missing type. A `@Named('audit')` dependency with only an unnamed registration counts as a gap:
 the qualifier is part of the key.
 
-**Registrations made by hand have to be declared.** The container only sees this package's
-annotations, so a scope builder that wraps `$AlloyRootScope` and adds to it — or a provider from
-another package — is invisible to the check. Name those in the root:
+**Registrations made by hand have to be declared.** A module covers types you do not own; this is
+for registrations the generator cannot see at all — a scope builder that wraps `$AlloyRootScope`
+and adds to it, or a provider from another package. Name those in the root:
 
 ```dart
 @AlloyScopeRoot(name: 'app', provides: [SessionManager])

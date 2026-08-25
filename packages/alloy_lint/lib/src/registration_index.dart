@@ -46,6 +46,7 @@ class AlloyRegistrationIndex {
   static void _collect(CompilationUnit unit, Set<String> names) {
     for (final declaration in unit.declarations) {
       if (declaration is! ClassDeclaration) continue;
+      var isModule = false;
       for (final annotation in declaration.metadata) {
         switch (annotation.name.name.split('.').last) {
           case 'AlloyInject':
@@ -58,9 +59,51 @@ class AlloyRegistrationIndex {
             _addArgument(annotation, 'exposeAs', names);
           case 'AlloyScopeRoot':
             _addArgumentList(annotation, 'provides', names);
+          case 'AlloyModule':
+          case 'alloyModule':
+            isModule = true;
+        }
+      }
+      if (isModule) _collectMembers(declaration, names);
+    }
+  }
+
+  /// Adds what a module's members register.
+  ///
+  /// Only inside a class that says it is a module: a return type is a much
+  /// weaker signal than an annotated class, and reading every method of every
+  /// class would quietly answer for types nobody registers.
+  static void _collectMembers(ClassDeclaration module, Set<String> names) {
+    for (final member in module.body.members) {
+      if (member is! MethodDeclaration) continue;
+      for (final annotation in member.metadata) {
+        switch (annotation.name.name.split('.').last) {
+          case 'AlloyInject':
+          case 'alloyInject':
+          case 'alloySingleton':
+          case 'alloyTransient':
+            _addTypeAnnotation(member.returnType, names);
+            _addArgument(annotation, 'exposeAs', names);
         }
       }
     }
+  }
+
+  /// Reads the name a return type registers.
+  ///
+  /// `Future<T>` registers `T`, matching the parser. Type arguments are
+  /// otherwise ignored, as everywhere else in this index. A member with no
+  /// written return type adds nothing — a silent miss, which is the direction
+  /// this index is allowed to fail in.
+  static void _addTypeAnnotation(TypeAnnotation? type, Set<String> names) {
+    if (type is! NamedType) return;
+    final name = type.name.lexeme;
+    if (name != 'Future') {
+      names.add(name);
+      return;
+    }
+    final argument = type.typeArguments?.arguments.firstOrNull;
+    if (argument != null) _addTypeAnnotation(argument, names);
   }
 
   static void _addArgument(

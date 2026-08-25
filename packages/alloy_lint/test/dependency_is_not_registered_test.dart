@@ -255,6 +255,86 @@ class Api {
 ''');
   }
 
+  void test_providedByAModuleInAnotherFile_isClean() async {
+    newFile('$testPackageLibPath/network.dart', '''
+$alloyImport
+
+class Dio {}
+
+@alloyModule
+class NetworkModule {
+  const NetworkModule();
+
+  @alloyInject
+  Dio dio() => Dio();
+}
+''');
+
+    await assertNoDiagnostics('''
+$alloyImport
+
+import 'network.dart';
+
+@alloyInject
+class Api {
+  Api(this.dio);
+  final Dio dio;
+}
+''');
+  }
+
+  void test_providedAsyncByAModule_isClean() async {
+    newFile('$testPackageLibPath/storage.dart', '''
+$alloyImport
+
+class Prefs {}
+
+@alloyModule
+class StorageModule {
+  const StorageModule();
+
+  @alloyInject
+  Future<Prefs> get prefs async => Prefs();
+}
+''');
+
+    await assertNoDiagnostics('''
+$alloyImport
+
+import 'storage.dart';
+
+@alloyInject
+class Settings {
+  Settings(this.prefs);
+  final Prefs prefs;
+}
+''');
+  }
+
+  void test_aModuleMemberWantingSomethingUnregistered_isReported() async {
+    newFile('$testPackageLibPath/http.dart', '''
+class HttpClient {}
+class Dio {}
+''');
+
+    await assertDiagnostics(
+      '''
+$alloyImport
+
+import 'http.dart';
+
+@alloyModule
+class NetworkModule {
+  const NetworkModule();
+
+  @alloyInject
+  Dio dio(HttpClient client) => Dio();
+}
+''',
+      [lint(100, 13)],
+    );
+  }
+
   /// Same reason: type arguments are not part of the index, so any
   /// `Repository` registration answers for every instantiation.
   void test_anotherInstantiationOfAGeneric_isNotReported() async {

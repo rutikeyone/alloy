@@ -131,8 +131,8 @@ Be aware of these before you commit to the move:
 
 ### What changes shape
 
-**`@Module` becomes a scope builder.** Alloy has no module concept; it has
-composition, which does the same job with no new vocabulary:
+**`@module` becomes `@AlloyModule`, and stays close.** The shape carries over
+almost unchanged — a class whose members provide types you do not own:
 
 ```dart
 // injectable
@@ -142,19 +142,26 @@ abstract class AppModule {
   Dio get dio => Dio();
 }
 
-// Alloy — the generated builder plus whatever the generator cannot know about
-class AppScope implements AlloyScopeBuilder {
-  const AppScope(this.environment);
+// Alloy
+@alloyModule
+class AppModule {
+  const AppModule();
 
-  final AlloyEnvironment environment;
-
-  @override
-  void build(AlloyScope scope) {
-    $AlloyRootScope(environment: environment).build(scope);
-    scope.registerSingleton<Dio>(Dio());
-  }
+  @alloyInject
+  Dio get dio => Dio();
 }
 ```
+
+Three differences. The class is **concrete with a `const` constructor** rather
+than abstract, because Alloy calls the member on `const AppModule()` instead of
+generating a subclass. **Abstract members are rejected**: injectable uses them
+to mean "build it from its own constructor", which is what `@AlloyInject` on
+the class already means, and binding to an interface is `exposeAs`. And
+`Future<T>` alone marks a member async — there is no `@preResolve`.
+
+**`dispose:` replaces `@disposeMethod` for foreign types.** A class you own
+implements `Disposable`; a `Dio` cannot, so the registration says how:
+`@AlloyInject(dispose: closeClient)`.
 
 **`@Order` disappears.** injectable makes you declare ordering; Alloy computes
 it. Registrations are sorted by a compile-time topological sort in which

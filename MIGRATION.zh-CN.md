@@ -116,8 +116,7 @@ final tabB = app.push('tab:b');   // 是兄弟，而不是压在 tabA 上面
 
 ### 形态发生变化的部分
 
-**`@Module` 变成作用域 builder。** Alloy 没有模块这个概念；它有组合，用同样的做法完成同样的事，且不引入
-新词汇：
+**`@module` 变成 `@AlloyModule`，形态几乎不变。** 依然是一个类，其成员提供你并未编写的类型：
 
 ```dart
 // injectable
@@ -127,19 +126,22 @@ abstract class AppModule {
   Dio get dio => Dio();
 }
 
-// Alloy —— 生成的 builder，加上生成器无从知晓的那部分
-class AppScope implements AlloyScopeBuilder {
-  const AppScope(this.environment);
+// Alloy
+@alloyModule
+class AppModule {
+  const AppModule();
 
-  final AlloyEnvironment environment;
-
-  @override
-  void build(AlloyScope scope) {
-    $AlloyRootScope(environment: environment).build(scope);
-    scope.registerSingleton<Dio>(Dio());
-  }
+  @alloyInject
+  Dio get dio => Dio();
 }
 ```
+
+三点不同。该类是**带 `const` 构造函数的具体类**而非抽象类，因为 Alloy 在 `const AppModule()` 上调用
+成员，而不是生成子类。**抽象成员会被拒绝**：injectable 用它表示「用类自己的构造函数来构建」，而这正是
+`@AlloyInject` 已有的含义，绑定到接口则是 `exposeAs`。异步只由 `Future<T>` 标记，没有 `@preResolve`。
+
+**`dispose:` 取代外来类型的 `@disposeMethod`。** 你自己的类实现 `Disposable`；`Dio` 做不到，
+因此由注册来说明如何关闭：`@AlloyInject(dispose: closeClient)`。
 
 **`@Order` 消失了。** injectable 要你声明顺序；Alloy 自己算。注册由编译期拓扑排序决定顺序，其中属性注入
 的字段也算依赖边；出现环时构建失败并指出环本身，而不是一路递归到栈溢出。

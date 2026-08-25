@@ -2,9 +2,10 @@ import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 
 const alloyAnnotationsStub = r'''
 class AlloyInject {
-  const AlloyInject({this.name, this.exposeAs});
+  const AlloyInject({this.name, this.exposeAs, this.dispose});
   final String? name;
   final Type? exposeAs;
+  final Function? dispose;
 }
 
 const alloyInject = AlloyInject();
@@ -46,6 +47,12 @@ class AlloyInit {
 }
 
 const alloyInit = AlloyInit();
+
+class AlloyModule {
+  const AlloyModule();
+}
+
+const alloyModule = AlloyModule();
 
 class AlloyEnvironment {
   const AlloyEnvironment(this.name);

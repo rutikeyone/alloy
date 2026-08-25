@@ -32,6 +32,8 @@ class ContainerSourceEmitter {
 
     _assertNoMissingDependencies(injectables, declarations.scopeRoots);
 
+    final ordered = _withDerivedDependsOn(injectables);
+
     final hasBootstrap = declarations.bootstrapSteps.isNotEmpty;
     final scopeUsesEnvironments = injectables.any(
       (declaration) => declaration.environments.isNotEmpty,
@@ -43,10 +45,10 @@ class ContainerSourceEmitter {
     final library = Library(
       (b) => b
         ..body.addAll([
-          for (final declaration in injectables) _factories.emit(declaration),
-          if (injectables.isNotEmpty)
+          for (final declaration in ordered) _factories.emit(declaration),
+          if (ordered.isNotEmpty)
             _rootScope.emit(
-              _ordered(injectables),
+              _ordered(ordered),
               usesEnvironments: scopeUsesEnvironments,
             ),
           if (hasBootstrap)
@@ -86,7 +88,7 @@ class ContainerSourceEmitter {
         for (final dependency in _dependenciesOf(declaration))
           ...?byKey[dependency.key],
       ],
-      labelOf: (declaration) => declaration.type.name,
+      labelOf: (declaration) => declaration.label,
     );
 
     return [for (final level in levels) ...level];
@@ -133,8 +135,7 @@ class ContainerSourceEmitter {
           missing
               .putIfAbsent(
                 '${declaration.type.name}#${dependency.key}',
-                () =>
-                    _MissingDependency(declaration.type.name, dependency.label),
+                () => _MissingDependency(declaration.label, dependency.label),
               )
               .environments
               .add(environment);
@@ -146,6 +147,40 @@ class ContainerSourceEmitter {
     throw AlloyGenerationError(
       _missingMessage(missing.values.toList(), universe),
     );
+  }
+
+  /// Fills in async ordering for module members.
+  ///
+  /// An `@AlloyInit` class states `dependsOn` by hand. A module member has
+  /// nowhere to write it, and does not need to: the whole package is in hand
+  /// here, so which of its parameters are themselves async is a fact the
+  /// generator can read off the graph rather than ask for. What it emits is
+  /// exactly what a hand-written registration would say.
+  ///
+  /// Named async dependencies are left out, because `dependsOn` in the IR
+  /// carries a type and no qualifier.
+  List<AlloyInjectableClass> _withDerivedDependsOn(
+    List<AlloyInjectableClass> injectables,
+  ) {
+    final asyncKeys = {
+      for (final declaration in injectables)
+        if (declaration.isAsyncInit) _keyOf(declaration),
+    };
+
+    return [
+      for (final declaration in injectables)
+        if (declaration.provider == null ||
+            !declaration.isAsyncInit ||
+            declaration.dependsOn.isNotEmpty)
+          declaration
+        else
+          declaration.withDependsOn([
+            for (final parameter in declaration.constructorParameters)
+              if (parameter.name == null &&
+                  asyncKeys.contains(_refKey(parameter.type, null)))
+                parameter.type,
+          ]),
+    ];
   }
 
   static List<String> _environmentUniverse(
@@ -166,9 +201,10 @@ class ContainerSourceEmitter {
       final only = missing.single;
       return '${only.dependent} requires ${only.label}'
           '${_whereMissing(only, universe)}, which nothing registers. '
-          'Annotate the class that provides it with @AlloyInject, or name it '
-          'in @AlloyScopeRoot(provides: [...]) when something outside the '
-          'generated container registers it.';
+          'Annotate the class that provides it with @AlloyInject, add an '
+          '@AlloyModule member returning it when the type is not yours, or '
+          'name it in @AlloyScopeRoot(provides: [...]) when something outside '
+          'the generated container registers it.';
     }
     final lines = [
       for (final entry in missing)
@@ -176,9 +212,10 @@ class ContainerSourceEmitter {
             '${_whereMissing(entry, universe)}',
     ].join('\n');
     return 'The graph is missing ${missing.length} registrations.\n$lines\n'
-        'Annotate the classes that provide them with @AlloyInject, or name '
-        'them in @AlloyScopeRoot(provides: [...]) when something outside the '
-        'generated container registers them.';
+        'Annotate the classes that provide them with @AlloyInject, add '
+        '@AlloyModule members returning them when the types are not yours, or '
+        'name them in @AlloyScopeRoot(provides: [...]) when something outside '
+        'the generated container registers them.';
   }
 
   static String _whereMissing(
@@ -214,7 +251,7 @@ class ContainerSourceEmitter {
     final exposed = first.exposedType.name;
     final named = first.name == null ? '' : " named '${first.name}'";
     final where = _overlapDescription(first.environments, second.environments);
-    return '${first.type.name} and ${second.type.name} both register '
+    return '${first.label} and ${second.label} both register '
         '$exposed$named$where. Give them environments that do not overlap, '
         'or expose one of them as a different type.';
   }

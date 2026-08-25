@@ -1,6 +1,7 @@
 import 'package:alloy_analyzer/src/model/library_declarations.dart';
 import 'package:alloy_analyzer/src/parser/bootstrap_parser.dart';
 import 'package:alloy_analyzer/src/parser/injectable_parser.dart';
+import 'package:alloy_analyzer/src/parser/module_parser.dart';
 import 'package:alloy_analyzer/src/parser/scope_root_parser.dart';
 import 'package:analyzer/dart/element/element.dart';
 
@@ -11,6 +12,7 @@ class AlloyParser {
   static const _injectables = AlloyInjectableParser();
   static const _bootstrap = AlloyBootstrapParser();
   static const _scopeRoot = AlloyScopeRootParser();
+  static const _modules = AlloyModuleParser();
 
   /// Collects the injectables, bootstrap steps and scope roots declared in
   /// [library]. Throws `AlloyParseError` for a declaration Alloy cannot use.
@@ -21,6 +23,10 @@ class AlloyParser {
       injectables: [
         for (final clazz in classes)
           if (_injectables.declares(clazz)) _injectables.parseClass(clazz),
+        // A module is the one declaration that yields many registrations, so
+        // this spreads where the others append.
+        for (final clazz in classes)
+          if (_modules.declares(clazz)) ..._modules.parseClass(clazz),
       ],
       bootstrapSteps: [
         for (final clazz in classes)

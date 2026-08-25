@@ -64,6 +64,7 @@ class RootScopeEmitter {
     final exposed = typeReferenceOf(declaration.exposedType);
     final factory = refer(factoryNameOf(declaration)).constInstance(const []);
 
+    final dispose = declaration.dispose;
     final named = <String, Expression>{
       if (declaration.name != null) 'name': literalString(declaration.name!),
       if (declaration.isAsyncInit && declaration.dependsOn.isNotEmpty)
@@ -71,6 +72,7 @@ class RootScopeEmitter {
           for (final dependency in declaration.dependsOn)
             alloyRef('AlloyKey').constInstance([typeReferenceOf(dependency)]),
         }),
+      if (dispose != null) 'dispose': functionReferenceOf(dispose),
     };
 
     final method = declaration.isAsyncInit

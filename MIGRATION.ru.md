@@ -127,8 +127,8 @@ final tabB = app.push('tab:b');   // сосед, а не «сверху на tab
 
 ### Что меняет форму
 
-**`@Module` становится билдером скоупа.** Понятия модуля у Alloy нет; есть композиция, которая делает
-ту же работу без нового словаря:
+**`@module` становится `@AlloyModule` и остаётся почти таким же.** Форма переносится без изменений —
+класс, чьи члены отдают типы, которые вы не писали:
 
 ```dart
 // injectable
@@ -138,19 +138,24 @@ abstract class AppModule {
   Dio get dio => Dio();
 }
 
-// Alloy — сгенерированный билдер плюс то, чего генератор знать не может
-class AppScope implements AlloyScopeBuilder {
-  const AppScope(this.environment);
+// Alloy
+@alloyModule
+class AppModule {
+  const AppModule();
 
-  final AlloyEnvironment environment;
-
-  @override
-  void build(AlloyScope scope) {
-    $AlloyRootScope(environment: environment).build(scope);
-    scope.registerSingleton<Dio>(Dio());
-  }
+  @alloyInject
+  Dio get dio => Dio();
 }
 ```
+
+Три отличия. Класс **конкретный, с `const` конструктором**, а не абстрактный: Alloy зовёт член на
+`const AppModule()`, а не генерирует подкласс. **Абстрактные члены отвергаются** — у injectable они
+значат «собери из собственного конструктора», а это ровно то, что уже значит `@AlloyInject` на
+классе, привязка же к интерфейсу — это `exposeAs`. И асинхронность помечается одним лишь
+`Future<T>`: `@preResolve` не нужен.
+
+**`dispose:` заменяет `@disposeMethod` для чужих типов.** Свой класс реализует `Disposable`, а `Dio`
+не может, поэтому способ закрытия называет регистрация: `@AlloyInject(dispose: closeClient)`.
 
 **`@Order` исчезает.** injectable заставляет объявлять порядок; Alloy его вычисляет. Регистрации
 сортируются компайл-тайм топологической сортировкой, где поля с property injection считаются рёбрами

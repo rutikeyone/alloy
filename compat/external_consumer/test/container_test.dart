@@ -22,10 +22,19 @@ void main() {
     expect(BootLog.entries, ['bind-platform']);
   });
 
-  test('a bootstrap step is released with the scope', () async {
-    await scope.dispose();
-    expect(BootLog.entries, ['bind-platform', 'bind-platform released']);
-  });
+  test(
+    'a bootstrap step is released with the scope, and released last',
+    () async {
+      await scope.dispose();
+      // The module's channel is closed on the way down too; the bootstrap step
+      // was adopted before anything else existed, so it goes after all of it.
+      expect(BootLog.entries, [
+        'bind-platform',
+        'channel closed',
+        'bind-platform released',
+      ]);
+    },
+  );
 
   test('exposeAs publishes the interface, not the implementation', () {
     expect(scope.get<Clock>(), isA<SystemClock>());
@@ -57,6 +66,34 @@ void main() {
     final catalog = scope.get<Catalog>();
     expect(catalog.users.all().single.name, 'ada');
     expect(catalog.orders.all().map((order) => order.id), [1, 2]);
+  });
+
+  group('a module registers types the package does not own', () {
+    test('a member becomes an ordinary registration', () {
+      expect(scope.get<Channel>().name, 'channel');
+    });
+
+    test('an async member is built during startup and gets its argument', () {
+      final envelope = scope.get<Envelope>();
+      expect(envelope.stamp, 'stamped');
+      expect(identical(envelope.channel, scope.get<Channel>()), isTrue);
+    });
+
+    test(
+      'the dispose function closes it, after what was built on it',
+      () async {
+        final channel = scope.get<Channel>();
+        scope.get<Envelope>();
+        BootLog.clear();
+
+        await scope.dispose();
+
+        expect(channel.isOpen, isFalse);
+        // The bootstrap step was adopted first, so it is released last; the
+        // channel closes before it and after everything that used it.
+        expect(BootLog.entries, ['channel closed', 'bind-platform released']);
+      },
+    );
   });
 
   group('a registration promised through provides', () {

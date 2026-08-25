@@ -44,6 +44,7 @@ class _Visitor extends SimpleAstVisitor<void> {
   _Visitor(this.rule, this.context, this._cache);
 
   static const _parser = AlloyInjectableParser();
+  static const _modules = AlloyModuleParser();
 
   final AnalysisRule rule;
   final RuleContext context;
@@ -52,11 +53,17 @@ class _Visitor extends SimpleAstVisitor<void> {
   @override
   void visitClassDeclaration(ClassDeclaration node) {
     final element = node.declaredFragment?.element;
-    if (element == null || !_parser.declares(element)) return;
+    if (element == null) return;
 
-    final AlloyInjectableClass declaration;
+    final List<AlloyInjectableClass> declarations;
     try {
-      declaration = _parser.parseClass(element);
+      if (_parser.declares(element)) {
+        declarations = [_parser.parseClass(element)];
+      } else if (_modules.declares(element)) {
+        declarations = _modules.parseClass(element);
+      } else {
+        return;
+      }
     } on AlloyParseError {
       // A malformed declaration is somebody else's rule to report, and its
       // dependency list cannot be trusted.
@@ -66,6 +73,18 @@ class _Visitor extends SimpleAstVisitor<void> {
     final index = _index();
     if (index == null) return;
 
+    for (final declaration in declarations) {
+      final missing = _firstMissing(declaration, index);
+      if (missing == null) continue;
+      rule.reportAtNode(node.namePart, arguments: [declaration.label, missing]);
+      return;
+    }
+  }
+
+  String? _firstMissing(
+    AlloyInjectableClass declaration,
+    AlloyRegistrationIndex index,
+  ) {
     final wanted = {
       for (final parameter in declaration.constructorParameters) parameter.type,
       for (final property in declaration.properties) property.type,
@@ -73,13 +92,9 @@ class _Visitor extends SimpleAstVisitor<void> {
     };
 
     for (final type in wanted) {
-      if (index.contains(type.name)) continue;
-      rule.reportAtNode(
-        node.namePart,
-        arguments: [node.namePart.typeName.lexeme, type.name],
-      );
-      return;
+      if (!index.contains(type.name)) return type.name;
     }
+    return null;
   }
 
   AlloyRegistrationIndex? _index() {
