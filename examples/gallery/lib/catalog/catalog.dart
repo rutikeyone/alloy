@@ -1,5 +1,3 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_talker/alloy_talker.dart';
 import 'package:codegen_basics/alloy.g.dart' as codegen;
 import 'package:codegen_basics/counter_screen.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +9,8 @@ import 'package:gallery/catalog/glyphs.dart';
 import 'package:gallery/catalog/notes_graph.dart';
 import 'package:graph_events/app/app_scope.dart';
 import 'package:graph_events/app/audit_log.dart';
+import 'package:graph_events/app/observers.dart';
+import 'package:graph_events/app/report_log.dart';
 import 'package:graph_events/features/home/ui/home_screen.dart' as events;
 import 'package:notes_app/features/diagnostics/ui/scope_tree_screen.dart';
 import 'package:notes_app/features/environments/ui/environments_screen.dart';
@@ -250,31 +250,7 @@ List<ExampleEntry> buildCatalog() => [
     ],
     transcriptLabel: 'Where it lives',
     transcript: 'examples/graph_events/lib/app/graph_events_app.dart',
-    open: (_) {
-      // Built per open, not shared: the observers hold this talker, and a
-      // second visit should start with an empty log rather than the last one.
-      final talker = Talker();
-      final audit = AuditLog();
-      return ExampleHost(
-        root: const AppScope(),
-        bootstrap: () => [WarmUp()],
-        rootName: 'app',
-        observers: [
-          AlloyTalkerObserver(talker, verbose: true),
-          AlloyLogObserver(
-            AlloyMultiSink([
-              const AlloyPrintLogSink(),
-              AlloyLogSink.from(
-                (record) =>
-                    audit.write('${record.level.name} ${record.message}'),
-              ),
-            ]),
-          ),
-        ],
-        seedColor: Colors.deepOrange,
-        child: events.HomeScreen(talker: talker),
-      );
-    },
+    open: (_) => const _GraphEventsHost(),
   ),
 
   // ── Testing ───────────────────────────────────────────────────────────
@@ -307,4 +283,42 @@ List<SectionedEntries<ExampleEntry>> buildSections() {
           when entries.isNotEmpty)
         SectionedEntries(section: section, entries: entries),
   ];
+}
+
+/// Builds the observability example, everything it watches with, per open.
+///
+/// Fresh each visit rather than shared: the observers hold this talker and
+/// this report log, and a second visit should start with an empty trail rather
+/// than the last one's.
+class _GraphEventsHost extends StatefulWidget {
+  const _GraphEventsHost();
+
+  @override
+  State<_GraphEventsHost> createState() => _GraphEventsHostState();
+}
+
+class _GraphEventsHostState extends State<_GraphEventsHost> {
+  final _talker = Talker();
+  final _audit = AuditLog();
+  final _reports = ReportLog();
+
+  @override
+  void dispose() {
+    _reports.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ExampleHost(
+    root: const AppScope(),
+    bootstrap: () => [WarmUp()],
+    rootName: 'app',
+    observers: graphEventsObservers(
+      talker: _talker,
+      audit: _audit,
+      reports: _reports,
+    ),
+    seedColor: Colors.deepOrange,
+    child: events.HomeScreen(talker: _talker, reports: _reports),
+  );
 }

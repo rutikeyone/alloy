@@ -3,8 +3,12 @@ import 'package:test/test.dart';
 
 import 'support.dart';
 
-AlloyLogRecord record(AlloyLogLevel level, String message, {Object? error}) =>
-    AlloyLogRecord(level: level, message: message, error: error);
+AlloyLogRecord record(
+  AlloyLogLevel level,
+  String message, {
+  Object? error,
+  AlloyEventKind kind = AlloyEventKind.scopePushed,
+}) => AlloyLogRecord(kind: kind, level: level, message: message, error: error);
 
 final class BrokenSink implements AlloyLogSink {
   const BrokenSink();
@@ -122,6 +126,7 @@ void main() {
       runZonedPrint(lines, () {
         const AlloyPrintLogSink(prefix: 'di').write(
           AlloyLogRecord(
+            kind: AlloyEventKind.scopeInitFailed,
             level: AlloyLogLevel.error,
             message: 'it broke',
             error: StateError('boom'),

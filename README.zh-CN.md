@@ -280,11 +280,43 @@ AlloyLogObserver(AlloyLogSink.from((record) => myLogger.debug(record.message)))
 | `loggy` | `AlloyLogSink.from((r) => logDebug(r.message))` |
 | `fimber` | `AlloyLogSink.from((r) => Fimber.d(r.message, ex: r.error))` |
 | `simple_logger` | `AlloyLogSink.from((r) => logger.info(r.message))` |
-| Sentry | `AlloyLogSink.from((r) { if (r.error != null) Sentry.captureException(r.error, stackTrace: r.stackTrace); })` |
-| Crashlytics | `AlloyLogSink.from((r) => FirebaseCrashlytics.instance.log(r.message))` |
+| Graylog 或任何 JSON 接收端 | `AlloyLogSink.from((r) => gelf.send(r.toStructured()))` |
 
-记录不只是一个字符串——`level`、`scope`、`key`、`error` 和 `stackTrace` 都在里面，这正是上面两行崩溃
-上报可以只筛选失败、而不必把每一行 trace 都送进付费服务的原因。
+记录不只是一个字符串。`level`、`scope`、`key`、`error` 和 `stackTrace` 都在里面，而 `kind` 用值来
+命名事件——`AlloyEventKind.scopeInitFailed`，而不是随时可能改写的句子
+`scope "app" failed to initialize`。`toStructured()` 把这一切作为 map 交出去，这就是一个 GELF 或
+JSON sink 的全部。
+
+### 崩溃上报是另一种形态
+
+日志 sink 收到的是每一行，因此必须廉价。崩溃上报收到的是离散事件，每一个都要花掉一次网络调用和一份
+配额；而让一份报告可执行的不是异常本身，而是图在此之前在做什么。`AlloyErrorObserver` 会带着这条线索
+上报失败：
+
+```dart
+observers: [
+  AlloyErrorObserver(
+    AlloyErrorSink.from((report) => Sentry.captureException(
+      report.error,
+      stackTrace: report.stackTrace,
+      withScope: (scope) => scope.setContexts('alloy', report.toStructured()),
+    )),
+  ),
+],
+```
+
+| 上报服务 | 全部集成代码 |
+|---|---|
+| Sentry | `AlloyErrorSink.from((r) => Sentry.captureException(r.error, stackTrace: r.stackTrace))` |
+| Crashlytics | `AlloyErrorSink.from((r) => FirebaseCrashlytics.instance.recordError(r.error, r.stackTrace))` |
+
+有两个默认值值得知道。线索在所有级别上都会保留，包括日志 sink 默认丢弃的逐实例记录——在出问题之前
+它们不花什么代价，而"最后构建的是什么"通常正是有用的那一行；它是一个 20 条的环形缓冲，所以长时间
+运行的应用不会让它无限增长。上报阈值是 `error` 而不是 `warning`：拆卸失败以 warning 到达，它确实
+意味着资源泄漏，但每次小问题都惊动付费服务，是让报告没人再看的可靠办法。需要时用 `reportAt` 调低。
+
+它只上报 Alloy 自己知道出错的事情——抛异常的初始化器、失败的引导步骤、没能完成的拆卸。没有上报任意
+错误的方法，因为这不是通用的错误通道；你已经在用的那个上报服务才是。
 
 `AlloyMultiSink` 把一条记录分发给多个目的地，而且某个 sink 抛异常不会让其余的失声——控制台加崩溃上报
 是生产环境的常见搭配：

@@ -38,6 +38,7 @@ void main() {
       final boom = StateError('boom');
       sink.write(
         AlloyLogRecord(
+          kind: AlloyEventKind.scopeInitFailed,
           level: AlloyLogLevel.error,
           message: 'it broke',
           error: boom,

@@ -313,12 +313,46 @@ AlloyLogObserver(AlloyLogSink.from((record) => myLogger.debug(record.message)))
 | `loggy` | `AlloyLogSink.from((r) => logDebug(r.message))` |
 | `fimber` | `AlloyLogSink.from((r) => Fimber.d(r.message, ex: r.error))` |
 | `simple_logger` | `AlloyLogSink.from((r) => logger.info(r.message))` |
-| Sentry | `AlloyLogSink.from((r) { if (r.error != null) Sentry.captureException(r.error, stackTrace: r.stackTrace); })` |
-| Crashlytics | `AlloyLogSink.from((r) => FirebaseCrashlytics.instance.log(r.message))` |
+| Graylog и любой JSON-приёмник | `AlloyLogSink.from((r) => gelf.send(r.toStructured()))` |
 
-Запись — не просто строка: в ней есть `level`, `scope`, `key`, `error` и `stackTrace`, и именно
-поэтому две строки про крашрепортинг могут фильтровать только падения, а не сливать в платный
-сервис весь trace.
+Запись — не просто строка. В ней есть `level`, `scope`, `key`, `error` и `stackTrace`, а `kind`
+называет событие значением: `AlloyEventKind.scopeInitFailed` вместо фразы
+`scope "app" failed to initialize`, которую вольны переписать. `toStructured()` отдаёт всё это
+картой — в этом и состоит целиком приёмник GELF или JSON.
+
+### Крашрепортинг — другая форма
+
+Приёмнику логов отдают каждую строку, и он обязан быть дешёвым. Крашрепортеру отдают дискретные
+инциденты ценой в сетевой вызов и квоту, а полезным отчёт делает не исключение, а то, что граф
+делал до него. `AlloyErrorObserver` сообщает о сбоях вместе с этим следом:
+
+```dart
+observers: [
+  AlloyErrorObserver(
+    AlloyErrorSink.from((report) => Sentry.captureException(
+      report.error,
+      stackTrace: report.stackTrace,
+      withScope: (scope) => scope.setContexts('alloy', report.toStructured()),
+    )),
+  ),
+],
+```
+
+| Репортер | Вся интеграция целиком |
+|---|---|
+| Sentry | `AlloyErrorSink.from((r) => Sentry.captureException(r.error, stackTrace: r.stackTrace))` |
+| Crashlytics | `AlloyErrorSink.from((r) => FirebaseCrashlytics.instance.recordError(r.error, r.stackTrace))` |
+
+Два дефолта, о которых стоит знать. След копится на всех уровнях, включая поинстансные записи,
+которые приёмник логов по умолчанию отбрасывает: они ничего не стоят, пока ничего не сломалось, а
+«что построилось последним» — обычно и есть нужная строка. Это кольцо на 20 записей, так что
+долгоживущее приложение не может растить его без предела. Порог отчёта — `error`, а не `warning`:
+сбой разбора приходит warning'ом и действительно означает утёкший ресурс, но слать в платный сервис
+на каждую заминку — верный способ, чтобы отчёты перестали читать. Понижается через `reportAt`.
+
+Сообщается только то, что Alloy знает сам: упавший инициализатор, упавший bootstrap-шаг,
+незавершённый разбор. Метода «зарепортить произвольную ошибку» нет — общей шиной ошибок это не
+является, для неё есть тот репортер, который у вас уже стоит.
 
 `AlloyMultiSink` разводит одну запись по нескольким адресатам, и упавший приёмник не заглушает
 остальных — консоль плюс крашрепортинг это нормальная продакшен-пара:

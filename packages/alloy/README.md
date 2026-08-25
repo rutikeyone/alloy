@@ -100,3 +100,31 @@ rule is simply that each isolate builds its own graph.
 
 If you offload work with `Isolate.run` or `compute`, pass the *data* the work
 needs, not the scope or anything resolved from it.
+
+## Reporting failures
+
+`AlloyObserver` reports everything; `AlloyErrorObserver` reports only what went wrong, and brings
+the events that led up to it:
+
+```dart
+final scope = await AlloyApplication.start(
+  root: const AppScope(),
+  observers: [AlloyErrorObserver(AlloyErrorSink.from(myReporter.capture))],
+);
+```
+
+An `AlloyErrorReport` is the failing record plus its breadcrumbs, oldest first. The exception alone
+says a teardown threw; the breadcrumbs say which scope had just been pushed and what it had built
+by then, which is usually the part that makes the report actionable. `toStructured()` hands the
+whole thing over as a map for a destination that takes structured input.
+
+The trail is a bounded ring — 20 by default — kept at every level, including the per-instance
+records `AlloyLogObserver` drops. They cost nothing until something fails.
+
+Reports fire at `error` and above. A teardown failure arrives as a warning: it does mean a resource
+leaked, but paging a paid service on every hiccup is how reports stop being read, so lowering that
+is a deliberate `reportAt: AlloyLogLevel.warning`.
+
+Only Alloy's own failures are reported — an initializer that threw, a bootstrap step that failed, a
+teardown that could not finish. There is no method for reporting an arbitrary error: this is not a
+general error channel.

@@ -1,13 +1,18 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:graph_events/app/report_log.dart';
+import 'package:graph_events/features/home/ui/last_report_tile.dart';
 import 'package:graph_events/features/session/session_scope.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 /// Drives the graph so the log has something to show.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({required this.talker, super.key});
+  const HomeScreen({required this.talker, required this.reports, super.key});
 
   final Talker talker;
+
+  /// Where AlloyErrorObserver's reports land.
+  final ReportLog reports;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -101,6 +106,8 @@ class _HomeScreenState extends State<HomeScreen> {
           trailing: const Icon(Icons.logout),
           onTap: _closeSession,
         ),
+        const Divider(),
+        LastReportTile(log: widget.reports),
         const Divider(),
         ListTile(
           key: const Key('event-count'),

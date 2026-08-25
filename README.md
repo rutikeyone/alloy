@@ -304,12 +304,47 @@ AlloyLogObserver(AlloyLogSink.from((record) => myLogger.debug(record.message)))
 | `loggy` | `AlloyLogSink.from((r) => logDebug(r.message))` |
 | `fimber` | `AlloyLogSink.from((r) => Fimber.d(r.message, ex: r.error))` |
 | `simple_logger` | `AlloyLogSink.from((r) => logger.info(r.message))` |
-| Sentry | `AlloyLogSink.from((r) { if (r.error != null) Sentry.captureException(r.error, stackTrace: r.stackTrace); })` |
-| Crashlytics | `AlloyLogSink.from((r) => FirebaseCrashlytics.instance.log(r.message))` |
+| Graylog, or any JSON intake | `AlloyLogSink.from((r) => gelf.send(r.toStructured()))` |
 
-The record is not just a string — `level`, `scope`, `key`, `error` and `stackTrace` are all there,
-which is why the two crash-reporting rows can filter on failures alone rather than shipping every
-line of trace to a paid service.
+The record is not just a string. `level`, `scope`, `key`, `error` and `stackTrace` are all there,
+and `kind` names the event as a value — `AlloyEventKind.scopeInitFailed` rather than the sentence
+`scope "app" failed to initialize`, which is free to be reworded. `toStructured()` hands the lot
+over as a map, which is the whole of a GELF or JSON sink.
+
+### Crash reporting is a different shape
+
+A log sink is handed every line and has to be cheap. A crash reporter is handed discrete incidents
+that cost a network call and a quota, and what makes one actionable is not the exception — it is
+what the graph was doing beforehand. `AlloyErrorObserver` reports failures with that trail
+attached:
+
+```dart
+observers: [
+  AlloyErrorObserver(
+    AlloyErrorSink.from((report) => Sentry.captureException(
+      report.error,
+      stackTrace: report.stackTrace,
+      withScope: (scope) => scope.setContexts('alloy', report.toStructured()),
+    )),
+  ),
+],
+```
+
+| Reporter | The whole integration |
+|---|---|
+| Sentry | `AlloyErrorSink.from((r) => Sentry.captureException(r.error, stackTrace: r.stackTrace))` |
+| Crashlytics | `AlloyErrorSink.from((r) => FirebaseCrashlytics.instance.recordError(r.error, r.stackTrace))` |
+
+Two defaults worth knowing. The trail is kept at every level, including the per-instance records a
+log sink drops — they cost nothing until something fails, and "what was built last" is usually the
+useful line; it is a ring of 20, so a long-running app cannot grow it without bound. And the
+reporting threshold is `error`, not `warning`: a teardown failure arrives as a warning and does mean
+a resource leaked, but paging a paid service on every hiccup is how reports stop being read. Lower
+it with `reportAt` when you want them.
+
+It reports only what Alloy itself knows went wrong — an initializer that threw, a bootstrap step
+that failed, a teardown that could not finish. There is no method for reporting an arbitrary error,
+because this is not a general error channel; the reporter you already have is that.
 
 `AlloyMultiSink` fans one record out to several destinations, and a sink that throws does not
 silence the rest — console plus crash reporting is the normal production pair:

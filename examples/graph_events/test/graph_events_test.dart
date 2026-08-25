@@ -4,17 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graph_events/app/app_scope.dart';
 import 'package:graph_events/app/audit_log.dart';
-import 'package:graph_events/app/graph_events_app.dart';
+import 'package:graph_events/app/observers.dart';
+import 'package:graph_events/app/report_log.dart';
+import 'package:graph_events/features/home/ui/home_screen.dart';
 import 'package:talker/talker.dart';
 
 void main() {
   late Talker talker;
   late AuditLog audit;
+  late ReportLog reports;
   late AlloyScope app;
 
   setUp(() {
     talker = Talker();
     audit = AuditLog();
+    reports = ReportLog();
   });
 
   Future<void> settle(WidgetTester tester) async {
@@ -23,12 +27,33 @@ void main() {
   }
 
   Future<void> pumpApp(WidgetTester tester) async {
-    await tester.pumpWidget(GraphEventsApp(talker: talker, audit: audit));
+    // The app widget is gone — the gallery owns that now — so the test mounts
+    // the same graph and screen the gallery does.
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AlloyAppScope(
+          root: const AppScope(),
+          bootstrap: () => [WarmUp()],
+          rootName: 'app',
+          observers: graphEventsObservers(
+            talker: talker,
+            audit: audit,
+            reports: reports,
+          ),
+          loading: const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+          child: HomeScreen(talker: talker, reports: reports),
+        ),
+      ),
+    );
     await settle(tester);
     await settle(tester);
     // Below MaterialApp now: AlloyAppScope.builder publishes the scope inside
     // it, so loading and error screens are rendered with the app's theme.
-    app = AlloyScopeProvider.of(tester.element(find.byType(Navigator).first));
+    // Below the Navigator now, not above it: the screen is mounted inside a
+    // route, so the provider sits with the screen rather than with the app.
+    app = AlloyScopeProvider.of(tester.element(find.byType(Scaffold).first));
   }
 
   List<String> titles() => [
@@ -110,6 +135,45 @@ void main() {
         messages(),
         contains('could not release StubbornResource.dispose'),
       );
+    });
+  });
+
+  group('failures reach the reporter', () {
+    testWidgets('a teardown that throws is reported with its breadcrumbs', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+
+      expect(find.byKey(const Key('no-report')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('open-broken-session')));
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('close-session')));
+      await settle(tester);
+
+      expect(reports.reports, hasLength(1));
+      final report = reports.reports.single;
+      expect(report.failure.kind, AlloyEventKind.scopeDisposeFailed);
+      expect(report.error, isA<StateError>());
+      expect(
+        report.breadcrumbs.map((c) => c.kind),
+        contains(AlloyEventKind.scopePushed),
+        reason: 'the session being opened is what led to the failure',
+      );
+      expect(find.byKey(const Key('last-report')), findsOneWidget);
+    });
+
+    testWidgets('a session that closes cleanly reports nothing', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+
+      await tester.tap(find.byKey(const Key('open-session')));
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('close-session')));
+      await settle(tester);
+
+      expect(reports.reports, isEmpty);
     });
   });
 }
