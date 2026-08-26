@@ -173,6 +173,31 @@ What this does not cover: something expensive that must live as long as the app 
 only a few screens. Expressing that today means a long-lived child scope, which blurs who owns it.
 That is the case a lazy async registration would be for, and it has not come up.
 
+## Looking at a live graph
+
+`AlloyInspector.enable()` publishes the scope tree over the VM service as
+`ext.alloy.getScopeTree`, and `AlloyDevToolsObserver` posts every event where DevTools' Logging view
+shows it — no extension to install:
+
+```dart
+assert(() {
+  AlloyInspector.enable();
+  return true;
+}());
+```
+
+The `assert` is the switch. With asserts off the call never runs and the extension does not exist,
+which is what you want in release — and it means `dart run` needs `--enable-asserts` to see it,
+since only Flutter's debug mode turns them on for you.
+
+Live roots are tracked weakly and forgotten **as a scope is disposed**, not when it is collected:
+nothing about `WeakReference` promises when, so a view that waited for the collector would show
+scopes that are gone.
+
+What it reports is what was *declared*. A lazy singleton nobody resolved looks the same as one that
+is built, `adopt`ed objects have no key, and nothing records what a factory will ask for — so this
+is a tree of scopes and their registrations, never a dependency graph.
+
 ## One graph per isolate
 
 Alloy is single-threaded by construction. There are no locks anywhere in the

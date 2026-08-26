@@ -21,6 +21,8 @@ import 'package:alloy/src/lifecycle/disposable.dart';
 import 'package:alloy/src/observer/alloy_observer.dart';
 import 'package:alloy/src/observer/alloy_scope_ref.dart';
 import 'package:alloy/src/registration/alloy_registration.dart';
+import 'package:alloy/src/devtools/alloy_scope_registry.dart';
+import 'package:alloy/src/scope/alloy_registration_kind.dart';
 import 'package:alloy/src/scope/alloy_scope_state.dart';
 import 'package:alloy/src/scope/resolution_tracker.dart';
 
@@ -58,12 +60,21 @@ final class AlloyScope implements AlloyResolver {
   factory AlloyScope.root({
     String name = 'root',
     List<AlloyObserver> observers = const [],
-  }) => AlloyScope._(
-    name,
-    null,
-    AlloyResolutionTracker(),
-    List.unmodifiable(observers),
-  );
+  }) {
+    final scope = AlloyScope._(
+      name,
+      null,
+      AlloyResolutionTracker(),
+      List.unmodifiable(observers),
+    );
+    // Debug only, and weak: the registry exists so a tool can find live
+    // graphs, and must never be the reason one stays alive.
+    assert(() {
+      AlloyScopeRegistry.add(scope);
+      return true;
+    }());
+    return scope;
+  }
 
   /// This scope's name, used in diagnostics.
   final String name;
@@ -130,6 +141,67 @@ final class AlloyScope implements AlloyResolver {
       }
     }
     return Map.unmodifiable(result);
+  }
+
+  /// What kind of registration [key] has, or null when nothing registers it.
+  ///
+  /// Resolves through ancestors like [get] does, so it answers for the scope
+  /// the key would actually come from.
+  ///
+  /// For tools. It exists because the alternative — telling a parameterized
+  /// registration apart from a broken one by reading an exception message — is
+  /// parsing prose.
+  AlloyRegistrationKind? debugKindOf(AlloyKey key) =>
+      switch (_lookup(key)?.registration) {
+        SingletonRegistration() => AlloyRegistrationKind.singleton,
+        LazySingletonRegistration() => AlloyRegistrationKind.lazySingleton,
+        TransientRegistration() => AlloyRegistrationKind.transient,
+        AsyncSingletonRegistration() => AlloyRegistrationKind.asyncSingleton,
+        ParamRegistration() => AlloyRegistrationKind.parameterized,
+        null => null,
+      };
+
+  /// Resolves [key] without naming its type, or null when nothing registers it.
+  ///
+  /// The typed [get] cannot be called from a loop over [keys]: Dart has no way
+  /// to turn a `Type` back into a type argument. This is the same resolution,
+  /// reached by value instead — which is what lets a tool walk a whole graph.
+  ///
+  /// Everything [get] throws, this throws: an async singleton before `init()`
+  /// raises `AlloyNotReadyError`, a parameterized registration raises
+  /// `AlloyError`, a cycle raises `AlloyCycleError`. Check [debugKindOf] first
+  /// rather than reading those apart afterwards.
+  Object? debugResolve(AlloyKey key) {
+    _assertUsable();
+    final found = _lookup(key);
+    if (found == null) return null;
+    return found.scope._materialize(found.registration);
+  }
+
+  /// Resolves a parameterized [key] with [param], without naming its types.
+  ///
+  /// The key-based twin of [getWithParam], for the same reason [debugResolve]
+  /// is the twin of [get]: a walk over [keys] has no type arguments to give.
+  ///
+  /// Returns null when nothing registers [key]. Throws `AlloyError` when the
+  /// registration is not parameterized, and `AlloyParamTypeError` when [param]
+  /// is not what its factory takes.
+  Object? debugResolveWithParam(AlloyKey key, Object param) {
+    _assertUsable();
+    final found = _lookup(key);
+    if (found == null) return null;
+    final registration = found.registration;
+    if (registration is! ParamRegistration) {
+      throw AlloyError('$key is not registered as a parameterized factory.');
+    }
+    if (!registration.accepts(param)) {
+      throw AlloyParamTypeError(key, registration.paramType, param.runtimeType);
+    }
+    return found.scope._tracker.guard(key, () {
+      final instance = registration.factory.create(found.scope, param);
+      found.scope._afterCreate(instance, key, retain: false);
+      return instance;
+    });
   }
 
   /// Renders this scope and everything under it, one line per scope.
@@ -565,6 +637,13 @@ final class AlloyScope implements AlloyResolver {
     _initFuture = null;
     parent?._children.remove(this);
     _state = AlloyScopeState.disposed;
+    // Pruned here rather than left to the collector: nothing about
+    // WeakReference promises when, and a stale entry would report a scope
+    // that is gone.
+    assert(() {
+      AlloyScopeRegistry.remove(this);
+      return true;
+    }());
 
     // An init that threw belongs to whoever called init(); an init that ran
     // past the deadline is teardown failing to finish its own wait.

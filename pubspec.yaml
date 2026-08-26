@@ -15,6 +15,7 @@ workspace:
   - packages/alloy_analyzer
   - packages/alloy_generator
   - packages/alloy_lint
+  - packages/alloy_test
   - examples/manual_mode
   - examples/codegen_basics
   - examples/notes_app

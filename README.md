@@ -26,6 +26,7 @@ what does not.
 | `alloy_analyzer` | `alloy_annotations`, `analyzer` | no |
 | `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | dev_dependency only |
 | `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | dev_dependency only |
+| `alloy_test` | `alloy`, `test_api`, `matcher` | dev_dependency only |
 
 `alloy_analyzer` exists so the generator and the lint plugin parse Alloy declarations through one
 implementation instead of two that drift apart. It owns the IR and the topological sort, and depends
@@ -61,6 +62,7 @@ dart format --output=none --set-exit-if-changed .
 (cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
+(cd packages/alloy_test && dart test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ```
@@ -78,6 +80,16 @@ assertions in a plain `test`. `examples/notes_app/test/screens_test.dart` uses b
 
 To override a dependency, push a child scope and register it again — a duplicate registration in
 one scope is an error, but shadowing from a child is the supported way, in tests as in production.
+
+`alloy_test` packages the mechanics: `alloyTestScope` builds a graph and disposes it with the test,
+`pushForTest` does the same for an override scope, and `ownerOf<T>()` answers the question that
+trips everyone once — a factory runs on the scope that owns *its* registration, so an override
+below the consumer is invisible to it.
+
+It also carries `expectGraphResolves`, the only way to check a hand-written graph. The generator
+rejects an incomplete graph at build time, but it only sees what it generated; a factory never
+declares what it will ask for, so a manual graph can only be checked by running it. That check is
+terminal — resolving *is* the check, so afterwards every lazy singleton is built.
 
 ## Known publish warning
 

@@ -1,6 +1,6 @@
 # Releasing
 
-Ten packages depend on each other, so the order is not a preference — a package
+Eleven packages depend on each other, so the order is not a preference — a package
 cannot be published until everything it depends on is already on pub.dev, or
 version solving fails.
 
@@ -14,6 +14,7 @@ version solving fails.
    alloy_logger               (alloy)
    alloy_logging              (alloy)
    alloy_talker               (alloy)
+   alloy_test                 (alloy)
 4. alloy_generator            (alloy_analyzer, alloy_annotations)
    alloy_lint                 (alloy_analyzer)
    alloy_go_router            (alloy_flutter)

@@ -61,8 +61,9 @@ jobs:
           for package in packages/alloy packages/alloy_analyzer \
                          packages/alloy_generator packages/alloy_lint \
                          packages/alloy_talker packages/alloy_logging \
-                         packages/alloy_logger examples/manual_mode \
-                         examples/teardown compat/external_consumer; do
+                         packages/alloy_logger packages/alloy_test \
+                         examples/manual_mode examples/teardown \
+                         compat/external_consumer; do
             (cd "$package" && dart test)
           done
 
@@ -78,6 +79,8 @@ jobs:
       - name: Publish dry run
         run: |
           for package in packages/alloy_annotations packages/alloy \
-                         packages/alloy_analyzer packages/alloy_generator; do
+                         packages/alloy_analyzer packages/alloy_generator \
+                         packages/alloy_test packages/alloy_talker \
+                         packages/alloy_logging packages/alloy_logger; do
             (cd "$package" && dart pub publish --dry-run)
           done

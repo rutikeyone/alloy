@@ -29,6 +29,7 @@
 | `alloy_analyzer` | `alloy_annotations`, `analyzer` | нет |
 | `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | только dev_dependency |
 | `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | только dev_dependency |
+| `alloy_test` | `alloy`, `test_api`, `matcher` | только dev_dependency |
 
 `alloy_analyzer` существует затем, чтобы генератор и линтер разбирали объявления Alloy **одной**
 реализацией, а не двумя, которые неизбежно разойдутся. Он владеет IR и топологической сортировкой и
@@ -65,6 +66,7 @@ dart format --output=none --set-exit-if-changed .
 (cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
+(cd packages/alloy_test && dart test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ```
@@ -83,6 +85,16 @@ CI (`.github/workflows/ci.yml`) гоняет всё перечисленное �
 
 Чтобы подменить зависимость, создайте дочерний скоуп и зарегистрируйте её заново: дубликат внутри
 одного скоупа — ошибка, а затенение из дочернего — штатный способ, и в тестах, и в продакшене.
+
+`alloy_test` упаковывает механику: `alloyTestScope` строит граф и разбирает его вместе с тестом,
+`pushForTest` делает то же для скоупа подмены, а `ownerOf<T>()` отвечает на вопрос, на котором
+спотыкаются все однажды: фабрика вызывается на скоупе-**владельце** своей регистрации, поэтому
+подмена ниже потребителя ему не видна.
+
+Там же `expectGraphResolves` — единственный способ проверить рукописный граф. Генератор отвергает
+неполный граф на сборке, но видит только то, что сам сгенерировал; фабрика не объявляет, что
+попросит, поэтому ручной граф проверяется только исполнением. Проверка терминальна: резолв **и
+есть** проверка, поэтому после неё каждый ленивый синглтон построен.
 
 ## Известное предупреждение при публикации
 

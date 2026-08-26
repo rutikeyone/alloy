@@ -26,6 +26,7 @@
 | `alloy_analyzer` | `alloy_annotations`、`analyzer` | 否 |
 | `alloy_generator` | `alloy_analyzer`、`build`、`source_gen`、`code_builder` | 仅 dev_dependency |
 | `alloy_lint` | `alloy_analyzer`、`analysis_server_plugin` | 仅 dev_dependency |
+| `alloy_test` | `alloy`、`test_api`、`matcher` | 仅 dev_dependency |
 
 `alloy_analyzer` 的存在是为了让生成器和 lint 插件用**同一套**实现解析 Alloy 声明，而不是两套迟早会
 各说各话的实现。它持有 IR 和拓扑排序，并且既不依赖 `build`，也不依赖插件 API。
@@ -59,6 +60,7 @@ dart format --output=none --set-exit-if-changed .
 (cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
+(cd packages/alloy_test && dart test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ```
@@ -75,6 +77,14 @@ CI（`.github/workflows/ci.yml`）会跑完上述全部内容，并在重新生�
 
 要替换某个依赖，就压入一个子作用域并重新注册它——同一作用域内重复注册是错误，但从子作用域遮蔽是受支持
 的做法，测试与生产环境同理。
+
+`alloy_test` 把这些机械动作打包好了：`alloyTestScope` 构建图并随测试一起释放，`pushForTest` 对覆盖
+作用域做同样的事，而 `ownerOf<T>()` 回答那个人人都会踩一次的问题——工厂运行在拥有**它自己**注册的
+作用域上，因此位于消费者下方的覆盖对它不可见。
+
+其中还有 `expectGraphResolves`，这是检查手写图的唯一办法。生成器会在构建期拒绝不完整的图，但它只看得见
+自己生成的部分；工厂从不声明它会索取什么，所以手写的图只能靠运行来检查。该检查是终结性的：解析**就是**
+检查，因此之后每个惰性单例都已被构建。
 
 ## 已知的发布警告
 
