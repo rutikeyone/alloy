@@ -89,6 +89,59 @@ final class AlloyScope implements AlloyResolver {
   /// The child scopes currently alive, in the order they were pushed.
   List<AlloyScope> get children => List.unmodifiable(_children);
 
+  /// The outermost scope above this one, or this scope when it is the root.
+  AlloyScope get root {
+    var current = this;
+    for (var parent = current.parent; parent != null; parent = current.parent) {
+      current = parent;
+    }
+    return current;
+  }
+
+  /// What this scope registers, in registration order.
+  ///
+  /// This is what was *declared*, not what exists. A lazy singleton nobody
+  /// resolved is indistinguishable here from one that is built, and an async
+  /// singleton appears whether or not `init()` has reached it.
+  ///
+  /// Three more things it deliberately is not. Objects handed to [adopt] have
+  /// no key at all, so this is not what teardown will release. One key can
+  /// stand for any number of live transients, or none. And nothing records
+  /// what a factory will ask for, so this is a list, never a graph.
+  ///
+  /// Empty after [dispose], which clears the registrations rather than keeping
+  /// a tombstone.
+  Set<AlloyKey> get keys => Set.unmodifiable(_registrations.keys);
+
+  /// Every key resolvable from here, mapped to the scope that owns it.
+  ///
+  /// Nearest wins: a key this scope registers shadows the same key in an
+  /// ancestor, exactly as [get] resolves it.
+  ///
+  /// The owner is the point of the map. A factory is called with the scope
+  /// that owns *its* registration, not the scope you asked from, so a key
+  /// alone cannot tell you what an override will actually affect.
+  Map<AlloyKey, AlloyScope> get visibleKeys {
+    final result = <AlloyKey, AlloyScope>{};
+    for (AlloyScope? scope = this; scope != null; scope = scope.parent) {
+      for (final key in scope._registrations.keys) {
+        result.putIfAbsent(key, () => scope!);
+      }
+    }
+    return Map.unmodifiable(result);
+  }
+
+  /// Renders this scope and everything under it, one line per scope.
+  ///
+  /// For diagnostics and test failures. The shape is not a contract.
+  String debugDescribeTree() => _describe(0).join('\n');
+
+  List<String> _describe(int indent) => [
+    '${'  ' * indent}$name  [${_state.name}]  ${_registrations.length} '
+        'registration(s)',
+    for (final child in _children) ...child._describe(indent + 1),
+  ];
+
   /// Whether the scope still accepts registrations and resolutions.
   ///
   /// False once teardown has begun, which is what turns later use into an
@@ -223,6 +276,14 @@ final class AlloyScope implements AlloyResolver {
   @override
   bool isRegistered<T extends Object>({String? name}) =>
       _lookup(AlloyKey(T, name: name)) != null;
+
+  @override
+  T? getOrNull<T extends Object>({String? name}) {
+    _assertUsable();
+    final found = _lookup(AlloyKey(T, name: name));
+    if (found == null) return null;
+    return found.scope._materialize(found.registration) as T;
+  }
 
   @override
   T get<T extends Object>({String? name}) {

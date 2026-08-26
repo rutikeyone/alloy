@@ -10,7 +10,7 @@ class ScopeTreeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final root = _rootOf(context.alloyScope);
+    final root = context.alloyScope.root;
 
     return Scaffold(
       appBar: AppBar(
@@ -22,14 +22,6 @@ class ScopeTreeScreen extends StatelessWidget {
       ),
       body: ListView(children: [..._rows(root, 0)]),
     );
-  }
-
-  AlloyScope _rootOf(AlloyScope scope) {
-    var current = scope;
-    for (var parent = current.parent; parent != null; parent = current.parent) {
-      current = parent;
-    }
-    return current;
   }
 
   Iterable<Widget> _rows(AlloyScope scope, int depth) sync* {

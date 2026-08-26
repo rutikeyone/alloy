@@ -61,24 +61,43 @@ void main() {
   });
 
   group('nullable dependencies', () {
-    test(
-      'a nullable injected field resolves the non-nullable registration',
-      () {
-        final source = const InjectionMixinEmitter().emit(
+    String mixinFor({required bool isNullable}) =>
+        const InjectionMixinEmitter().emit(
           declare(
             'Report',
             properties: [
               AlloyInjectedProperty(
                 field: '_clock',
-                type: ref('Clock', isNullable: true),
+                type: ref('Clock', isNullable: isNullable),
               ),
             ],
           ),
         );
 
-        expect(source, contains('resolver.get<Clock>()'));
-        expect(source, isNot(contains('Clock?')));
-      },
-    );
+    test('a nullable injected field reads through getOrNull', () {
+      final source = mixinFor(isNullable: true);
+
+      expect(source, contains('resolver.getOrNull<Clock>()'));
+    });
+
+    test('its setter accepts null, or the assignment would not compile', () {
+      final source = mixinFor(isNullable: true);
+
+      expect(source, contains('set _clock(Clock? value)'));
+    });
+
+    test('the type argument stays non-nullable, since T extends Object', () {
+      final source = mixinFor(isNullable: true);
+
+      expect(source, isNot(contains('<Clock?>')));
+    });
+
+    test('a required field is untouched', () {
+      final source = mixinFor(isNullable: false);
+
+      expect(source, contains('resolver.get<Clock>()'));
+      expect(source, contains('set _clock(Clock value)'));
+      expect(source, isNot(contains('getOrNull')));
+    });
   });
 }

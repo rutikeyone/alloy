@@ -18,3 +18,6 @@
   version loads. See the README for pointing it at local sources.
 - The registration index reads `@AlloyModule` members too, so a graph using
   modules does not produce false reports.
+- `alloy_dependency_is_not_registered` skips optional dependencies. It walks
+  them as a list rather than a set, because `AlloyTypeRef` compares by
+  signature and would otherwise fold `Foo` and `Foo?` into one entry.

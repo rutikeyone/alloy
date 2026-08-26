@@ -27,6 +27,20 @@ abstract interface class AlloyResolver {
   /// `AlloyError` if the registration is not a parameterized factory.
   T getWithParam<T extends Object, P extends Object>(P param, {String? name});
 
+  /// Returns the instance registered for [T], or null when nothing is.
+  ///
+  /// This is what an optional dependency reads. A `Foo?` parameter or
+  /// `@injected` field resolves through here, so a graph that does not supply
+  /// `Foo` injects null instead of failing.
+  ///
+  /// Null means exactly one thing: nothing is registered under this key.
+  /// Everything else still throws — an async singleton requested before
+  /// `init()` raises `AlloyNotReadyError`, a parameterized factory raises
+  /// `AlloyError`, and a cycle raises `AlloyCycleError`. Folding those into
+  /// null would turn a startup-ordering bug into a value that reads as
+  /// "absent".
+  T? getOrNull<T extends Object>({String? name});
+
   /// Whether [T] can be resolved from this scope or any ancestor.
   bool isRegistered<T extends Object>({String? name});
 }

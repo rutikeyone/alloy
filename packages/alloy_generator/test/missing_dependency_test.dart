@@ -77,13 +77,41 @@ void main() {
       );
     });
 
-    test('a nullable dependency names the registration it looks for', () {
+    test('an optional dependency is not reported missing', () {
+      final source = generate([
+        declare('Api', constructor: [dep('HttpClient', isNullable: true)]),
+      ]);
+
+      expect(registrationsOf(source), hasLength(1));
+      expect(source, contains('resolver.getOrNull<'));
+    });
+
+    test('a nullable dependsOn is still required, being an ordering edge', () {
       expect(
         () => generate([
-          declare('Api', constructor: [dep('HttpClient', isNullable: true)]),
+          declare(
+            'Index',
+            isAsyncInit: true,
+            dependsOn: [ref('Database', isNullable: true)],
+          ),
         ]),
-        failsWith(contains('Api requires HttpClient,')),
+        failsWith(contains('Index requires Database')),
       );
+    });
+
+    test('an optional dependency still orders registration when present', () {
+      final source = generate([
+        declare('Api', constructor: [dep('HttpClient', isNullable: true)]),
+        declare('HttpClient'),
+      ]);
+
+      final order = registrationsOf(source);
+      expect(
+        order.first,
+        contains('HttpClient'),
+        reason: 'optional does not mean unordered — it is still an edge',
+      );
+      expect(order.last, contains('Api'));
     });
   });
 

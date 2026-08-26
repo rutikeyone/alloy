@@ -131,6 +131,7 @@ class ContainerSourceEmitter {
 
       for (final declaration in active) {
         for (final dependency in _dependenciesOf(declaration)) {
+          if (dependency.isOptional) continue;
           if (available.contains(dependency.key)) continue;
           missing
               .putIfAbsent(
@@ -287,18 +288,24 @@ class ContainerSourceEmitter {
     for (final property in declaration.properties)
       _dependency(property.type, property.name),
     for (final dependency in declaration.dependsOn)
-      _dependency(dependency, null),
+      _dependency(dependency, null, isOptional: false),
   ];
 
-  static _Dependency _dependency(AlloyTypeRef type, String? name) => (
+  static _Dependency _dependency(
+    AlloyTypeRef type,
+    String? name, {
+    bool isOptional = true,
+  }) => (
     key: _refKey(type, name),
     label: name == null ? _display(type) : "${_display(type)} named '$name'",
+    isOptional: isOptional && type.isNullable,
   );
 
   /// The type as a reader recognises it, without nullability.
   ///
-  /// A `Foo?` dependency reads the `Foo` registration, so saying nothing
-  /// registers `Foo?` would name something that never exists as a key.
+  /// A `Foo?` dependency still reads the `Foo` *key* — nullability marks the
+  /// dependency optional, it does not make a second registration — so naming
+  /// `Foo?` here would name something that never exists as a key.
   static String _display(AlloyTypeRef type) {
     if (type.typeArguments.isEmpty) return type.name;
     final arguments = type.typeArguments.map(_display).join(', ');
@@ -312,7 +319,7 @@ class ContainerSourceEmitter {
       '${type.signature}#${name ?? ''}';
 }
 
-typedef _Dependency = ({String key, String label});
+typedef _Dependency = ({String key, String label, bool isOptional});
 
 class _MissingDependency {
   _MissingDependency(this.dependent, this.label);

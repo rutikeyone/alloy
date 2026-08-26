@@ -130,5 +130,11 @@ The injectable class itself may not be generic. `@AlloyInject class Cache<T>` is
 time, because nothing says which instantiations to register. Annotate a concrete subtype, or expose
 one with `@AlloyInject(exposeAs: Cache<Note>)`.
 
-Nullability is not part of that identity: a `Foo?` dependency reads the `Foo` registration. There
-is no optional-dependency support yet — a missing registration is an error, not a `null`.
+Nullability is not part of that identity: a `Foo?` dependency reads the `Foo` registration. What it
+does change is whether the dependency is required. A nullable parameter or `@injected` field is
+emitted as `resolver.getOrNull<Foo>()` and is skipped by the completeness check, so nothing
+registering `Foo` injects null rather than failing the build. It stays an ordering edge when `Foo`
+*is* registered, and `@AlloyInit(dependsOn:)` is never optional — it declares order, not injection.
+
+A module member may not return a nullable type. A nullable type marks a dependency optional; it
+cannot describe a registration, because `AlloyKey` has no way to represent `Foo?`.

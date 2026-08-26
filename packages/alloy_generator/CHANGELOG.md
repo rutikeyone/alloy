@@ -21,3 +21,7 @@
 - Emits factories for `@AlloyModule` members, calling the member on a const
   module instance. Async ordering between module members is derived from the
   graph rather than declared.
+- A nullable dependency is optional: it is emitted as `getOrNull` and skipped
+  by the completeness check, while still ordering registration when the type
+  is present. `@AlloyInit(dependsOn:)` is never optional, and a module member
+  may not return a nullable type.

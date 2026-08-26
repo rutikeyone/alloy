@@ -35,13 +35,8 @@ void main() {
     await settle(tester);
     // Climbs to the root: a screen that owns a scope publishes its own
     // provider, so the nearest one is the screen's, not the graph's.
-    var scope = AlloyScopeProvider.of(
-      tester.element(find.byType(Scaffold).first),
-    );
-    for (var parent = scope.parent; parent != null; parent = scope.parent) {
-      scope = parent;
-    }
-    app = scope;
+    app = AlloyScopeProvider.of(tester.element(find.byType(Scaffold).first))
+        .root;
   }
 
   Future<void> pumpApp(WidgetTester tester) => open(tester, const HomeScreen());
@@ -226,8 +221,8 @@ void main() {
       await signIn(tester);
       await open(tester, const ScopeTreeScreen());
 
-      expect(find.text('app  [active]'), findsOneWidget);
-      expect(find.text('  session:u-9  [active]'), findsOneWidget);
+      expect(find.textContaining('app  [active]'), findsOneWidget);
+      expect(find.textContaining('  session:u-9  [active]'), findsOneWidget);
     });
 
     testWidgets('a widget-owned scope shows up as a third level', (
@@ -238,7 +233,10 @@ void main() {
       await open(tester, const NoteDetailScreen());
       await open(tester, const ScopeTreeScreen());
 
-      expect(find.text('  NoteDetailScreen  [active]'), findsOneWidget);
+      expect(
+        find.textContaining('  NoteDetailScreen  [active]'),
+        findsOneWidget,
+      );
     });
   });
 

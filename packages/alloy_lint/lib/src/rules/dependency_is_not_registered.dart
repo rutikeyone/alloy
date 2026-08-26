@@ -85,13 +85,18 @@ class _Visitor extends SimpleAstVisitor<void> {
     AlloyInjectableClass declaration,
     AlloyRegistrationIndex index,
   ) {
-    final wanted = {
+    // A list, not a set. `AlloyTypeRef` compares by signature, which ignores
+    // nullability, so a class taking both `Foo` and `Foo?` would collapse into
+    // one entry and whichever came first would decide whether the required one
+    // is checked at all.
+    final wanted = <AlloyTypeRef>[
       for (final parameter in declaration.constructorParameters) parameter.type,
       for (final property in declaration.properties) property.type,
       ...declaration.dependsOn,
-    };
+    ];
 
     for (final type in wanted) {
+      if (type.isNullable) continue;
       if (!index.contains(type.name)) return type.name;
     }
     return null;

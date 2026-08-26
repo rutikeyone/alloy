@@ -11,9 +11,11 @@ import 'package:alloy_external_consumer/src/device_info.dart' as _i28;
 import 'package:alloy_external_consumer/src/diagnostics.dart' as _i628;
 import 'package:alloy_external_consumer/src/platform_module.dart' as _i505;
 import 'package:alloy_external_consumer/src/report.dart' as _i552;
+import 'package:alloy_external_consumer/src/reporter.dart' as _i578;
 import 'package:alloy_external_consumer/src/repository.dart' as _i309;
 import 'package:alloy_external_consumer/src/search_index.dart' as _i115;
 import 'package:alloy_external_consumer/src/system_clock.dart' as _i358;
+import 'package:alloy_external_consumer/src/telemetry.dart' as _i954;
 
 final class _SystemClockFactory implements _i178.AlloyFactory<_i713.Clock> {
   const _SystemClockFactory();
@@ -70,6 +72,16 @@ final class _ReportFactory implements _i178.AlloyFactory<_i552.Report> {
 
   @override
   _i552.Report create(_i178.AlloyResolver resolver) => _i552.Report();
+}
+
+final class _ReporterFactory implements _i178.AlloyFactory<_i578.Reporter> {
+  const _ReporterFactory();
+
+  @override
+  _i578.Reporter create(_i178.AlloyResolver resolver) => _i578.Reporter(
+    resolver.get<_i713.Clock>(),
+    resolver.getOrNull<_i954.Telemetry>(),
+  );
 }
 
 final class _CatalogFactory implements _i178.AlloyFactory<_i309.Catalog> {
@@ -133,6 +145,7 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
     scope.registerAsyncSingleton<_i505.Envelope>(
       const _PlatformModuleEnvelopeFactory(),
     );
+    scope.registerLazySingleton<_i578.Reporter>(const _ReporterFactory());
     scope.registerLazySingleton<_i309.Catalog>(const _CatalogFactory());
     scope.registerAsyncSingleton<_i115.SearchIndex>(
       const _SearchIndexFactory(),

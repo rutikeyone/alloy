@@ -96,6 +96,22 @@ void main() {
     );
   });
 
+  group('an optional dependency', () {
+    test('arrives null when the graph supplies nothing', () {
+      expect(scope.get<Reporter>().telemetry, isNull);
+      expect(scope.get<Reporter>().describe(), 'reporting disabled');
+    });
+
+    test('did not stop the required one beside it from resolving', () {
+      expect(scope.get<Reporter>().clock, isA<SystemClock>());
+    });
+
+    test('getOrNull says absent where get would throw', () {
+      expect(scope.getOrNull<Telemetry>(), isNull);
+      expect(() => scope.get<Telemetry>(), throwsA(isA<AlloyError>()));
+    });
+  });
+
   group('a registration promised through provides', () {
     test('is not emitted by the generator, only trusted', () {
       expect(scope.isRegistered<DeviceInfo>(), isFalse);

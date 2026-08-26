@@ -119,8 +119,16 @@ Generic types work as dependencies and as `exposeAs` targets: `Repository<User>`
 `@AlloyInject class Cache<T>` is rejected, because nothing tells the generator which instantiations
 to register. Annotate a concrete subtype, or expose one with `exposeAs`.
 
-Nullability is not part of a registration key: a `Foo?` dependency reads the `Foo` registration.
-Alloy has no notion of an optional dependency yet.
+Nullability is not part of a registration *key* — a `Foo?` dependency still reads the `Foo`
+registration — but it does mark the dependency **optional**. A nullable constructor parameter or
+`@injected` field resolves through `getOrNull`, so a graph that registers nothing for it injects
+null instead of failing the build. Required dependencies are unchanged, and an optional one is
+still an ordering edge when something does register it.
+
+Optional is the type's job, not an annotation's: without `?` the field could not hold null anyway.
+The runtime spelling is `scope.getOrNull<Foo>()`, which returns null only when nothing is
+registered — an async singleton asked for before `init()` still throws, because "not ready" and
+"not there" are different facts.
 
 `@AlloyBootstrap` classes are collected into `$alloyBootstrap`, ordered by their `order` and then by
 name so the output is stable. They run strictly sequentially, before the container exists, so the

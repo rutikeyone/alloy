@@ -113,6 +113,42 @@ For a class you own, implement `Disposable` instead. Keeping the knowledge on
 the object rather than at each registration means it cannot be forgotten at one
 of them.
 
+## Optional dependencies
+
+`scope.getOrNull<T>()` returns null when nothing is registered for `T`, instead of throwing. It is
+what a nullable dependency reads: in Code-Gen Mode a `Foo?` parameter or `@injected` field is
+emitted as `getOrNull`, so a graph that supplies nothing injects null.
+
+Null means one thing only — nothing is registered under that key. An async singleton asked for
+before `init()` still throws `AlloyNotReadyError`, and a parameterized factory still throws.
+Folding those into null would turn a startup-ordering bug into a value that reads as "absent".
+
+## Inspecting a scope
+
+Four read-only members, for diagnostics and tests:
+
+| Member | Answers |
+|---|---|
+| `keys` | what this scope registers, in registration order |
+| `visibleKeys` | every key resolvable from here, mapped to the scope that owns it |
+| `root` | the outermost scope above this one |
+| `debugDescribeTree()` | the subtree as text, one line per scope |
+
+`visibleKeys` is a map rather than a set because the owner is the interesting part: a factory runs
+on the scope that owns *its* registration, not the scope you asked from, so a key alone cannot tell
+you what an override will reach.
+
+None of them throws on a scope that is being torn down, so a diagnostics screen keeps working
+during teardown.
+
+What they deliberately do not tell you:
+
+- **Declared, not built.** A lazy singleton nobody resolved looks exactly like one that is built.
+- **Not what teardown will release.** Objects handed to `adopt` have no key at all.
+- **Not a count of instances.** One key can stand for any number of live transients, or none.
+- **Nothing after `dispose`.** The registrations are cleared, not kept as a tombstone.
+- **Not a dependency graph.** A factory never declares what it will ask for.
+
 ## One graph per isolate
 
 Alloy is single-threaded by construction. There are no locks anywhere in the

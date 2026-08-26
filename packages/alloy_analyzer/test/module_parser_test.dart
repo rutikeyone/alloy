@@ -223,6 +223,20 @@ $member
       );
     });
 
+    test('a nullable return type is rejected', () async {
+      await expectRejected(
+        '  @alloyInject\n  Dio? dio() => null;',
+        contains('a registration cannot be nullable'),
+      );
+    });
+
+    test('a nullable type inside Future is rejected too', () async {
+      await expectRejected(
+        '  @alloyInject\n  Future<Dio?> dio() async => null;',
+        contains('a registration cannot be nullable'),
+      );
+    });
+
     test('a named parameter is rejected', () async {
       await expectRejected(
         '  @alloyInject\n  Dio dio({Dio? other}) => Dio();',

@@ -22,3 +22,8 @@
   close a type that implements neither `Disposable` nor `AsyncDisposable` —
   a client from another package, say. `adopt` takes one too. Absent from
   `registerFactory` and `registerParamFactory`, which retain nothing.
+- `AlloyResolver.getOrNull` resolves an optional dependency, returning null
+  only when nothing is registered — "registered but not ready" still throws.
+- `AlloyScope` gained four read-only members for diagnostics: `keys`,
+  `visibleKeys` (mapped to the owning scope), `root` and `debugDescribeTree`.
+  None of them throws on a scope that is being torn down.

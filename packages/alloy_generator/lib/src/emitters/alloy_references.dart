@@ -47,10 +47,20 @@ Expression functionReferenceOf(AlloyFunctionRef function) {
       : refer(owner, function.import).property(function.name);
 }
 
+/// Emits the resolve for one dependency.
+///
+/// A nullable dependency reads through `getOrNull`, so a graph that does not
+/// register it injects null instead of failing. The type argument stays
+/// non-nullable either way — `getOrNull<Foo>()` returns `Foo?`, and
+/// `AlloyResolver` bounds every type parameter to `Object`.
+///
+/// The branch belongs here rather than in [typeReferenceOf]: that one also
+/// builds `registerLazySingleton<T>` and `AlloyKey(T)`, where a `?` would
+/// change the registration itself.
 Expression resolveCall(AlloyInjectedProperty dependency) {
   final name = dependency.name;
   return refer('resolver')
-      .property('get')
+      .property(dependency.type.isNullable ? 'getOrNull' : 'get')
       .call(
         const [],
         {if (name != null) 'name': literalString(name)},

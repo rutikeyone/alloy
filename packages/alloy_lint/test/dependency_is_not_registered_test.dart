@@ -335,6 +335,73 @@ class NetworkModule {
     );
   }
 
+  void test_anOptionalDependency_isClean() async {
+    newFile('$testPackageLibPath/http.dart', '''
+class HttpClient {}
+''');
+
+    await assertNoDiagnostics('''
+$alloyImport
+
+import 'http.dart';
+
+@alloyInject
+class Api {
+  Api(this.client);
+  final HttpClient? client;
+}
+''');
+  }
+
+  /// `AlloyTypeRef` compares by signature, which ignores nullability, so
+  /// collecting dependencies into a set would fold these two into one entry
+  /// and let declaration order decide whether the required one is checked.
+  void test_aRequiredDependencyBesideAnOptionalOne_isReported() async {
+    newFile('$testPackageLibPath/http.dart', '''
+class HttpClient {}
+''');
+
+    await assertDiagnostics(
+      '''
+$alloyImport
+
+import 'http.dart';
+
+@alloyInject
+class Api {
+  Api(this.maybe, this.required);
+  final HttpClient? maybe;
+  final HttpClient required;
+}
+''',
+      [lint(100, 3)],
+    );
+  }
+
+  /// The same pair the other way round: whichever is declared first, the
+  /// required one still has to be seen.
+  void test_aRequiredDependencyBeforeAnOptionalOne_isReported() async {
+    newFile('$testPackageLibPath/http.dart', '''
+class HttpClient {}
+''');
+
+    await assertDiagnostics(
+      '''
+$alloyImport
+
+import 'http.dart';
+
+@alloyInject
+class Api {
+  Api(this.required, this.maybe);
+  final HttpClient required;
+  final HttpClient? maybe;
+}
+''',
+      [lint(100, 3)],
+    );
+  }
+
   /// Same reason: type arguments are not part of the index, so any
   /// `Repository` registration answers for every instantiation.
   void test_anotherInstantiationOfAGeneric_isNotReported() async {

@@ -438,13 +438,8 @@ final class RecordingObserver extends AlloyObserver {
 
 /// Climbs to the root: the probe sits below the child scope, so the nearest
 /// provider is that child, not the root.
-AlloyScope _rootOf(WidgetTester tester) {
-  var scope = AlloyScopeProvider.of(tester.element(find.byType(_ChildProbe)));
-  for (var parent = scope.parent; parent != null; parent = scope.parent) {
-    scope = parent;
-  }
-  return scope;
-}
+AlloyScope _rootOf(WidgetTester tester) =>
+    AlloyScopeProvider.of(tester.element(find.byType(_ChildProbe))).root;
 
 class _ChildProbe extends StatelessWidget {
   const _ChildProbe();

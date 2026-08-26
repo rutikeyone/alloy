@@ -39,15 +39,10 @@ class _ScopeTreeScreenState extends State<ScopeTreeScreen> {
       body: ListView(
         key: const Key('scope-tree'),
         children: [
-          for (final line in describeScope(root))
+          for (final line in root.debugDescribeTree().split('\n'))
             ListTile(dense: true, title: Text(line)),
         ],
       ),
     );
   }
 }
-
-List<String> describeScope(AlloyScope scope, [int depth = 0]) => [
-  '${'  ' * depth}${scope.name}  [${scope.state.name}]',
-  for (final child in scope.children) ...describeScope(child, depth + 1),
-];
