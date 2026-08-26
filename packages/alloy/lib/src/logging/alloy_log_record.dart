@@ -2,6 +2,7 @@ import 'package:alloy/src/key/alloy_key.dart';
 import 'package:alloy/src/logging/alloy_log_level.dart';
 import 'package:alloy/src/observer/alloy_event_kind.dart';
 import 'package:alloy/src/observer/alloy_scope_ref.dart';
+import 'package:alloy/src/scope/alloy_registration_kind.dart';
 import 'package:meta/meta.dart';
 
 /// One line an [AlloyLogSink] is asked to write.
@@ -19,6 +20,8 @@ final class AlloyLogRecord {
     required this.message,
     this.scope,
     this.key,
+    this.registrationKind,
+    this.retained,
     this.error,
     this.stackTrace,
   });
@@ -40,6 +43,18 @@ final class AlloyLogRecord {
 
   /// The registration the event was about, when there is one.
   final AlloyKey? key;
+
+  /// How long the thing built lives, for a creation event.
+  ///
+  /// Null for every other kind. It is here rather than only in the message so
+  /// a screen can group and filter on it instead of reading prose.
+  final AlloyRegistrationKind? registrationKind;
+
+  /// Whether the scope will dispose what it just built.
+  ///
+  /// Null for every other kind. Correlated with [registrationKind] today but
+  /// not the same question: one is how long it lives, the other who closes it.
+  final bool? retained;
 
   /// The failure, for warnings and errors.
   final Object? error;
@@ -68,6 +83,8 @@ final class AlloyLogRecord {
       if (scope!.parentName != null) 'scope_parent': scope!.parentName,
     },
     if (key != null) 'key': key.toString(),
+    if (registrationKind != null) 'lifetime': registrationKind!.name,
+    if (retained != null) 'retained': retained,
     if (error != null) 'error': error.toString(),
     if (stackTrace != null) 'stack_trace': stackTrace.toString(),
   };

@@ -39,11 +39,9 @@
   argument, which is what lets a tool walk a whole graph — `get<T>` cannot be
   called from a loop over `keys`, since Dart has no way to turn a `Type` back
   into a type argument. `debugResolveWithParam` is the parameterized twin.
-- `AlloyInspector.enable()` publishes the live scope tree over the VM service as
-  `ext.alloy.getScopeTree`, and `AlloyDevToolsObserver` posts every event where
-  DevTools' Logging view shows it. Both are meant to sit behind an `assert`, and
-  neither adds a dependency.
-- `AlloyScopeRegistry` tracks live roots weakly, and is pruned as a scope is
-  disposed rather than when it is collected: nothing about `WeakReference`
-  promises when, and a stale entry would report a scope that is gone.
+- `onInstanceCreated` reports the `AlloyRegistrationKind` it built, and
+  `AlloyLogRecord` carries it alongside `retained`. The `retained` flag alone
+  collapses five lifetimes into two, and it only ever existed inside the
+  message text. An eager singleton still reports nothing: it is built by
+  whoever called `registerSingleton`, so the scope has nothing to announce.
 

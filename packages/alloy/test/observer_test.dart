@@ -31,8 +31,9 @@ final class RecordingObserver extends AlloyObserver {
   void onInstanceCreated(
     AlloyScopeRef scope,
     AlloyKey key, {
+    required AlloyRegistrationKind kind,
     required bool retained,
-  }) => events.add('created:$key:${retained ? 'kept' : 'loose'}');
+  }) => events.add('created:$key:${kind.name}:${retained ? 'kept' : 'loose'}');
 
   @override
   void onInstanceDisposed(AlloyScopeRef scope, String label) =>
@@ -75,6 +76,7 @@ final class ExplodingObserver extends AlloyObserver {
   void onInstanceCreated(
     AlloyScopeRef scope,
     AlloyKey key, {
+    required AlloyRegistrationKind kind,
     required bool retained,
   }) => throw StateError('boom');
 }
@@ -173,7 +175,7 @@ void main() {
         ..get<Logger>()
         ..get<Logger>();
 
-      expect(observer.events, ['created:Logger:kept']);
+      expect(observer.events, ['created:Logger:lazySingleton:kept']);
     });
 
     test('a transient is reported every time and marked loose', () {
@@ -186,7 +188,10 @@ void main() {
         ..get<Logger>()
         ..get<Logger>();
 
-      expect(observer.events, ['created:Logger:loose', 'created:Logger:loose']);
+      expect(observer.events, [
+        'created:Logger:transient:loose',
+        'created:Logger:transient:loose',
+      ]);
     });
 
     test('a parameterized factory is reported as loose', () {
@@ -197,7 +202,7 @@ void main() {
 
       root.getWithParam<Greeting, String>('there');
 
-      expect(observer.events, ['created:Greeting:loose']);
+      expect(observer.events, ['created:Greeting:parameterized:loose']);
     });
 
     test('a named registration keeps its name in the key', () {
@@ -208,7 +213,7 @@ void main() {
 
       root.get<Logger>(name: 'audit');
 
-      expect(observer.events, ['created:Logger(audit):kept']);
+      expect(observer.events, ['created:Logger(audit):lazySingleton:kept']);
     });
   });
 
@@ -237,6 +242,59 @@ void main() {
     });
   });
 
+  group('the lifetime a creation reports', () {
+    test('an eager singleton reports nothing, having been built already', () {
+      final observer = RecordingObserver();
+      AlloyScope.root(
+        name: 'app',
+        observers: [observer],
+      ).registerSingleton<Logger>(Logger());
+
+      expect(
+        observer.events,
+        isEmpty,
+        reason: 'the caller built it; the scope only took ownership',
+      );
+    });
+
+    test('an async singleton is told apart from a lazy one', () async {
+      final observer = RecordingObserver();
+      final scope = AlloyScope.root(name: 'app', observers: [observer])
+        ..registerAsyncSingleton<SlowService>(const SlowFactory('db', 0));
+      addTearDown(scope.dispose);
+
+      await scope.init();
+
+      expect(
+        observer.events,
+        contains('created:SlowService:asyncSingleton:kept'),
+      );
+    });
+
+    test('the record carries the lifetime as a value, not as prose', () {
+      final records = <AlloyLogRecord>[];
+      final scope = AlloyScope.root(
+        name: 'app',
+        observers: [
+          AlloyLogObserver(
+            AlloyLogSink.from(records.add),
+            minimumLevel: AlloyLogLevel.trace,
+          ),
+        ],
+      )..registerFactory<Logger>(const LoggerFactory());
+      addTearDown(scope.dispose);
+
+      scope.get<Logger>();
+
+      final created = records.firstWhere(
+        (record) => record.kind == AlloyEventKind.instanceCreated,
+      );
+      expect(created.registrationKind, AlloyRegistrationKind.transient);
+      expect(created.retained, isFalse);
+      expect(created.toStructured()['lifetime'], 'transient');
+    });
+  });
+
   group('dispose events', () {
     test('report the order teardown actually happened in', () async {
       final observer = RecordingObserver();
@@ -248,8 +306,8 @@ void main() {
       await root.dispose();
 
       expect(observer.events, [
-        'created:Logger:kept',
-        'created:ApiClient:kept',
+        'created:Logger:lazySingleton:kept',
+        'created:ApiClient:lazySingleton:kept',
         'disposing:app',
         'disposed:ApiClient',
         'disposed:Logger',

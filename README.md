@@ -27,6 +27,7 @@ what does not.
 | `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | dev_dependency only |
 | `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | dev_dependency only |
 | `alloy_test` | `alloy`, `test_api`, `matcher` | dev_dependency only |
+| `alloy_inspector` | `alloy_flutter`, `flutter` | dev_dependency only |
 
 `alloy_analyzer` exists so the generator and the lint plugin parse Alloy declarations through one
 implementation instead of two that drift apart. It owns the IR and the topological sort, and depends
@@ -63,6 +64,7 @@ dart format --output=none --set-exit-if-changed .
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
 (cd packages/alloy_test && dart test)
+(cd packages/alloy_inspector && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ```

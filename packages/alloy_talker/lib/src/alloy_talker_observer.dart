@@ -65,12 +65,15 @@ final class AlloyTalkerObserver extends AlloyObserver {
   void onInstanceCreated(
     AlloyScopeRef scope,
     AlloyKey key, {
+    required AlloyRegistrationKind kind,
     required bool retained,
   }) {
     if (!verbose) return;
     talker.logCustom(
       AlloyInstanceLog(
-        retained ? 'built $key in "$scope"' : 'built $key in "$scope" (loose)',
+        retained
+            ? 'built $key in "$scope" as ${kind.name}'
+            : 'built $key in "$scope" as ${kind.name} (loose)',
       ),
     );
   }

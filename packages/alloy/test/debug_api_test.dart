@@ -1,15 +1,10 @@
-import 'dart:convert';
-
 import 'package:alloy/alloy.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
 
 void main() {
-  setUp(() {
-    resetLogs();
-    AlloyScopeRegistry.clear();
-  });
+  setUp(resetLogs);
 
   group('debugKindOf', () {
     test('names every kind of registration', () {
@@ -85,79 +80,6 @@ void main() {
         () => scope.debugResolve(const AlloyKey(PropertyTarget)),
         throwsA(isA<AlloyError>()),
       );
-    });
-  });
-
-  group('the live registry', () {
-    test('records a root when it is created', () {
-      final root = AlloyScope.root(name: 'app');
-
-      expect(AlloyScopeRegistry.roots, [same(root)]);
-    });
-
-    test('forgets it the moment it is disposed, not when collected', () async {
-      final root = AlloyScope.root(name: 'app');
-      await root.dispose();
-
-      expect(
-        AlloyScopeRegistry.roots,
-        isEmpty,
-        reason: 'nothing here may wait on the garbage collector',
-      );
-    });
-
-    test('does not record a pushed child', () {
-      final root = AlloyScope.root(name: 'app');
-      root.push('child');
-
-      expect(AlloyScopeRegistry.roots.map((s) => s.name), ['app']);
-    });
-  });
-
-  group('the reported tree', () {
-    test('carries the shape a tool needs', () {
-      final root = AlloyScope.root(name: 'app')
-        ..registerLazySingleton<Logger>(const LoggerFactory());
-      root
-          .push('session')
-          .registerLazySingleton<ApiClient>(const ApiClientFactory());
-
-      final tree = AlloyInspector.describe(root);
-
-      expect(tree['name'], 'app');
-      expect(tree['depth'], 0);
-      expect(tree['state'], 'open');
-      expect(tree['keys'], ['Logger']);
-
-      final child = (tree['children']! as List).single as Map<String, Object?>;
-      expect(child['name'], 'session');
-      expect(child['depth'], 1);
-      expect(child['keys'], ['ApiClient']);
-    });
-
-    test('names the owner of an inherited key', () {
-      final root = AlloyScope.root(name: 'app')
-        ..registerLazySingleton<Logger>(const LoggerFactory());
-      final child = root.push('session');
-
-      final inherited = (AlloyInspector.describe(child)['inherited']! as List)
-          .cast<Map<String, Object?>>();
-
-      expect(inherited, [
-        {'key': 'Logger', 'owner': 'app'},
-      ]);
-    });
-
-    test('survives a round trip through JSON', () {
-      final root = AlloyScope.root(name: 'app')
-        ..registerLazySingleton<Logger>(const LoggerFactory());
-
-      final decoded = jsonDecode(
-        jsonEncode(AlloyInspector.describe(root)),
-      ) as Map<String, Object?>;
-
-      expect(decoded['name'], 'app');
-      expect(decoded['keys'], ['Logger']);
     });
   });
 }

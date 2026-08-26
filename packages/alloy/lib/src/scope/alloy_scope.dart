@@ -21,7 +21,6 @@ import 'package:alloy/src/lifecycle/disposable.dart';
 import 'package:alloy/src/observer/alloy_observer.dart';
 import 'package:alloy/src/observer/alloy_scope_ref.dart';
 import 'package:alloy/src/registration/alloy_registration.dart';
-import 'package:alloy/src/devtools/alloy_scope_registry.dart';
 import 'package:alloy/src/scope/alloy_registration_kind.dart';
 import 'package:alloy/src/scope/alloy_scope_state.dart';
 import 'package:alloy/src/scope/resolution_tracker.dart';
@@ -60,21 +59,12 @@ final class AlloyScope implements AlloyResolver {
   factory AlloyScope.root({
     String name = 'root',
     List<AlloyObserver> observers = const [],
-  }) {
-    final scope = AlloyScope._(
-      name,
-      null,
-      AlloyResolutionTracker(),
-      List.unmodifiable(observers),
-    );
-    // Debug only, and weak: the registry exists so a tool can find live
-    // graphs, and must never be the reason one stays alive.
-    assert(() {
-      AlloyScopeRegistry.add(scope);
-      return true;
-    }());
-    return scope;
-  }
+  }) => AlloyScope._(
+    name,
+    null,
+    AlloyResolutionTracker(),
+    List.unmodifiable(observers),
+  );
 
   /// This scope's name, used in diagnostics.
   final String name;
@@ -199,7 +189,12 @@ final class AlloyScope implements AlloyResolver {
     }
     return found.scope._tracker.guard(key, () {
       final instance = registration.factory.create(found.scope, param);
-      found.scope._afterCreate(instance, key, retain: false);
+      found.scope._afterCreate(
+        instance,
+        key,
+        kind: AlloyRegistrationKind.parameterized,
+        retain: false,
+      );
       return instance;
     });
   }
@@ -384,7 +379,12 @@ final class AlloyScope implements AlloyResolver {
     }
     return found.scope._tracker.guard(key, () {
       final instance = registration.factory.create(found.scope, param);
-      found.scope._afterCreate(instance, key, retain: false);
+      found.scope._afterCreate(
+        instance,
+        key,
+        kind: AlloyRegistrationKind.parameterized,
+        retain: false,
+      );
       return instance as T;
     });
   }
@@ -637,13 +637,6 @@ final class AlloyScope implements AlloyResolver {
     _initFuture = null;
     parent?._children.remove(this);
     _state = AlloyScopeState.disposed;
-    // Pruned here rather than left to the collector: nothing about
-    // WeakReference promises when, and a stale entry would report a scope
-    // that is gone.
-    assert(() {
-      AlloyScopeRegistry.remove(this);
-      return true;
-    }());
 
     // An init that threw belongs to whoever called init(); an init that ran
     // past the deadline is teardown failing to finish its own wait.
@@ -689,7 +682,12 @@ final class AlloyScope implements AlloyResolver {
       case TransientRegistration():
         return _tracker.guard(registration.key, () {
           final instance = registration.factory.create(this);
-          _afterCreate(instance, registration.key, retain: false);
+          _afterCreate(
+            instance,
+            registration.key,
+            kind: AlloyRegistrationKind.transient,
+            retain: false,
+          );
           return instance;
         });
 
@@ -702,6 +700,7 @@ final class AlloyScope implements AlloyResolver {
           _afterCreate(
             instance,
             registration.key,
+            kind: AlloyRegistrationKind.lazySingleton,
             retain: true,
             teardown: registration.teardown,
           );
@@ -730,6 +729,7 @@ final class AlloyScope implements AlloyResolver {
         _afterCreate(
           instance,
           registration.key,
+          kind: AlloyRegistrationKind.asyncSingleton,
           retain: true,
           teardown: registration.teardown,
         );
@@ -738,13 +738,15 @@ final class AlloyScope implements AlloyResolver {
   void _afterCreate(
     Object instance,
     AlloyKey key, {
+    required AlloyRegistrationKind kind,
     required bool retain,
     AlloyTeardown? teardown,
   }) {
     if (instance is AlloyInjectable) instance.onInject(this);
     if (retain) _own(instance, teardown: teardown);
     _notify(
-      (observer) => observer.onInstanceCreated(ref, key, retained: retain),
+      (observer) =>
+          observer.onInstanceCreated(ref, key, kind: kind, retained: retain),
     );
   }
 

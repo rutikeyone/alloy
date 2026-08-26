@@ -30,6 +30,7 @@
 | `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | только dev_dependency |
 | `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | только dev_dependency |
 | `alloy_test` | `alloy`, `test_api`, `matcher` | только dev_dependency |
+| `alloy_inspector` | `alloy_flutter`, `flutter` | только dev_dependency |
 
 `alloy_analyzer` существует затем, чтобы генератор и линтер разбирали объявления Alloy **одной**
 реализацией, а не двумя, которые неизбежно разойдутся. Он владеет IR и топологической сортировкой и
@@ -67,6 +68,7 @@ dart format --output=none --set-exit-if-changed .
 (cd examples/notes_app && dart run build_runner build && flutter test)
 (cd packages/alloy_lint && dart test)
 (cd packages/alloy_test && dart test)
+(cd packages/alloy_inspector && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ```

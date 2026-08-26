@@ -1,3 +1,5 @@
+import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_inspector/alloy_inspector.dart';
 import 'package:codegen_basics/alloy.g.dart' as codegen;
 import 'package:codegen_basics/counter_screen.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import 'package:graph_events/app/app_scope.dart';
 import 'package:graph_events/app/audit_log.dart';
 import 'package:graph_events/app/observers.dart';
 import 'package:graph_events/app/report_log.dart';
+import 'package:graph_events/features/session/session_scope.dart';
 import 'package:graph_events/features/home/ui/home_screen.dart' as events;
 import 'package:notes_app/features/diagnostics/ui/scope_tree_screen.dart';
 import 'package:notes_app/features/environments/ui/environments_screen.dart';
@@ -252,6 +255,25 @@ List<ExampleEntry> buildCatalog() => [
     transcript: 'examples/graph_events/lib/app/graph_events_app.dart',
     open: (_) => const _GraphEventsHost(),
   ),
+  ExampleEntry(
+    id: 'inspector',
+    title: 'In-app inspector',
+    kind: ExampleKind.screen,
+    section: ExampleSection.observability,
+    teaches:
+        'The live tree, what was built and with what lifetime, on a screen in '
+        'the app.',
+    glyph: Glyphs.notes,
+    points: const [
+      'The tree is walked from the live scopes, not rebuilt from events',
+      'Every registration carries its lifetime, read with debugKindOf',
+      'Tapping shows facts; building is a separate action that says its cost',
+      'An eager singleton shows in the tree and never in the built list',
+    ],
+    transcriptLabel: 'Where it lives',
+    transcript: 'packages/alloy_inspector/lib/src/alloy_inspector_screen.dart',
+    open: (_) => const _InspectorHost(),
+  ),
 
   // ── Testing ───────────────────────────────────────────────────────────
   ExampleEntry(
@@ -290,6 +312,117 @@ List<SectionedEntries<ExampleEntry>> buildSections() {
 /// Fresh each visit rather than shared: the observers hold this talker and
 /// this report log, and a second visit should start with an empty trail rather
 /// than the last one's.
+/// The inspector's log has to be installed when the graph is built, because
+/// observers are fixed at construction — so the host owns one per visit, and a
+/// second visit starts with an empty trail.
+class _InspectorHost extends StatefulWidget {
+  const _InspectorHost();
+
+  @override
+  State<_InspectorHost> createState() => _InspectorHostState();
+}
+
+class _InspectorHostState extends State<_InspectorHost> {
+  final _log = AlloyInspectorLog();
+
+  @override
+  void dispose() {
+    _log.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ExampleHost(
+    root: const AppScope(),
+    bootstrap: () => [WarmUp()],
+    rootName: 'app',
+    observers: [_log],
+    seedColor: Colors.deepOrange,
+    child: _InspectorDemo(log: _log),
+  );
+}
+
+/// Something for the graph to do, then the inspector to look at it with.
+class _InspectorDemo extends StatefulWidget {
+  const _InspectorDemo({required this.log});
+
+  final AlloyInspectorLog log;
+
+  @override
+  State<_InspectorDemo> createState() => _InspectorDemoState();
+}
+
+class _InspectorDemoState extends State<_InspectorDemo> {
+  AlloyScope? _session;
+
+  Future<void> _openSession() async {
+    if (_session != null) return;
+    final scope = context.alloyScope.push('session');
+    const SessionScope(breaks: false).build(scope);
+    await scope.init();
+    if (!mounted) return;
+    setState(() => _session = scope);
+  }
+
+  Future<void> _closeSession() async {
+    final scope = _session;
+    if (scope == null) return;
+    await scope.dispose();
+    if (!mounted) return;
+    setState(() => _session = null);
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('Alloy · inspector'),
+      actions: [
+        IconButton(
+          key: const Key('open-inspector'),
+          tooltip: 'inspect the graph',
+          icon: const Icon(Icons.account_tree_outlined),
+          // The scope is read here, below the provider — a pushed route is
+          // built by the navigator, which sits above it.
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => AlloyInspectorScreen(
+                log: widget.log,
+                scope: context.alloyScope,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+    body: ListView(
+      children: [
+        ListTile(
+          key: const Key('open-session'),
+          enabled: _session == null,
+          title: const Text('Open a session scope'),
+          subtitle: const Text('a push, an async init, some instances'),
+          trailing: const Icon(Icons.login),
+          onTap: _openSession,
+        ),
+        ListTile(
+          key: const Key('close-session'),
+          enabled: _session != null,
+          title: const Text('Close the session'),
+          subtitle: Text(_session == null ? 'nothing open' : 'tears it down'),
+          trailing: const Icon(Icons.logout),
+          onTap: _closeSession,
+        ),
+        const Divider(),
+        const ListTile(
+          dense: true,
+          title: Text('Then open the inspector from the app bar'),
+          subtitle: Text('the tree, what was built, and everything reported'),
+        ),
+      ],
+    ),
+  );
+}
+
 class _GraphEventsHost extends StatefulWidget {
   const _GraphEventsHost();
 

@@ -5,6 +5,7 @@ import 'package:alloy/src/logging/alloy_log_record.dart';
 import 'package:alloy/src/observer/alloy_event_kind.dart';
 import 'package:alloy/src/observer/alloy_observer.dart';
 import 'package:alloy/src/observer/alloy_scope_ref.dart';
+import 'package:alloy/src/scope/alloy_registration_kind.dart';
 
 /// Turns Alloy's events into [AlloyLogRecord]s and hands each to [onRecord].
 ///
@@ -28,6 +29,8 @@ abstract base class AlloyRecordingObserver extends AlloyObserver {
     String message, {
     AlloyScopeRef? scope,
     AlloyKey? key,
+    AlloyRegistrationKind? registrationKind,
+    bool? retained,
     Object? error,
     StackTrace? stackTrace,
   }) => onRecord(
@@ -37,6 +40,8 @@ abstract base class AlloyRecordingObserver extends AlloyObserver {
       message: message,
       scope: scope,
       key: key,
+      registrationKind: registrationKind,
+      retained: retained,
       error: error,
       stackTrace: stackTrace,
     ),
@@ -84,15 +89,18 @@ abstract base class AlloyRecordingObserver extends AlloyObserver {
   void onInstanceCreated(
     AlloyScopeRef scope,
     AlloyKey key, {
+    required AlloyRegistrationKind kind,
     required bool retained,
   }) => _emit(
     AlloyEventKind.instanceCreated,
     AlloyLogLevel.trace,
     retained
-        ? 'built $key in "$scope"'
-        : 'built $key in "$scope", not retained',
+        ? 'built $key in "$scope" as ${kind.name}'
+        : 'built $key in "$scope" as ${kind.name}, not retained',
     scope: scope,
     key: key,
+    registrationKind: kind,
+    retained: retained,
   );
 
   @override

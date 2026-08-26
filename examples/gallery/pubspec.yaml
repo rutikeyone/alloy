@@ -15,6 +15,7 @@ dependencies:
   alloy: ^0.1.0
   alloy_flutter: ^0.1.0
   alloy_go_router: ^0.1.0
+  alloy_inspector: ^0.1.0
   alloy_talker: ^0.1.0
   flutter:
     sdk: flutter

@@ -1,5 +1,6 @@
 import 'package:alloy/src/errors/alloy_dispose_failure.dart';
 import 'package:alloy/src/key/alloy_key.dart';
+import 'package:alloy/src/scope/alloy_registration_kind.dart';
 import 'package:alloy/src/observer/alloy_scope_ref.dart';
 
 /// Watches what a scope tree does.
@@ -44,11 +45,18 @@ abstract base class AlloyObserver {
 
   /// An instance was constructed.
   ///
-  /// [retained] is whether the scope will dispose it — false for transients
-  /// and parameterized factories, whose caller owns them.
+  /// [kind] is the registration it came from, and [retained] whether the scope
+  /// will dispose it — false for transients and parameterized factories, whose
+  /// caller owns them. Both are reported because they answer different
+  /// questions: one is how long the thing lives, the other is who closes it.
+  ///
+  /// An eager singleton never reaches here. It is built by whoever called
+  /// `registerSingleton` and handed over already made, so the scope has
+  /// nothing to report constructing.
   void onInstanceCreated(
     AlloyScopeRef scope,
     AlloyKey key, {
+    required AlloyRegistrationKind kind,
     required bool retained,
   }) {}
 
