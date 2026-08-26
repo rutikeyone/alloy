@@ -13,6 +13,11 @@ import 'package:talker/talker.dart';
 /// whole integration for a logger with no adapter: one callback, no package,
 /// no class.
 ///
+/// `AlloyDevToolsObserver` is the fifth, and costs nothing to add: it posts
+/// each event to the VM service, where DevTools' Logging view shows it without
+/// any extension installed. It is guarded because a release build has no
+/// business paying for it.
+///
 /// `AlloyErrorObserver` is the fourth, and a different shape on purpose. A log
 /// sink is handed every line; this is handed only failures, each with the
 /// events that led up to it — which is what a crash reporter can actually act
@@ -37,4 +42,15 @@ List<AlloyObserver> graphEventsObservers({
     AlloyErrorSink.from(reports.add),
     reportAt: AlloyLogLevel.warning,
   ),
+  if (_devToolsEnabled) const AlloyDevToolsObserver(),
 ];
+
+/// True only where asserts run, which is where the VM service exists at all.
+bool get _devToolsEnabled {
+  var enabled = false;
+  assert(() {
+    enabled = true;
+    return true;
+  }());
+  return enabled;
+}
