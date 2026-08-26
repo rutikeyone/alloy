@@ -104,8 +104,12 @@ Be aware of these before you commit to the move:
 - **`registerFactoryParam<T, P1, P2>`** — Alloy's `registerParamFactory<T, P>`
   takes one parameter. Two parameters become one record or one small class.
 - **`registerFactoryAsync`, `registerLazySingletonAsync`** — async construction
-  belongs to `registerAsyncSingleton`, which participates in phase 1. A
-  per-call async factory is not supported.
+  belongs to `registerAsyncSingleton`, which participates in phase 1, so there
+  is no per-registration lazy async build and no `getAsync`. What defers the
+  work is lifetime: put the expensive thing in a child scope and push that
+  scope when the feature is entered, and `AlloyScopeWidget` shows `loading`
+  while its `init()` runs. The case that leaves uncovered is something
+  expensive that must live as long as the app and is wanted by few screens.
 - **`resetLazySingletons`** — dispose the scope instead. Resetting instances
   underneath live holders is the class of bug scopes exist to prevent.
 - **A global instance.** There is no `GetIt.I`. A scope is passed, injected, or

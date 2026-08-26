@@ -149,6 +149,30 @@ What they deliberately do not tell you:
 - **Nothing after `dispose`.** The registrations are cleared, not kept as a tombstone.
 - **Not a dependency graph.** A factory never declares what it will ask for.
 
+## Deferring expensive async construction
+
+There is no per-registration lazy async build. `registerAsyncSingleton` participates in phase 1, so
+when `AlloyApplication.start` returns the whole async graph is up — that is the guarantee the
+two-phase start exists to give.
+
+What defers work is **lifetime**, not laziness. Put the expensive thing in a child scope and push
+that scope when the feature is entered:
+
+```dart
+final session = root.push('session')
+  ..registerAsyncSingleton<Telemetry>(const TelemetryFactory());
+await session.init();
+```
+
+Startup never sees it, `init()` builds it when it is actually wanted, and closing the feature
+disposes it. In Flutter `AlloyScopeWidget` does all of that declaratively and shows `loading` while
+`init()` runs, so the wait already has a place to live. `examples/graph_events` does it by hand,
+`examples/flow_scopes` through the widget.
+
+What this does not cover: something expensive that must live as long as the app and is wanted by
+only a few screens. Expressing that today means a long-lived child scope, which blurs who owns it.
+That is the case a lazy async registration would be for, and it has not come up.
+
 ## One graph per isolate
 
 Alloy is single-threaded by construction. There are no locks anywhere in the

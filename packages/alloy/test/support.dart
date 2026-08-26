@@ -82,6 +82,14 @@ class GreetingFactory implements AlloyParamFactory<Greeting, String> {
       Greeting('hi $param');
 }
 
+class AnyGreetingFactory implements AlloyParamFactory<Greeting, Object> {
+  const AnyGreetingFactory();
+
+  @override
+  Greeting create(AlloyResolver resolver, Object param) =>
+      Greeting('hi $param');
+}
+
 class SlowService {
   SlowService(this.label);
 

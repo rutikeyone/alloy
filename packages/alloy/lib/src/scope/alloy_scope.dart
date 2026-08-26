@@ -6,6 +6,7 @@ import 'package:alloy/src/errors/alloy_dispose_stage.dart';
 import 'package:alloy/src/errors/alloy_duplicate_registration_error.dart';
 import 'package:alloy/src/errors/alloy_error.dart';
 import 'package:alloy/src/errors/alloy_not_ready_error.dart';
+import 'package:alloy/src/errors/alloy_param_type_error.dart';
 import 'package:alloy/src/errors/alloy_not_registered_error.dart';
 import 'package:alloy/src/errors/alloy_scope_state_error.dart';
 import 'package:alloy/src/factory/alloy_async_factory.dart';
@@ -269,6 +270,8 @@ final class AlloyScope implements AlloyResolver {
         key: AlloyKey(T, name: name),
         order: _order++,
         factory: factory,
+        paramType: P,
+        accepts: (value) => value is P,
       ),
     );
   }
@@ -303,6 +306,9 @@ final class AlloyScope implements AlloyResolver {
     final registration = found.registration;
     if (registration is! ParamRegistration) {
       throw AlloyError('$key is not registered as a parameterized factory.');
+    }
+    if (!registration.accepts(param)) {
+      throw AlloyParamTypeError(key, registration.paramType, param.runtimeType);
     }
     return found.scope._tracker.guard(key, () {
       final instance = registration.factory.create(found.scope, param);

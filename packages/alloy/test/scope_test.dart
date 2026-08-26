@@ -58,6 +58,71 @@ void main() {
       expect(scope.getWithParam<Greeting, String>('alloy').text, 'hi alloy');
     });
 
+    test('a value the factory cannot take names both types', () {
+      final scope = AlloyScope.root()
+        ..registerParamFactory<Greeting, String>(const GreetingFactory());
+
+      expect(
+        () => scope.getWithParam<Greeting, int>(42),
+        throwsA(
+          isA<AlloyParamTypeError>()
+              .having((e) => e.expected, 'expected', String)
+              .having((e) => e.actual, 'actual', int)
+              .having((e) => e.key, 'key', const AlloyKey(Greeting))
+              .having(
+                (e) => e.message,
+                'message',
+                allOf(
+                  contains('Greeting'),
+                  contains('String'),
+                  contains('int'),
+                ),
+              ),
+        ),
+      );
+    });
+
+    test('the check happens before the factory runs', () {
+      final scope = AlloyScope.root()
+        ..registerParamFactory<Greeting, String>(const GreetingFactory());
+
+      expect(
+        () => scope.getWithParam<Greeting, int>(42),
+        throwsA(isA<AlloyError>()),
+        reason: 'a TypeError from inside the factory names nothing useful',
+      );
+      expect(scope.getWithParam<Greeting, String>('ada').text, 'hi ada');
+    });
+
+    /// A type test, not a comparison of `Type`s: a factory registered for a
+    /// supertype should take a subtype, exactly as its body would.
+    test('a subtype of the registered parameter is accepted', () {
+      final scope = AlloyScope.root()
+        ..registerParamFactory<Greeting, Object>(const AnyGreetingFactory());
+
+      expect(scope.getWithParam<Greeting, Object>('ada').text, 'hi ada');
+      expect(scope.getWithParam<Greeting, Object>(7).text, 'hi 7');
+    });
+
+    test('a named parameterized registration is checked too', () {
+      final scope = AlloyScope.root()
+        ..registerParamFactory<Greeting, String>(
+          const GreetingFactory(),
+          name: 'formal',
+        );
+
+      expect(
+        () => scope.getWithParam<Greeting, int>(1, name: 'formal'),
+        throwsA(
+          isA<AlloyParamTypeError>().having(
+            (e) => e.key,
+            'key',
+            const AlloyKey(Greeting, name: 'formal'),
+          ),
+        ),
+      );
+    });
+
     test('parameterized registration rejects plain get', () {
       final scope = AlloyScope.root()
         ..registerParamFactory<Greeting, String>(const GreetingFactory());

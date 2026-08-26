@@ -137,6 +137,36 @@ void main() {
       expect(scope.get<Logger>(), isNotNull);
     });
 
+    /// A level is entered through `Future.wait`, so every registration in it
+    /// is on the tracker before any of them suspends. Unwinding has to remove
+    /// the right key rather than assume it is on top, or the one that finished
+    /// first stays behind — and the tracker is shared by the whole tree, so the
+    /// next scope registering that key is told it is a cycle.
+    test('a parallel level leaves no key behind for a later scope', () async {
+      final root = AlloyScope.root(name: 'app')
+        ..registerAsyncSingleton<SlowService>(
+          const SlowFactory('fast', 0),
+          name: 'fast',
+        )
+        ..registerAsyncSingleton<SlowService>(
+          const SlowFactory('slow', 30),
+          name: 'slow',
+        );
+      addTearDown(root.dispose);
+      await root.init();
+
+      final child = root.push('child')
+        ..registerAsyncSingleton<SlowService>(
+          const SlowFactory('again', 0),
+          name: 'fast',
+        );
+
+      await child.init();
+
+      expect(child.state, AlloyScopeState.active);
+      expect(child.get<SlowService>(name: 'fast'), isNotNull);
+    });
+
     test('a diamond is not mistaken for a cycle', () {
       final scope = AlloyScope.root()
         ..registerLazySingleton<Logger>(const LoggerFactory())

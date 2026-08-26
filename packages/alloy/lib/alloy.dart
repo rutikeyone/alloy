@@ -21,6 +21,7 @@ export 'package:alloy/src/errors/alloy_dispose_stage.dart';
 export 'package:alloy/src/errors/alloy_duplicate_registration_error.dart';
 export 'package:alloy/src/errors/alloy_error.dart';
 export 'package:alloy/src/errors/alloy_not_ready_error.dart';
+export 'package:alloy/src/errors/alloy_param_type_error.dart';
 export 'package:alloy/src/errors/alloy_not_registered_error.dart';
 export 'package:alloy/src/errors/alloy_scope_state_error.dart';
 export 'package:alloy/src/factory/alloy_async_factory.dart';

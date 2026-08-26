@@ -27,3 +27,11 @@
 - `AlloyScope` gained four read-only members for diagnostics: `keys`,
   `visibleKeys` (mapped to the owning scope), `root` and `debugDescribeTree`.
   None of them throws on a scope that is being torn down.
+- `getWithParam` checks the value against the parameter type the factory was
+  registered with, raising `AlloyParamTypeError` naming the registration and
+  both types, instead of a cast error from inside the factory. A subtype of the
+  registered type is accepted.
+- Fixed: the resolution tracker removed a key only from the top of its stack,
+  so a registration in a parallel init level that finished before the one
+  entered after it stayed behind. Because one tracker serves the whole scope
+  tree, the next scope registering that key was told it was a cycle.
