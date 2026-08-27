@@ -1,5 +1,12 @@
 ## 0.1.0
 
+- `dependsOn` naming something that is not an async registration fails `init()`
+  with `AlloyDependsOnError` instead of being silently dropped. An async
+  registration in an ancestor scope is still ignored, which is the one case
+  where dropping the edge is right.
+- The two parameterized-factory misuses have their own errors,
+  `AlloyNotParameterizedError` and `AlloyParamRequiredError`, rather than a bare
+  `AlloyError`.
 - `AlloyNotRegisteredError` and `AlloyNotReadyError` carry the chain of
   registrations under construction when the key was asked for, as `resolving`
   and in the message. The chain is the synchronous one: an awaited build

@@ -1,4 +1,5 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
+import 'package:alloy_generator/alloy_generator.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -62,10 +63,42 @@ void main() {
       );
     });
 
+    test('waiting for a registration that is not async fails the build', () {
+      expect(
+        () => generate([
+          declare('Logger'),
+          declare('Database', isAsyncInit: true, dependsOn: [ref('Logger')]),
+        ]),
+        throwsA(
+          isA<AlloyGenerationError>().having(
+            (e) => e.toString(),
+            'message',
+            allOf(
+              contains('Database waits for Logger'),
+              contains('only wait for an async registration'),
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('waiting for an async registration is fine', () {
+      final source = generate([
+        declare('Logger', isAsyncInit: true),
+        declare('Database', isAsyncInit: true, dependsOn: [ref('Logger')]),
+      ]);
+
+      expect(source, contains('dependsOn: {'));
+    });
+
     test('sync and async registrations coexist in one container', () {
+      // The dependency is a constructor parameter, not a dependsOn. Waiting
+      // for a plain registration is now a build failure, and this test never
+      // meant to assert one — it is about the two kinds sitting in one
+      // container, ordered by what actually depends on what.
       final source = generate([
         declare('Logger'),
-        declare('Database', isAsyncInit: true, dependsOn: [ref('Logger')]),
+        declare('Database', isAsyncInit: true, constructor: [dep('Logger')]),
       ]);
 
       final order = registrationsOf(source);

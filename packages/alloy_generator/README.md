@@ -90,6 +90,18 @@ type is not yours, or name it in @AlloyScopeRoot(provides: [...]) when something
 outside the generated container registers it.
 ```
 
+`@AlloyInit(dependsOn:)` has a second requirement: what it waits for must itself be `@AlloyInit`.
+`dependsOn` sequences phase 1, so waiting for a plain registration means waiting for something with
+no async build to finish — the container would ignore that edge, and the declaration would read as
+an ordering guarantee that was never in force. The build names it instead:
+
+```
+dependsOn can only wait for an async registration.
+  SearchIndex waits for Logger
+Annotate what it waits for with @AlloyInit, or drop the dependsOn: a registration
+without an async build has nothing to finish, and the container would ignore the edge.
+```
+
 All gaps are reported together, so a graph is fixed in one pass rather than one rebuild per
 missing type. A `@Named('audit')` dependency with only an unnamed registration counts as a gap:
 the qualifier is part of the key.

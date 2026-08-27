@@ -8,9 +8,12 @@ import 'package:alloy/alloy.dart';
 
 part 'notes.g.dart';
 
-@alloyInject
-class Database {
+@alloyInit
+class Database implements AsyncInitializable {
   Database();
+
+  @override
+  Future<void> init() async { /* open the file */ }
 }
 
 @AlloyInject(exposeAs: NoteStore)
@@ -39,3 +42,7 @@ class NotesController with _$NotesController {
 
 A full application using every annotation lives in
 [`examples/notes_app`](https://github.com/rutikeyone/alloy/tree/main/examples/notes_app).
+
+`SearchIndex` may state `dependsOn: [Database]` only because `Database` is `@AlloyInit` too.
+`dependsOn` sequences phase 1, so it can wait for an async registration and nothing else; naming a
+plain one fails the build.

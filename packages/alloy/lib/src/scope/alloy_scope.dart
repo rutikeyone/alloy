@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:alloy/src/errors/alloy_depends_on_error.dart';
 import 'package:alloy/src/errors/alloy_dispose_error.dart';
 import 'package:alloy/src/errors/alloy_dispose_failure.dart';
 import 'package:alloy/src/errors/alloy_dispose_stage.dart';
 import 'package:alloy/src/errors/alloy_duplicate_registration_error.dart';
-import 'package:alloy/src/errors/alloy_error.dart';
+import 'package:alloy/src/errors/alloy_not_parameterized_error.dart';
 import 'package:alloy/src/errors/alloy_not_ready_error.dart';
+import 'package:alloy/src/errors/alloy_param_required_error.dart';
 import 'package:alloy/src/errors/alloy_param_type_error.dart';
 import 'package:alloy/src/errors/alloy_not_registered_error.dart';
 import 'package:alloy/src/errors/alloy_scope_state_error.dart';
@@ -182,7 +184,7 @@ final class AlloyScope implements AlloyResolver {
     if (found == null) return null;
     final registration = found.registration;
     if (registration is! ParamRegistration) {
-      throw AlloyError('$key is not registered as a parameterized factory.');
+      throw AlloyNotParameterizedError(key);
     }
     if (!registration.accepts(param)) {
       throw AlloyParamTypeError(key, registration.paramType, param.runtimeType);
@@ -376,7 +378,7 @@ final class AlloyScope implements AlloyResolver {
     }
     final registration = found.registration;
     if (registration is! ParamRegistration) {
-      throw AlloyError('$key is not registered as a parameterized factory.');
+      throw AlloyNotParameterizedError(key);
     }
     if (!registration.accepts(param)) {
       throw AlloyParamTypeError(key, registration.paramType, param.runtimeType);
@@ -426,6 +428,46 @@ final class AlloyScope implements AlloyResolver {
     return _initFuture = _run();
   }
 
+  /// Rejects a `dependsOn` that names something phase 1 cannot wait for.
+  ///
+  /// An edge to a key outside this scope's async registrations used to be
+  /// dropped without a word, so the declaration read as an ordering guarantee
+  /// that was never in force. There are three ways to be outside that set and
+  /// only one of them is innocent:
+  ///
+  /// - nothing registers the key at all — a mistake, and the loudest kind;
+  /// - something registers it, but not as an async singleton — the wait is
+  ///   meaningless, because a registration without an async build has nothing
+  ///   to finish;
+  /// - an ancestor registers it as an async singleton — legitimate, and still
+  ///   dropped: a parent's phase 1 is its own, and a child pushed onto a live
+  ///   parent finds it already built.
+  void _assertDependsOnCanBeWaitedFor(
+    List<AsyncSingletonRegistration> pending,
+    Map<AlloyKey, AsyncSingletonRegistration> byKey,
+  ) {
+    for (final registration in pending) {
+      for (final dependency in registration.dependsOn) {
+        if (byKey.containsKey(dependency)) continue;
+        final found = _lookup(dependency);
+        if (found == null) {
+          throw AlloyDependsOnError(
+            registration.key,
+            dependency,
+            reason: 'nothing registers',
+          );
+        }
+        if (found.registration is! AsyncSingletonRegistration) {
+          throw AlloyDependsOnError(
+            registration.key,
+            dependency,
+            reason: 'is registered but not as an async singleton',
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _run() async {
     _state = AlloyScopeState.initializing;
 
@@ -435,6 +477,7 @@ final class AlloyScope implements AlloyResolver {
 
     if (pending.isNotEmpty) {
       final byKey = {for (final r in pending) r.key: r};
+      _assertDependsOnCanBeWaitedFor(pending, byKey);
       final levels = layeredTopologicalSort<AsyncSingletonRegistration>(
         pending,
         (r) => [for (final dep in r.dependsOn) ?byKey[dep]],
@@ -719,9 +762,7 @@ final class AlloyScope implements AlloyResolver {
         return existing;
 
       case ParamRegistration():
-        throw AlloyError(
-          '${registration.key} requires a parameter; use getWithParam.',
-        );
+        throw AlloyParamRequiredError(registration.key);
     }
   }
 

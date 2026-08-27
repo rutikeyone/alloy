@@ -10,15 +10,19 @@ hand, using only the public API of this package.
 ```dart
 final scope = AlloyScope.root(name: 'app')
   ..registerLazySingleton<Logger>(const LoggerFactory())
-  ..registerAsyncSingleton<Database>(
-    const DatabaseFactory(),
-    dependsOn: {const AlloyKey(Logger)},
+  ..registerAsyncSingleton<Database>(const DatabaseFactory())
+  ..registerAsyncSingleton<SearchIndex>(
+    const SearchIndexFactory(),
+    dependsOn: {const AlloyKey(Database)},
   );
 
 await scope.init();
-final db = scope.get<Database>();
+final index = scope.get<SearchIndex>();
 await scope.dispose();
 ```
+
+`SearchIndex` states `dependsOn` because both it and `Database` are built during `init()` and one
+has to finish first. `Logger` needs no such line: a factory that wants it simply resolves it.
 
 ## What it guarantees
 
@@ -38,7 +42,11 @@ await scope.dispose();
   different, since finishing that wait is teardown's own work, and it is reported like any other
   overrun.
 - **Async init as a graph.** `dependsOn` is topologically sorted into levels; each level runs
-  through `Future.wait`, so independent branches start together.
+  through `Future.wait`, so independent branches start together. It waits only for another async
+  registration — naming a plain one fails `init()` rather than being dropped, because a
+  registration with no async build has nothing to finish. An async registration in an *ancestor*
+  is the exception and is ignored: a parent's phase 1 is its own, and a child pushed onto a live
+  parent finds it already built.
 - **Cycles fail loudly.** Both the init graph and runtime resolution raise `AlloyCycleError`
   naming the path, rather than deadlocking or overflowing the stack.
 - **No closures in registrations.** Factories are objects (`AlloyFactory`, `AlloyAsyncFactory`,

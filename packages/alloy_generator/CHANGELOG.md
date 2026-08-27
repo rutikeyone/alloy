@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- `@AlloyInit(dependsOn:)` naming a registration that is not itself `@AlloyInit`
+  fails the build, listing every such edge at once.
 - Two libraries in one package declaring classes of the same name no longer emit
   two factories of the same name. Every claimant of a contested base name gets a
   suffix from its own library; uncontested names are untouched, so the fix

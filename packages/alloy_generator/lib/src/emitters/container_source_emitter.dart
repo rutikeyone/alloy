@@ -33,6 +33,8 @@ class ContainerSourceEmitter {
 
     _assertNoMissingDependencies(injectables, declarations.scopeRoots);
 
+    _assertDependsOnIsAsync(injectables);
+
     final ordered = _withDerivedDependsOn(injectables);
     final names = AlloyFactoryNames(ordered);
 
@@ -151,6 +153,45 @@ class ContainerSourceEmitter {
     if (missing.isEmpty) return;
     throw AlloyGenerationError(
       _missingMessage(missing.values.toList(), universe),
+    );
+  }
+
+  /// Rejects a `dependsOn` naming a registration that is not async.
+  ///
+  /// `dependsOn` sequences phase 1, so the only thing it can wait for is
+  /// another `@AlloyInit`. Naming a plain registration used to generate a
+  /// container the runtime would silently ignore that edge in — the
+  /// declaration read as an ordering guarantee that was never in force.
+  ///
+  /// A key nothing registers is not reported here: the completeness check
+  /// above already names it, and better. And a key that is async in *some*
+  /// environment is left alone — a registration split across builds is not a
+  /// mistake, and this check refuses only what is async nowhere.
+  void _assertDependsOnIsAsync(List<AlloyInjectableClass> injectables) {
+    final registered = {
+      for (final declaration in injectables) _keyOf(declaration),
+    };
+    final asyncKeys = {
+      for (final declaration in injectables)
+        if (declaration.isAsyncInit) _keyOf(declaration),
+    };
+
+    final wrong = <String>[];
+    for (final declaration in injectables) {
+      for (final dependency in declaration.dependsOn) {
+        final key = _refKey(dependency, null);
+        if (!registered.contains(key) || asyncKeys.contains(key)) continue;
+        wrong.add('${declaration.label} waits for ${dependency.name}');
+      }
+    }
+    if (wrong.isEmpty) return;
+
+    throw AlloyGenerationError(
+      'dependsOn can only wait for an async registration.\n'
+      '${wrong.map((line) => '  $line').join('\n')}\n'
+      'Annotate what it waits for with @AlloyInit, or drop the dependsOn: a '
+      'registration without an async build has nothing to finish, and the '
+      'container would ignore the edge.',
     );
   }
 
