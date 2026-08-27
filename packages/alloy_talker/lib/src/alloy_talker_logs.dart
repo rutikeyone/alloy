@@ -7,6 +7,12 @@ import 'package:talker/talker.dart';
 /// off when the graph gets chatty.
 abstract class AlloyTalkerLog extends TalkerLog {
   /// Creates a log entry titled [title].
+  ///
+  /// The key is set to the title as well, and that is not decoration:
+  /// `talker_flutter` colours a row by its **key**, falling back to the log
+  /// level when there is none. Without it a themed screen paints every startup
+  /// entry the same blue as any other info line, whatever the theme says about
+  /// titles.
   AlloyTalkerLog(
     super.message, {
     required String title,
@@ -15,7 +21,7 @@ abstract class AlloyTalkerLog extends TalkerLog {
     super.error,
     super.stackTrace,
     super.logLevel,
-  }) : super(title: title, pen: pen);
+  }) : super(title: title, key: title, pen: pen);
 }
 
 /// A scope appeared or went away.

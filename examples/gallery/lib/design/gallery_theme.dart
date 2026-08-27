@@ -1,3 +1,4 @@
+import 'package:alloy_inspector/alloy_inspector.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -198,3 +199,22 @@ ThemeData galleryTheme() {
     ),
   );
 }
+
+/// The gallery's palette, handed to the Alloy inspector.
+///
+/// Written out rather than derived from [galleryTheme] to show what the knob
+/// is for: an app with its own colours names them, and the inspector uses
+/// those instead of the ones it would infer.
+AlloyInspectorThemeData galleryInspectorTheme() => AlloyInspectorThemeData(
+  background: GalleryColors.canvas,
+  surface: GalleryColors.card,
+  onSurface: GalleryColors.text,
+  muted: GalleryColors.textMuted,
+  outline: GalleryColors.hairline,
+  accent: GalleryColors.screen,
+  scope: GalleryColors.screen,
+  startup: const Color(0xFF8FD98F),
+  instance: GalleryColors.textFaint,
+  failure: const Color(0xFFE0705F),
+  monospace: GalleryText.mono,
+);

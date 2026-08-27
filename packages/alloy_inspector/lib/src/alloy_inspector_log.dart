@@ -33,11 +33,21 @@ final class AlloyInspectorLog extends AlloyRecordingObserver
   /// How many records are kept before the oldest is dropped.
   final int capacity;
 
-  final _records = <AlloyLogRecord>[];
+  final _entries = <AlloyLogEntry>[];
   var _disposed = false;
+  var _isPaused = false;
+  var _missedWhilePaused = false;
+
+  /// Whether new records are being withheld from listeners.
+  bool get isPaused => _isPaused;
+
+  /// Everything seen, oldest first, each with the moment it arrived.
+  List<AlloyLogEntry> get entries => List.unmodifiable(_entries);
 
   /// Everything seen, oldest first.
-  List<AlloyLogRecord> get records => List.unmodifiable(_records);
+  List<AlloyLogRecord> get records => [
+    for (final entry in _entries) entry.record,
+  ];
 
   /// Only what was built, oldest first.
   ///
@@ -45,26 +55,58 @@ final class AlloyInspectorLog extends AlloyRecordingObserver
   /// answer a different question: `keys` is what was *declared*, and a lazy
   /// singleton nobody resolved looks there exactly like one that is built.
   List<AlloyLogRecord> get created => [
-    for (final record in _records)
-      if (record.kind == AlloyEventKind.instanceCreated) record,
+    for (final entry in _entries)
+      if (entry.record.kind == AlloyEventKind.instanceCreated) entry.record,
   ];
 
   /// The records of one kind, oldest first.
   List<AlloyLogRecord> ofKind(AlloyEventKind kind) => [
-    for (final record in _records)
-      if (record.kind == kind) record,
+    for (final entry in _entries)
+      if (entry.record.kind == kind) entry.record,
   ];
+
+  /// Stops waking listeners. Records keep arriving and are kept.
+  ///
+  /// For reading a stream that will not hold still: the graph does not stop
+  /// because a screen is open, and a list that reorders under a finger is not
+  /// readable. Nothing is dropped — [resume] shows what came in.
+  void pause() {
+    if (_isPaused) return;
+    _isPaused = true;
+    notifyListeners();
+  }
+
+  /// Resumes waking listeners, and shows whatever arrived meanwhile.
+  void resume() {
+    if (!_isPaused) return;
+    _isPaused = false;
+    final missed = _missedWhilePaused;
+    _missedWhilePaused = false;
+    if (missed) {
+      _notify();
+    } else {
+      notifyListeners();
+    }
+  }
 
   /// Forgets everything seen so far.
   void clear() {
-    _records.clear();
+    _entries.clear();
     _notify();
   }
 
   @override
   void onRecord(AlloyLogRecord record) {
-    if (_records.length == capacity) _records.removeAt(0);
-    _records.add(record);
+    if (_entries.length == capacity) _entries.removeAt(0);
+    // Stamped on arrival rather than carried by the record. Observers are
+    // called synchronously inside the work they describe, so this is the
+    // moment the event happened — and it keeps the runtime's record free of a
+    // field only a screen wants.
+    _entries.add(AlloyLogEntry(record, DateTime.now()));
+    if (_isPaused) {
+      _missedWhilePaused = true;
+      return;
+    }
     _notify();
   }
 
@@ -88,4 +130,17 @@ final class AlloyInspectorLog extends AlloyRecordingObserver
     if (_disposed) return;
     notifyListeners();
   });
+}
+
+/// One record and the moment it arrived.
+@immutable
+class AlloyLogEntry {
+  /// Pairs [record] with [at].
+  const AlloyLogEntry(this.record, this.at);
+
+  /// What was reported.
+  final AlloyLogRecord record;
+
+  /// When the observer was called, which is when the event happened.
+  final DateTime at;
 }

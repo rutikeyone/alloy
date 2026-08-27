@@ -1,5 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_inspector/src/registration_view.dart';
+import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
+import 'package:alloy_inspector/src/widgets/chrome.dart';
 import 'package:flutter/material.dart';
 
 /// What is known about one registration, and the one thing you can do to it.
@@ -36,17 +38,30 @@ class _RegistrationDetailSheetState extends State<RegistrationDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final registration = widget.registration;
+    final theme = AlloyInspectorTheme.of(context);
 
     return SafeArea(
       child: ListView(
         key: const Key('registration-detail'),
         shrinkWrap: true,
         children: [
-          ListTile(
-            title: Text('${registration.key}'),
-            subtitle: Text(registration.kind?.name ?? 'no longer registered'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${registration.key}',
+                    style: (theme.monospace ?? const TextStyle(fontSize: 14))
+                        .copyWith(color: theme.onSurface, fontSize: 14),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                LifetimeBadge(kind: registration.kind, theme: theme),
+              ],
+            ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: theme.outline),
           _Fact(label: 'Owned by', value: registration.owner.name),
           _Fact(
             label: 'Reached',

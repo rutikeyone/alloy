@@ -28,6 +28,7 @@
 | `alloy_lint` | `alloy_analyzer`、`analysis_server_plugin` | 仅 dev_dependency |
 | `alloy_test` | `alloy`、`test_api`、`matcher` | 仅 dev_dependency |
 | `alloy_inspector` | `alloy_flutter`、`flutter` | 仅 dev_dependency |
+| `alloy_talker_flutter` | `alloy_inspector`, `alloy_talker`, `talker_flutter` | dev_dependency only |
 
 `alloy_analyzer` 的存在是为了让生成器和 lint 插件用**同一套**实现解析 Alloy 声明，而不是两套迟早会
 各说各话的实现。它持有 IR 和拓扑排序，并且既不依赖 `build`，也不依赖插件 API。
@@ -63,6 +64,7 @@ dart format --output=none --set-exit-if-changed .
 (cd packages/alloy_lint && dart test)
 (cd packages/alloy_test && dart test)
 (cd packages/alloy_inspector && flutter test)
+(cd packages/alloy_talker_flutter && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ./tool/coverage.sh

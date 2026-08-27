@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:graph_events/app/report_log.dart';
 import 'package:graph_events/features/home/ui/last_report_tile.dart';
 import 'package:graph_events/features/session/session_scope.dart';
+import 'package:alloy_talker_flutter/alloy_talker_flutter.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 /// Drives the graph so the log has something to show.
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.receipt_long),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (_) => TalkerScreen(talker: widget.talker),
+              builder: (_) => AlloyTalkerScreen(talker: widget.talker),
             ),
           ),
         ),

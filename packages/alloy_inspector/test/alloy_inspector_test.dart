@@ -24,7 +24,12 @@ void main() {
       expect(find.byKey(const Key('scope-tree')), findsOneWidget);
       expect(find.text('app'), findsOneWidget);
       expect(find.byKey(const Key('registration-Clock')), findsOneWidget);
-      expect(find.text('lazySingleton · registered here'), findsOneWidget);
+      expect(
+        find.text('lifetime: lazySingleton'),
+        findsNothing,
+        reason: 'the lifetime is a badge now, not a sentence',
+      );
+      expect(find.text('lazySingleton'), findsWidgets);
     });
 
     testWidgets('names the owner of an inherited registration', (tester) async {
@@ -35,11 +40,24 @@ void main() {
 
       expect(find.text('session'), findsOneWidget);
 
-      // Only the root opens by itself; a child is a click away.
+      // Every node opens by itself now; "collapse all" is the way back.
+      expect(find.byKey(const Key('registration-Clock')), findsWidgets);
+      expect(
+        find.byIcon(Icons.subdirectory_arrow_right),
+        findsWidgets,
+        reason:
+            'every registration the session sees but does not own is marked; '
+            'the root owns all of its own and is marked nowhere',
+      );
+
       await tester.tap(find.byKey(const Key('scope-session-1')));
       await tester.pumpAndSettle();
 
-      expect(find.text('lazySingleton · inherited from "app"'), findsWidgets);
+      expect(
+        find.byIcon(Icons.subdirectory_arrow_right),
+        findsNothing,
+        reason: 'tapping the node folds its registrations away',
+      );
     });
 
     /// The point of the whole design. `debugResolve` builds what it resolves,
@@ -141,10 +159,17 @@ void main() {
 
       expect(find.byKey(const Key('event-log')), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('filter-scopePushed')));
+      // Filtering is by family now: thirteen kinds is too many to scan, and
+      // the four families are the division the talker adapter already makes.
+      await tester.tap(find.byKey(const Key('filter-failure')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('no-events')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('filter-instance')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('event-log')), findsOneWidget);
     });
 
     testWidgets('clearing empties it', (tester) async {

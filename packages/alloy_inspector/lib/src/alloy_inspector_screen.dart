@@ -3,6 +3,8 @@ import 'package:alloy_inspector/src/alloy_inspector_log.dart';
 import 'package:alloy_inspector/src/created_view.dart';
 import 'package:alloy_inspector/src/event_log_view.dart';
 import 'package:alloy_inspector/src/scope_tree_view.dart';
+import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
+import 'package:alloy_inspector/src/theme/alloy_inspector_theme_data.dart';
 import 'package:flutter/material.dart';
 
 /// The inspector: the live tree, what was built, and everything reported.
@@ -27,13 +29,22 @@ import 'package:flutter/material.dart';
 /// [log] has to be the one passed to the graph when it was built. Observers
 /// are fixed at construction, so an inspector cannot start listening to a
 /// scope that is already running.
+///
+/// [theme] overrides whatever `AlloyInspectorTheme` is in force above this
+/// screen. Leave it out and the palette is inherited, or derived from the
+/// host's own `Theme` where nobody has set one — so an inspector dropped into
+/// an app matches it without configuration.
 class AlloyInspectorScreen extends StatelessWidget {
   /// Shows the graph [scope] belongs to, as recorded by [log].
   const AlloyInspectorScreen({
     required this.log,
     required this.scope,
+    this.theme,
     super.key,
   });
+
+  /// The palette to draw with, overriding the inherited one.
+  final AlloyInspectorThemeData? theme;
 
   /// The recorder installed when the graph was built.
   final AlloyInspectorLog log;
@@ -43,42 +54,108 @@ class AlloyInspectorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = theme ?? AlloyInspectorTheme.of(context);
     final root = scope.root;
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Alloy · inspector'),
-          actions: [
-            IconButton(
-              key: const Key('clear-log'),
-              tooltip: 'forget what has been recorded',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: log.clear,
+    return AlloyInspectorTheme(
+      data: palette,
+      child: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          backgroundColor: palette.background,
+          appBar: AppBar(
+            backgroundColor: palette.background,
+            foregroundColor: palette.onSurface,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'Alloy · inspector',
+              style: TextStyle(color: palette.onSurface, fontSize: 16),
             ),
-          ],
-          bottom: const TabBar(
-            tabs: [
-              Tab(key: Key('tab-tree'), text: 'Tree'),
-              Tab(key: Key('tab-created'), text: 'Built'),
-              Tab(key: Key('tab-log'), text: 'Log'),
+            actions: [
+              ListenableBuilder(
+                listenable: log,
+                builder: (context, _) => IconButton(
+                  key: const Key('pause-log'),
+                  tooltip: log.isPaused
+                      ? 'follow the graph again'
+                      : 'hold the view still',
+                  icon: Icon(
+                    log.isPaused ? Icons.play_arrow : Icons.pause,
+                    color: log.isPaused ? palette.accent : palette.muted,
+                  ),
+                  onPressed: () => log.isPaused ? log.resume() : log.pause(),
+                ),
+              ),
+              IconButton(
+                key: const Key('clear-log'),
+                tooltip: 'forget what has been recorded',
+                icon: Icon(Icons.delete_outline, color: palette.muted),
+                onPressed: log.clear,
+              ),
+            ],
+            bottom: TabBar(
+              labelColor: palette.accent,
+              unselectedLabelColor: palette.muted,
+              indicatorColor: palette.accent,
+              dividerColor: palette.outline,
+              tabs: [
+                const Tab(key: Key('tab-tree'), text: 'Tree'),
+                _CountedTab(
+                  key: const Key('tab-created'),
+                  label: 'Built',
+                  count: () => log.created.length,
+                  log: log,
+                ),
+                _CountedTab(
+                  key: const Key('tab-log'),
+                  label: 'Log',
+                  count: () => log.records.length,
+                  log: log,
+                ),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              _Reactive(
+                log: log,
+                child: ScopeTreeView(root: root),
+              ),
+              CreatedView(log: log),
+              EventLogView(log: log),
             ],
           ),
-        ),
-        body: TabBarView(
-          children: [
-            _Reactive(
-              log: log,
-              child: ScopeTreeView(root: root),
-            ),
-            CreatedView(log: log),
-            EventLogView(log: log),
-          ],
         ),
       ),
     );
   }
+}
+
+/// A tab that says how much is behind it.
+class _CountedTab extends StatelessWidget implements PreferredSizeWidget {
+  const _CountedTab({
+    required this.label,
+    required this.count,
+    required this.log,
+    super.key,
+  });
+
+  final String label;
+  final int Function() count;
+  final AlloyInspectorLog log;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(46);
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: log,
+    builder: (context, _) {
+      final n = count();
+      return Tab(text: n == 0 ? label : '$label · $n');
+    },
+  );
 }
 
 /// Rebuilds [child] whenever the graph reports anything.

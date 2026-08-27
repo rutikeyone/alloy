@@ -1,8 +1,16 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_inspector/src/alloy_inspector_log.dart';
+import 'package:alloy_inspector/src/record_detail_sheet.dart';
+import 'package:alloy_inspector/src/theme/alloy_inspector_family.dart';
+import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
+import 'package:alloy_inspector/src/theme/alloy_inspector_theme_data.dart';
+import 'package:alloy_inspector/src/widgets/chrome.dart';
 import 'package:flutter/material.dart';
 
-/// Everything the graph reported, newest first, filtered by kind.
+/// Everything the graph reported, newest first.
+///
+/// Filtered by family and by text, and pausable — the graph does not stop
+/// because a screen is open, and a list that reorders under a finger cannot be
+/// read. Pausing withholds the repaint, never the record.
 class EventLogView extends StatefulWidget {
   /// Reads from [log].
   const EventLogView({required this.log, super.key});
@@ -15,66 +23,134 @@ class EventLogView extends StatefulWidget {
 }
 
 class _EventLogViewState extends State<EventLogView> {
-  AlloyEventKind? _only;
+  AlloyInspectorFamily? _family;
+  String _query = '';
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.log,
-    builder: (context, _) {
-      final records =
-          (_only == null ? widget.log.records : widget.log.ofKind(_only!))
-              .reversed
-              .toList();
+  Widget build(BuildContext context) {
+    final theme = AlloyInspectorTheme.of(context);
 
-      return Column(
-        children: [
-          _KindFilter(
-            selected: _only,
-            onChanged: (kind) => setState(() => _only = kind),
+    return ListenableBuilder(
+      listenable: widget.log,
+      builder: (context, _) {
+        final entries = _matching(widget.log.entries)
+            .toList()
+            .reversed
+            .toList();
+
+        return Container(
+          color: theme.background,
+          child: Column(
+            children: [
+              SearchField(
+                key: const Key('log-search'),
+                hint: 'filter by message, scope or key',
+                theme: theme,
+                onChanged: (value) =>
+                    setState(() => _query = value.trim().toLowerCase()),
+              ),
+              _FamilyFilter(
+                selected: _family,
+                theme: theme,
+                counts: _counts(widget.log.entries),
+                onChanged: (family) => setState(() => _family = family),
+              ),
+              Divider(height: 1, color: theme.outline),
+              Expanded(
+                child: entries.isEmpty
+                    ? EmptyNote(
+                        key: const Key('no-events'),
+                        text: widget.log.entries.isEmpty
+                            ? 'Nothing reported yet'
+                            : 'Nothing matches that',
+                        theme: theme,
+                      )
+                    : ListView.separated(
+                        key: const Key('event-log'),
+                        itemCount: entries.length,
+                        separatorBuilder: (_, _) =>
+                            Divider(height: 1, color: theme.outline),
+                        itemBuilder: (context, index) => _RecordTile(
+                          entry: entries[index],
+                          // Newest first, so the one below is the earlier one.
+                          previous: index + 1 < entries.length
+                              ? entries[index + 1]
+                              : null,
+                          theme: theme,
+                        ),
+                      ),
+              ),
+            ],
           ),
-          const Divider(height: 1),
-          Expanded(
-            child: records.isEmpty
-                ? const Center(
-                    key: Key('no-events'),
-                    child: Text('Nothing reported yet'),
-                  )
-                : ListView.builder(
-                    key: const Key('event-log'),
-                    itemCount: records.length,
-                    itemBuilder: (context, index) =>
-                        _RecordTile(record: records[index]),
-                  ),
-          ),
-        ],
-      );
-    },
-  );
+        );
+      },
+    );
+  }
+
+  Iterable<AlloyLogEntry> _matching(List<AlloyLogEntry> entries) sync* {
+    for (final entry in entries) {
+      final record = entry.record;
+      if (_family != null && AlloyInspectorFamily.of(record.kind) != _family) {
+        continue;
+      }
+      if (_query.isEmpty) {
+        yield entry;
+        continue;
+      }
+      final haystack =
+          '${record.message} ${record.kind.name} ${record.scope?.name ?? ''} '
+                  '${record.key ?? ''}'
+              .toLowerCase();
+      if (haystack.contains(_query)) yield entry;
+    }
+  }
+
+  static Map<AlloyInspectorFamily, int> _counts(List<AlloyLogEntry> entries) {
+    final counts = {for (final f in AlloyInspectorFamily.values) f: 0};
+    for (final entry in entries) {
+      final family = AlloyInspectorFamily.of(entry.record.kind);
+      counts[family] = counts[family]! + 1;
+    }
+    return counts;
+  }
 }
 
-class _KindFilter extends StatelessWidget {
-  const _KindFilter({required this.selected, required this.onChanged});
+class _FamilyFilter extends StatelessWidget {
+  const _FamilyFilter({
+    required this.selected,
+    required this.theme,
+    required this.counts,
+    required this.onChanged,
+  });
 
-  final AlloyEventKind? selected;
-  final ValueChanged<AlloyEventKind?> onChanged;
+  final AlloyInspectorFamily? selected;
+  final AlloyInspectorThemeData theme;
+  final Map<AlloyInspectorFamily, int> counts;
+  final ValueChanged<AlloyInspectorFamily?> onChanged;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 56,
+    height: 44,
     child: ListView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       children: [
         _Chip(
           label: 'all',
+          count: counts.values.fold(0, (sum, n) => sum + n),
+          color: theme.accent,
+          theme: theme,
           isSelected: selected == null,
           onTap: () => onChanged(null),
         ),
-        for (final kind in AlloyEventKind.values)
+        for (final family in AlloyInspectorFamily.values)
           _Chip(
-            label: kind.name,
-            isSelected: selected == kind,
-            onTap: () => onChanged(kind),
+            label: family.name,
+            count: counts[family] ?? 0,
+            color: theme.colorOfFamily(family),
+            theme: theme,
+            isSelected: selected == family,
+            onTap: () => onChanged(family),
           ),
       ],
     ),
@@ -84,47 +160,127 @@ class _KindFilter extends StatelessWidget {
 class _Chip extends StatelessWidget {
   const _Chip({
     required this.label,
+    required this.count,
+    required this.color,
+    required this.theme,
     required this.isSelected,
     required this.onTap,
   });
 
   final String label;
+  final int count;
+  final Color color;
+  final AlloyInspectorThemeData theme;
   final bool isSelected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(right: 8),
-    child: FilterChip(
+    child: GestureDetector(
       key: Key('filter-$label'),
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onTap(),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: isSelected ? 0.22 : 0.06),
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(
+            color: isSelected ? color : theme.outline,
+            width: isSelected ? 1.4 : 1,
+          ),
+        ),
+        child: Text(
+          count == 0 ? label : '$label · $count',
+          style: TextStyle(
+            color: isSelected ? color : theme.muted,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ),
     ),
   );
 }
 
 class _RecordTile extends StatelessWidget {
-  const _RecordTile({required this.record});
+  const _RecordTile({
+    required this.entry,
+    required this.previous,
+    required this.theme,
+  });
 
-  final AlloyLogRecord record;
+  final AlloyLogEntry entry;
+  final AlloyLogEntry? previous;
+  final AlloyInspectorThemeData theme;
 
   @override
   Widget build(BuildContext context) {
-    final lifetime = record.registrationKind;
+    final record = entry.record;
+    final family = AlloyInspectorFamily.of(record.kind);
 
-    return ListTile(
-      dense: true,
-      title: Text(record.message),
-      subtitle: Text(
-        lifetime == null
-            ? '${record.kind.name} · ${record.level.name}'
-            : '${record.kind.name} · ${lifetime.name} · '
-                  '${record.retained ?? false ? 'kept' : 'loose'}',
+    return InkWell(
+      key: Key('record-${record.kind.name}-${entry.at.microsecondsSinceEpoch}'),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: theme.background,
+        isScrollControlled: true,
+        builder: (_) => AlloyInspectorTheme(
+          data: theme,
+          child: RecordDetailSheet(entry: entry),
+        ),
       ),
-      trailing: record.isFailure
-          ? const Icon(Icons.error_outline, size: 18)
-          : null,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FamilyMark(family: family, theme: theme, size: 15),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    record.message,
+                    style: TextStyle(color: theme.onSurface, fontSize: 13),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Text(
+                        record.kind.name,
+                        style: TextStyle(
+                          color: theme.colorOfFamily(family),
+                          fontSize: 11,
+                        ),
+                      ),
+                      if (record.registrationKind != null) ...[
+                        const SizedBox(width: 6),
+                        LifetimeBadge(
+                          kind: record.registrationKind,
+                          theme: theme,
+                        ),
+                      ],
+                      if (record.error != null) ...[
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.error_outline,
+                          size: 13,
+                          color: theme.failure,
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Timestamp(at: entry.at, since: previous?.at, theme: theme),
+          ],
+        ),
+      ),
     );
   }
 }

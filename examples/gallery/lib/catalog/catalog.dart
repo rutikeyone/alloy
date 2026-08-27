@@ -9,6 +9,7 @@ import 'package:gallery/catalog/example_section.dart';
 import 'package:gallery/catalog/flow_scopes_host.dart';
 import 'package:gallery/catalog/glyphs.dart';
 import 'package:gallery/catalog/inspector_graph.dart';
+import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/catalog/notes_graph.dart';
 import 'package:graph_events/app/app_scope.dart';
 import 'package:graph_events/app/audit_log.dart';
@@ -383,6 +384,9 @@ class _InspectorDemoState extends State<_InspectorDemo> {
               builder: (_) => AlloyInspectorScreen(
                 log: widget.log,
                 scope: context.alloyScope,
+                // The gallery's own palette, so the inspector reads as part
+                // of this app rather than as a panel bolted onto it.
+                theme: galleryInspectorTheme(),
               ),
             ),
           ),

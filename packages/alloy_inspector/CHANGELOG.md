@@ -1,5 +1,11 @@
 ## 0.1.0
 
+- `AlloyInspectorThemeData` and `AlloyInspectorTheme`: the screens take their
+  colours from the host application, and an app can name its own.
+- The log carries the time each record arrived, is searchable, filters by
+  family, opens a record whole and copies it, and can be paused.
+- The tree searches registrations and folds every node at once; the built list
+  groups by scope or by lifetime.
 - Initial release.
 - `AlloyInspectorScreen` — three views over a running graph: the live scope
   tree, what was built, and the event log.

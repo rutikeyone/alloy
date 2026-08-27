@@ -68,3 +68,42 @@ Observer callbacks are synchronous and arrive in the middle of the work they des
 teardown running while the widget tree builds, where notifying immediately throws
 `setState() called during build`. `AlloyInspectorLog` defers to the next turn, and drops a
 notification that comes due after it has been disposed.
+
+## Dressing it in your own colours
+
+The inspector derives its palette from the host application's `Theme`, so dropped into an app it
+already matches — light, dark, whatever seed. Where the derived answer is not the one you want,
+name the colours:
+
+```dart
+AlloyInspectorTheme(
+  data: AlloyInspectorThemeData.of(Theme.of(context)).copyWith(
+    accent: brand.primary,
+    failure: brand.danger,
+  ),
+  child: child,
+)
+```
+
+Put it once above wherever a debug menu opens from and pushed routes and sheets inherit it; or pass
+`theme:` to a screen to override it there. Nothing is required: with neither, the ambient theme
+decides.
+
+Colour is by **family**, not by event: thirteen kinds is more than anyone can hold, and level says
+how loud an event is rather than what it concerns. The four — scope, startup, instance, failure —
+are the same division `alloy_talker` files its logs under, which is what lets
+[`alloy_talker_flutter`](https://pub.dev/packages/alloy_talker_flutter) dress talker's screen in the
+same palette.
+
+## What the screens do
+
+**Tree** walks the live scopes, with a search over registrations and one control that folds every
+node. Reading it builds nothing: a lazy singleton nobody asked for is still unbuilt after you have
+looked at it.
+
+**Built** comes from creation events, grouped by scope, by lifetime, or not at all.
+
+**Log** is the event stream, newest first, searchable, filtered by family, each row carrying its
+time and the gap since the one before. Tapping opens the record whole — error, stack and the
+structured map — with a button that copies it. The pause control in the app bar holds the view
+still without dropping anything: records keep arriving and appear when you let go.

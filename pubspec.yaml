@@ -12,6 +12,7 @@ workspace:
   - packages/alloy_logging
   - packages/alloy_logger
   - packages/alloy_talker
+  - packages/alloy_talker_flutter
   - packages/alloy_analyzer
   - packages/alloy_generator
   - packages/alloy_lint
