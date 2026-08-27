@@ -1,5 +1,9 @@
 ## 0.1.0
 
+- An async registration made once `init()` has started is refused rather than
+  accepted and left unbuildable: phase 1 takes its list at the start and runs
+  once, so such a registration could never be built. Sync registrations are
+  unaffected.
 - `dependsOn` naming something that is not an async registration fails `init()`
   with `AlloyDependsOnError` instead of being silently dropped. An async
   registration in an ancestor scope is still ignored, which is the one case

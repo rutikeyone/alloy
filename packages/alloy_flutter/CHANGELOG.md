@@ -1,5 +1,8 @@
 ## 0.1.0
 
+- `AlloyNoScopeError` and `AlloyNoAppScopeError` replace the bare `AlloyError`
+  the two lookups used to throw, so a caller can catch the one it means. The
+  first also explains the pushed-route case in its message.
 - Initial release.
 - `AlloyAppScope`: owns the root scope for the whole app. It builds the graph
   inside `runApp`, shows loading and error states with retry, exposes

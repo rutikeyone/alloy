@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_flutter/src/errors/alloy_no_scope_error.dart';
 import 'package:flutter/widgets.dart';
 
 /// Publishes an [AlloyScope] to a widget subtree.
@@ -19,15 +20,12 @@ class AlloyScopeProvider extends InheritedWidget {
 
   /// The nearest scope above [context].
   ///
-  /// Throws `AlloyError` when there is none, which is nearly always a missing
-  /// provider at the root rather than a resolution problem.
+  /// Throws [AlloyNoScopeError] when there is none, which is nearly always a
+  /// missing provider rather than a resolution problem.
   static AlloyScope of(BuildContext context) {
     final provider = maybeOf(context);
     if (provider == null) {
-      throw AlloyError(
-        'No AlloyScopeProvider found above this widget. '
-        'Wrap your app in AlloyScopeProvider or AlloyScopeWidget.',
-      );
+      throw AlloyNoScopeError();
     }
     return provider;
   }

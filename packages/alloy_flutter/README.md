@@ -181,3 +181,19 @@ nicety, not a guarantee, and it delays quitting by however long teardown takes.
 One sharp edge if you do enable it: Flutter asks *every* observer before quitting and does not stop
 at the first refusal. If another observer cancels the exit after this one has already disposed, the
 app keeps running with no graph and shows `loading` until something calls `restart()`.
+
+## The two errors you will actually meet
+
+`AlloyNoScopeError` — nothing publishes a scope above the widget that asked. Usually a missing
+provider, but the other cause looks nothing like one and has cost this repository four separate
+debugging sessions: **a route pushed with `Navigator.push` is built by the navigator, which sits
+above any provider mounted inside a screen.** Code that resolved fine in place throws the moment the
+same widget is opened as a pushed route. Read the scope where the push happens and pass it into the
+pushed widget, rather than reading it there.
+
+`AlloyNoAppScopeError` — nothing *owns* a root scope above the widget that asked to restart it.
+`AlloyScopeProvider` publishes a scope somebody else owns; only `AlloyAppScope` owns one, and only
+an owner can take it down and build it again.
+
+Both are `AlloyError` subclasses, so a test can name the one it expects instead of matching on
+message text.

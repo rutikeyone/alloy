@@ -4,6 +4,7 @@ import 'dart:ui' show AppExitResponse;
 import 'package:alloy/alloy.dart';
 import 'package:alloy_flutter/src/alloy_app_scope_controller.dart';
 import 'package:alloy_flutter/src/alloy_scope_provider.dart';
+import 'package:alloy_flutter/src/errors/alloy_no_app_scope_error.dart';
 import 'package:flutter/widgets.dart';
 
 /// Owns the root scope for as long as the app is mounted.
@@ -195,10 +196,7 @@ class AlloyAppScope extends StatefulWidget {
         .dependOnInheritedWidgetOfExactType<_AlloyAppScopeMarker>()
         ?.controller;
     if (controller == null) {
-      throw AlloyError(
-        'No AlloyAppScope found above this widget. '
-        'Wrap your app in AlloyAppScope to restart its root scope.',
-      );
+      throw AlloyNoAppScopeError();
     }
     return controller;
   }

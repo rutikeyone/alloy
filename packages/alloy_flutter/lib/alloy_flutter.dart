@@ -11,6 +11,8 @@ export 'package:alloy/alloy.dart';
 export 'package:alloy_flutter/src/alloy_app_scope.dart';
 export 'package:alloy_flutter/src/alloy_app_scope_controller.dart';
 export 'package:alloy_flutter/src/alloy_build_context.dart';
+export 'package:alloy_flutter/src/errors/alloy_no_app_scope_error.dart';
+export 'package:alloy_flutter/src/errors/alloy_no_scope_error.dart';
 export 'package:alloy_flutter/src/alloy_scope_provider.dart';
 export 'package:alloy_flutter/src/alloy_scoped_stateful_widget.dart';
 export 'package:alloy_flutter/src/alloy_scoped_widget.dart';

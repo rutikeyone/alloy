@@ -195,6 +195,23 @@ rule is simply that each isolate builds its own graph.
 If you offload work with `Isolate.run` or `compute`, pass the *data* the work
 needs, not the scope or anything resolved from it.
 
+## When an async registration has to be made
+
+`init()` collects the async registrations it finds when it starts, and runs once — its future is
+memoized, so calling it again does not pick up anything added since. An async registration made at
+or after that moment could therefore never be built, and asking for it would throw for the rest of
+the scope's life. So it is refused at the point it is made:
+
+```
+Scope "app" is AlloyScopeState.active, so Database would never be built: init() takes the async
+registrations it finds when it starts, and runs once. Register it before init(), or push a child
+scope and initialize that.
+```
+
+The way out the message names is the ordinary one: a child scope has its own phase 1, so
+`parent.push('session')`, register, `await child.init()`. Sync registrations are unaffected at any
+point — they are built on demand and have no phase to miss.
+
 ## What a failed resolve tells you
 
 A resolution that fails inside a factory names the trail that led to it, not only the key that was

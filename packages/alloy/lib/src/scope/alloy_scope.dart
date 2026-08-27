@@ -315,6 +315,7 @@ final class AlloyScope implements AlloyResolver {
     Set<AlloyKey> dependsOn = const {},
     FutureOr<void> Function(T instance)? dispose,
   }) {
+    _assertPhaseOneIsStillOpen(AlloyKey(T, name: name));
     _put(
       AsyncSingletonRegistration(
         key: AlloyKey(T, name: name),
@@ -323,6 +324,28 @@ final class AlloyScope implements AlloyResolver {
         dependsOn: dependsOn,
         teardown: _teardownOf(dispose),
       ),
+    );
+  }
+
+  /// Refuses an async registration that phase 1 can no longer build.
+  ///
+  /// [init] collects what to build once, at its start, and memoizes its own
+  /// future — so a registration added at or after that moment is never built
+  /// and every resolve of it throws for the rest of the scope's life. That
+  /// used to be accepted in silence, and the error it eventually produced said
+  /// the key "was requested before init()", which by then was untrue.
+  ///
+  /// Sync registrations stay allowed at any point: they are built on demand
+  /// and have no phase to miss.
+  void _assertPhaseOneIsStillOpen(AlloyKey key) {
+    if (_state != AlloyScopeState.initializing &&
+        _state != AlloyScopeState.active) {
+      return;
+    }
+    throw AlloyScopeStateError(
+      'Scope "$name" is $_state, so $key would never be built: init() takes '
+      'the async registrations it finds when it starts, and runs once. '
+      'Register it before init(), or push a child scope and initialize that.',
     );
   }
 
