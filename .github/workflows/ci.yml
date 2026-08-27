@@ -88,6 +88,18 @@ jobs:
           for package in packages/alloy_annotations packages/alloy \
                          packages/alloy_analyzer packages/alloy_generator \
                          packages/alloy_test packages/alloy_talker \
-                         packages/alloy_logging packages/alloy_logger; do
+                         packages/alloy_logging packages/alloy_logger \
+                         packages/alloy_flutter packages/alloy_go_router \
+                         packages/alloy_inspector; do
             (cd "$package" && dart pub publish --dry-run)
           done
+
+      # alloy_lint cannot go in the loop above: pub exits non-zero because of
+      # the lib/main.dart warning the analysis-server plugin API requires, and
+      # which riverpod_lint carries too. Asserting the count instead still
+      # fails the build if a second warning ever appears.
+      - name: Publish dry run for alloy_lint
+        run: |
+          cd packages/alloy_lint
+          dart pub publish --dry-run 2>&1 | tee /tmp/lint-dry-run.txt || true
+          grep -q 'Package has 1 warning' /tmp/lint-dry-run.txt
