@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 final class _Collecting implements AlloyLogSink {
@@ -24,13 +25,12 @@ void main() {
   group('the level a log observer keeps', () {
     test('drops anything quieter than the minimum', () {
       final sink = _Collecting();
-      final scope = AlloyScope.root(
+      final scope = alloyTestRoot(
         name: 'app',
         observers: [
           AlloyLogObserver(sink, minimumLevel: AlloyLogLevel.warning),
         ],
       )..registerLazySingleton<Marker>(const _Fn());
-      addTearDown(scope.dispose);
 
       scope
         ..push('session')
@@ -45,11 +45,10 @@ void main() {
 
     test('keeps what sits at the minimum', () {
       final sink = _Collecting();
-      final scope = AlloyScope.root(
+      final scope = alloyTestRoot(
         name: 'app',
         observers: [AlloyLogObserver(sink, minimumLevel: AlloyLogLevel.debug)],
       );
-      addTearDown(scope.dispose);
 
       scope.push('session');
 
@@ -60,11 +59,10 @@ void main() {
 
     test('the default keeps per-instance records out', () {
       final sink = _Collecting();
-      final scope = AlloyScope.root(
+      final scope = alloyTestRoot(
         name: 'app',
         observers: [AlloyLogObserver(sink)],
       )..registerLazySingleton<Marker>(const _Fn());
-      addTearDown(scope.dispose);
 
       scope.get<Marker>();
 
@@ -81,11 +79,10 @@ void main() {
 
     test('trace lets everything through', () {
       final sink = _Collecting();
-      final scope = AlloyScope.root(
+      final scope = alloyTestRoot(
         name: 'app',
         observers: [AlloyLogObserver(sink, minimumLevel: AlloyLogLevel.trace)],
       )..registerLazySingleton<Marker>(const _Fn());
-      addTearDown(scope.dispose);
 
       scope.get<Marker>();
 

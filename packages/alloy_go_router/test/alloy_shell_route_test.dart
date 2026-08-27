@@ -139,7 +139,6 @@ void main() {
           ),
         ],
       );
-      addTearDown(plain.dispose);
 
       await tester.pumpWidget(app(root, plain));
       await settle(tester);
@@ -161,7 +160,6 @@ void main() {
       tester,
     ) async {
       final deep = flowRouter(initialLocation: '/orders/9/payment');
-      addTearDown(deep.dispose);
 
       await tester.pumpWidget(app(root, deep));
       await settle(tester);

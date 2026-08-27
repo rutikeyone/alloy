@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 class Logger {}
@@ -16,13 +17,12 @@ class Ticket {
 void main() {
   group('dependsOn', () {
     test('naming a registration that is not async fails init', () async {
-      final scope = AlloyScope.root(name: 'app')
-        ..registerLazySingleton<Logger>(_Fn((_) => Logger()))
+      final scope = alloyTestRoot(name: 'app')
+        ..registerLazySingleton<Logger>(FnFactory((_) => Logger()))
         ..registerAsyncSingleton<Index>(
-          _AsyncFn((_) async => Index()),
+          AsyncFnFactory((_) async => Index()),
           dependsOn: {const AlloyKey(Logger)},
         );
-      addTearDown(scope.dispose);
 
       await expectLater(
         scope.init(),
@@ -41,12 +41,11 @@ void main() {
     });
 
     test('naming something nothing registers fails init', () async {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerAsyncSingleton<Index>(
-          _AsyncFn((_) async => Index()),
+          AsyncFnFactory((_) async => Index()),
           dependsOn: {const AlloyKey(Database)},
         );
-      addTearDown(scope.dispose);
 
       await expectLater(
         scope.init(),
@@ -64,21 +63,20 @@ void main() {
       'naming an async registration in the same scope still works',
       () async {
         final built = <String>[];
-        final scope = AlloyScope.root(name: 'app')
+        final scope = alloyTestRoot(name: 'app')
           ..registerAsyncSingleton<Database>(
-            _AsyncFn((_) async {
+            AsyncFnFactory((_) async {
               built.add('database');
               return Database();
             }),
           )
           ..registerAsyncSingleton<Index>(
-            _AsyncFn((_) async {
+            AsyncFnFactory((_) async {
               built.add('index');
               return Index();
             }),
             dependsOn: {const AlloyKey(Database)},
           );
-        addTearDown(scope.dispose);
 
         await scope.init();
 
@@ -91,14 +89,15 @@ void main() {
     /// A parent's phase 1 is its own, and a child pushed onto a live parent
     /// finds it already built — so the edge is dropped, not rejected.
     test('naming an async registration in an ancestor is allowed', () async {
-      final root = AlloyScope.root(name: 'app')
-        ..registerAsyncSingleton<Database>(_AsyncFn((_) async => Database()));
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app')
+        ..registerAsyncSingleton<Database>(
+          AsyncFnFactory((_) async => Database()),
+        );
       await root.init();
 
       final child = root.push('session')
         ..registerAsyncSingleton<Index>(
-          _AsyncFn((_) async => Index()),
+          AsyncFnFactory((_) async => Index()),
           dependsOn: {const AlloyKey(Database)},
         );
 
@@ -110,9 +109,10 @@ void main() {
 
   group('a parameterized registration', () {
     test('resolved without its argument says which call to use', () {
-      final scope = AlloyScope.root(name: 'app')
-        ..registerParamFactory<Ticket, String>(_ParamFn((_, id) => Ticket(id)));
-      addTearDown(scope.dispose);
+      final scope = alloyTestRoot(name: 'app')
+        ..registerParamFactory<Ticket, String>(
+          FnParamFactory((_, id) => Ticket(id)),
+        );
 
       expect(
         () => scope.get<Ticket>(),
@@ -127,9 +127,8 @@ void main() {
     });
 
     test('is the only thing getWithParam accepts', () {
-      final scope = AlloyScope.root(name: 'app')
-        ..registerLazySingleton<Logger>(_Fn((_) => Logger()));
-      addTearDown(scope.dispose);
+      final scope = alloyTestRoot(name: 'app')
+        ..registerLazySingleton<Logger>(FnFactory((_) => Logger()));
 
       expect(
         () => scope.getWithParam<Logger, String>('x'),
@@ -143,32 +142,4 @@ void main() {
       );
     });
   });
-}
-
-final class _Fn<T extends Object> implements AlloyFactory<T> {
-  const _Fn(this.build);
-
-  final T Function(AlloyResolver resolver) build;
-
-  @override
-  T create(AlloyResolver resolver) => build(resolver);
-}
-
-final class _AsyncFn<T extends Object> implements AlloyAsyncFactory<T> {
-  const _AsyncFn(this.build);
-
-  final Future<T> Function(AlloyResolver resolver) build;
-
-  @override
-  Future<T> create(AlloyResolver resolver) => build(resolver);
-}
-
-final class _ParamFn<T extends Object, P extends Object>
-    implements AlloyParamFactory<T, P> {
-  const _ParamFn(this.build);
-
-  final T Function(AlloyResolver resolver, P param) build;
-
-  @override
-  T create(AlloyResolver resolver, P param) => build(resolver, param);
 }

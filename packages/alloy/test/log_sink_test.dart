@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -32,7 +33,7 @@ void main() {
 
     test('drives a real graph', () async {
       final seen = <String>[];
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [
           AlloyLogObserver(AlloyLogSink.from((r) => seen.add(r.message))),
@@ -52,7 +53,7 @@ void main() {
 
     test('the record keeps its structure, not just a string', () {
       AlloyLogRecord? captured;
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [
           AlloyLogObserver(
@@ -61,7 +62,6 @@ void main() {
           ),
         ],
       )..registerLazySingleton<Logger>(const LoggerFactory());
-      addTearDown(root.dispose);
 
       root.get<Logger>();
 

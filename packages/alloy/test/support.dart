@@ -1,28 +1,38 @@
 import 'dart:async';
 
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 
-final disposeLog = <String>[];
+/// Where teardown is recorded, replaced by [resetLogs].
+///
+/// A fixture captures this at **construction**, not at teardown. Teardown is
+/// not awaited by every caller, so a scope from one test can still be
+/// releasing while the next runs; reading the current recorder when the
+/// instance is disposed would file that report against the wrong test.
+var recorder = DisposeRecorder();
+
 final initLog = <String>[];
 
 class Recorder implements Disposable {
-  Recorder(this.label);
+  Recorder(this.label) : _recorder = recorder;
 
   final String label;
+  final DisposeRecorder _recorder;
 
   @override
-  void dispose() => disposeLog.add(label);
+  void dispose() => _recorder.record(label);
 }
 
 class AsyncRecorder implements AsyncDisposable {
-  AsyncRecorder(this.label);
+  AsyncRecorder(this.label) : _recorder = recorder;
 
   final String label;
+  final DisposeRecorder _recorder;
 
   @override
   Future<void> dispose() async {
     await Future<void>.delayed(Duration.zero);
-    disposeLog.add(label);
+    _recorder.record(label);
   }
 }
 
@@ -111,7 +121,7 @@ class SlowFactory implements AlloyAsyncFactory<SlowService> {
 }
 
 void resetLogs() {
-  disposeLog.clear();
+  recorder = DisposeRecorder();
   initLog.clear();
 }
 

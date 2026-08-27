@@ -117,3 +117,10 @@ Measured 2026-08-27: clean. The test *runner* cannot run down there — `fronten
 resolves to 3.2.0, which invokes a `frontend_server.dart.snapshot` that Dart 3.13 no longer ships —
 but that is a transitive dev dependency nothing here declares, and it is invisible to consumers,
 who never run these tests.
+
+## `alloy` dev-depends on `alloy_test`
+
+Its own tests use the helpers, which looks like a cycle and is not: dev dependencies are not
+transitive, so nothing a consumer resolves is affected, and `pub publish --dry-run` is clean. The
+publication order below is unchanged — `alloy` goes out before `alloy_test`, and the dev dependency
+plays no part in that.

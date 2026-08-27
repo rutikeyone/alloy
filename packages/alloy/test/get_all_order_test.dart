@@ -1,4 +1,4 @@
-import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 class Formatter {
@@ -15,11 +15,10 @@ void main() {
   /// cannot quietly reorder what every consumer of a multi-binding sees.
   group('getAll order', () {
     test('is registration order, not declaration or alphabetical', () {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerSingleton<Formatter>(const Formatter('zulu'), name: 'z')
         ..registerSingleton<Formatter>(const Formatter('alpha'), name: 'a')
         ..registerSingleton<Formatter>(const Formatter('mike'), name: 'm');
-      addTearDown(scope.dispose);
 
       expect(scope.getAll<Formatter>().map((each) => each.label), [
         'zulu',
@@ -29,10 +28,9 @@ void main() {
     });
 
     test('walks own registrations first, then each ancestor in turn', () {
-      final root = AlloyScope.root(name: 'app')
+      final root = alloyTestRoot(name: 'app')
         ..registerSingleton<Formatter>(const Formatter('root-1'), name: 'r1')
         ..registerSingleton<Formatter>(const Formatter('root-2'), name: 'r2');
-      addTearDown(root.dispose);
 
       final child = root.push('session')
         ..registerSingleton<Formatter>(const Formatter('child'), name: 'c');
@@ -45,9 +43,8 @@ void main() {
     });
 
     test('a shadowed key is taken from the nearest scope only once', () {
-      final root = AlloyScope.root(name: 'app')
+      final root = alloyTestRoot(name: 'app')
         ..registerSingleton<Formatter>(const Formatter('root'), name: 'shared');
-      addTearDown(root.dispose);
 
       final child = root.push(
         'session',
@@ -57,8 +54,7 @@ void main() {
     });
 
     test('is stable across calls', () {
-      final scope = AlloyScope.root(name: 'app');
-      addTearDown(scope.dispose);
+      final scope = alloyTestRoot(name: 'app');
       for (var i = 0; i < 20; i++) {
         scope.registerSingleton<Formatter>(Formatter('$i'), name: '$i');
       }

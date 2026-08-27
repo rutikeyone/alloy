@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -8,18 +9,18 @@ void main() {
 
   group('getOrNull', () {
     test('returns the instance when something is registered', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(scope.getOrNull<Logger>(), same(scope.get<Logger>()));
     });
 
     test('returns null instead of throwing when nothing is', () {
-      expect(AlloyScope.root().getOrNull<Logger>(), isNull);
+      expect(alloyTestRoot().getOrNull<Logger>(), isNull);
     });
 
     test('a name that nothing registers reads as absent', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(scope.getOrNull<Logger>(name: 'audit'), isNull);
@@ -27,7 +28,7 @@ void main() {
     });
 
     test('resolves through ancestors like get does', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
       final child = root.push('child');
 
@@ -35,7 +36,7 @@ void main() {
     });
 
     test('an async singleton asked for too early still throws', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(const SlowFactory('db', 5));
 
       expect(
@@ -49,7 +50,7 @@ void main() {
     });
 
     test('a parameterized factory still throws', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<Greeting, String>(const GreetingFactory());
 
       expect(() => scope.getOrNull<Greeting>(), throwsA(isA<AlloyError>()));
@@ -58,7 +59,7 @@ void main() {
 
   group('keys', () {
     test('lists what the scope registers, in registration order', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerLazySingleton<ApiClient>(const ApiClientFactory());
 
@@ -66,7 +67,7 @@ void main() {
     });
 
     test('keeps named registrations apart from unnamed ones', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerLazySingleton<Logger>(const LoggerFactory(), name: 'audit');
 
@@ -75,21 +76,21 @@ void main() {
     });
 
     test('lists a lazy singleton nobody resolved', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(scope.keys, contains(const AlloyKey(Logger)));
-      expect(disposeLog, isEmpty, reason: 'nothing was built');
+      expect(recorder.entries, isEmpty, reason: 'nothing was built');
     });
 
     test('does not list what only adopt owns', () {
-      final scope = AlloyScope.root()..adopt(Recorder('adopted'));
+      final scope = alloyTestRoot()..adopt(Recorder('adopted'));
 
       expect(scope.keys, isEmpty);
     });
 
     test('is empty after dispose rather than a tombstone', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
       await scope.dispose();
 
@@ -97,7 +98,7 @@ void main() {
     });
 
     test('is unmodifiable', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(
@@ -109,7 +110,7 @@ void main() {
 
   group('visibleKeys', () {
     test('includes what ancestors register', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
       final child = root.push('child')
         ..registerLazySingleton<ApiClient>(const ApiClientFactory());
@@ -121,7 +122,7 @@ void main() {
     });
 
     test('names the scope that owns each key', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
       final child = root.push('child')
         ..registerLazySingleton<ApiClient>(const ApiClientFactory());
@@ -131,7 +132,7 @@ void main() {
     });
 
     test('a child shadowing an ancestor owns the key', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
       final child = root.push('child')
         ..registerLazySingleton<Logger>(const LoggerFactory());
@@ -143,7 +144,7 @@ void main() {
 
   group('root and the tree', () {
     test('root climbs to the outermost scope', () {
-      final root = AlloyScope.root(name: 'app');
+      final root = alloyTestRoot(name: 'app');
       final grandchild = root.push('session').push('flow');
 
       expect(grandchild.root, same(root));
@@ -151,7 +152,7 @@ void main() {
     });
 
     test('describeTree indents children under their parent', () {
-      final root = AlloyScope.root(name: 'app')
+      final root = alloyTestRoot(name: 'app')
         ..registerLazySingleton<Logger>(const LoggerFactory());
       root.push('session');
 
@@ -164,7 +165,7 @@ void main() {
   });
 
   test('diagnostics still answer on a disposed scope', () async {
-    final root = AlloyScope.root(name: 'app');
+    final root = alloyTestRoot(name: 'app');
     final child = root.push('child');
     await child.dispose();
 

@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -77,7 +78,7 @@ void main() {
 
   group('runtime cycle detection', () {
     test('a two-node cycle throws instead of overflowing the stack', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Alpha>(const AlphaFactory())
         ..registerLazySingleton<Beta>(const BetaFactory());
 
@@ -85,7 +86,7 @@ void main() {
     });
 
     test('the error names the resolution path', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Alpha>(const AlphaFactory())
         ..registerLazySingleton<Beta>(const BetaFactory());
 
@@ -99,14 +100,14 @@ void main() {
     });
 
     test('self dependency is caught', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerFactory<SelfHungry>(const SelfHungryFactory());
 
       expect(() => scope.get<SelfHungry>(), throwsA(isA<AlloyCycleError>()));
     });
 
     test('the tracker is shared across the scope tree', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Alpha>(const AlphaFactory())
         ..registerLazySingleton<Beta>(const BetaFactory());
       final child = root.push('child');
@@ -115,7 +116,7 @@ void main() {
     });
 
     test('a parent still cannot see what only the child registered', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Alpha>(const AlphaFactory());
       final child = root.push('child')
         ..registerLazySingleton<Beta>(const BetaFactory());
@@ -128,7 +129,7 @@ void main() {
     });
 
     test('the tracker unwinds so later resolves still work', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Alpha>(const AlphaFactory())
         ..registerLazySingleton<Beta>(const BetaFactory())
         ..registerLazySingleton<Logger>(const LoggerFactory());
@@ -143,7 +144,7 @@ void main() {
     /// first stays behind — and the tracker is shared by the whole tree, so the
     /// next scope registering that key is told it is a cycle.
     test('a parallel level leaves no key behind for a later scope', () async {
-      final root = AlloyScope.root(name: 'app')
+      final root = alloyTestRoot(name: 'app')
         ..registerAsyncSingleton<SlowService>(
           const SlowFactory('fast', 0),
           name: 'fast',
@@ -152,7 +153,6 @@ void main() {
           const SlowFactory('slow', 30),
           name: 'slow',
         );
-      addTearDown(root.dispose);
       await root.init();
 
       final child = root.push('child')
@@ -168,7 +168,7 @@ void main() {
     });
 
     test('a diamond is not mistaken for a cycle', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerLazySingleton<ApiClient>(const ApiClientFactory());
 
@@ -178,7 +178,7 @@ void main() {
 
   group('init is safe to call more than once', () {
     test('concurrent init calls build the graph exactly once', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<Counter>(const CountingFactory());
 
       await Future.wait([scope.init(), scope.init(), scope.init()]);
@@ -188,7 +188,7 @@ void main() {
     });
 
     test('sequential init calls are a no-op after the first', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<Counter>(const CountingFactory());
 
       await scope.init();
@@ -198,7 +198,7 @@ void main() {
     });
 
     test('init after dispose is rejected', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<Counter>(const CountingFactory());
       await scope.init();
       await scope.dispose();
@@ -209,7 +209,7 @@ void main() {
 
   group('dispose racing init', () {
     test('dispose waits for a running init and still ends disposed', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<Counter>(const CountingFactory());
 
       final init = scope.init();
@@ -220,19 +220,19 @@ void main() {
     });
 
     test('what a racing init built is still torn down', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<AsyncRecorder>(const RecorderFactory());
 
       final init = scope.init();
       final dispose = scope.dispose();
       await Future.wait([init, dispose]);
 
-      expect(disposeLog, ['async-singleton']);
+      expect(recorder.entries, ['async-singleton']);
       expect(scope.state, AlloyScopeState.disposed);
     });
 
     test('a failed init still lets the scope be disposed', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<Counter>(const Exploding());
 
       await expectLater(scope.init(), throwsA(isA<StateError>()));

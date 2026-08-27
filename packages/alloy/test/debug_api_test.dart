@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -8,7 +9,7 @@ void main() {
 
   group('debugKindOf', () {
     test('names every kind of registration', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerSingleton<Greeting>(Greeting('hi'))
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerFactory<ApiClient>(const ApiClientFactory())
@@ -31,11 +32,11 @@ void main() {
     });
 
     test('is null for a key nothing registers', () {
-      expect(AlloyScope.root().debugKindOf(const AlloyKey(Logger)), isNull);
+      expect(alloyTestRoot().debugKindOf(const AlloyKey(Logger)), isNull);
     });
 
     test('answers through ancestors, like get does', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(
@@ -47,7 +48,7 @@ void main() {
 
   group('debugResolve', () {
     test('builds the same instance the typed get would', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(
@@ -57,11 +58,11 @@ void main() {
     });
 
     test('is null for a key nothing registers', () {
-      expect(AlloyScope.root().debugResolve(const AlloyKey(Logger)), isNull);
+      expect(alloyTestRoot().debugResolve(const AlloyKey(Logger)), isNull);
     });
 
     test('throws what get throws for an async singleton before init', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(const SlowFactory('db', 0));
 
       expect(
@@ -71,7 +72,7 @@ void main() {
     });
 
     test('throws for a parameterized registration', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<PropertyTarget, String>(
           const TargetByNameFactory(),
         );

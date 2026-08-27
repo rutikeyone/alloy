@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -33,10 +34,12 @@ class SyncStep implements AlloyBootstrapStep {
 }
 
 class ClosingStep implements AlloyBootstrapStep, Disposable {
-  ClosingStep(this.name);
+  ClosingStep(this.name) : _recorder = recorder;
 
   @override
   final String name;
+
+  final DisposeRecorder _recorder;
 
   var isClosed = false;
 
@@ -46,21 +49,23 @@ class ClosingStep implements AlloyBootstrapStep, Disposable {
   @override
   void dispose() {
     isClosed = true;
-    disposeLog.add(name);
+    _recorder.record(name);
   }
 }
 
 class ClosingAsyncStep implements AlloyBootstrapStep, AsyncDisposable {
-  ClosingAsyncStep(this.name);
+  ClosingAsyncStep(this.name) : _recorder = recorder;
 
   @override
   final String name;
+
+  final DisposeRecorder _recorder;
 
   @override
   void run() => bootLog.add(name);
 
   @override
-  Future<void> dispose() async => disposeLog.add(name);
+  Future<void> dispose() async => _recorder.record(name);
 }
 
 class FailingStep implements AlloyBootstrapStep {
@@ -163,7 +168,7 @@ void main() {
 
       await scope.dispose();
 
-      expect(disposeLog, [
+      expect(recorder.entries, [
         'service',
         'binding',
       ], reason: 'bootstrap set up the platform, so it is torn down last');
@@ -177,7 +182,7 @@ void main() {
 
       await scope.dispose();
 
-      expect(disposeLog, ['binding']);
+      expect(recorder.entries, ['binding']);
     });
 
     test('a step with nothing to release costs the scope nothing', () async {
@@ -188,7 +193,7 @@ void main() {
 
       await scope.dispose();
 
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
     });
   });
 
@@ -206,7 +211,7 @@ void main() {
         throwsA(isA<AlloyBootstrapError>()),
       );
 
-      expect(disposeLog, ['second', 'first']);
+      expect(recorder.entries, ['second', 'first']);
     });
 
     test('leaves nothing running when the very first step fails', () async {
@@ -218,50 +223,50 @@ void main() {
         throwsA(isA<AlloyBootstrapError>()),
       );
 
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
       expect(bootLog, isEmpty);
     });
   });
 
   group('adopt', () {
     test('ties an arbitrary object to the scope lifetime', () async {
-      final scope = AlloyScope.root();
-      final recorder = scope.adopt(Recorder('adopted'));
+      final scope = alloyTestRoot();
+      final adopted = scope.adopt(Recorder('adopted'));
 
       await scope.dispose();
 
-      expect(disposeLog, ['adopted']);
-      expect(recorder, isA<Recorder>());
+      expect(recorder.entries, ['adopted']);
+      expect(adopted, isA<Recorder>());
     });
 
     test('does not make the object resolvable', () async {
-      final scope = AlloyScope.root()..adopt(Recorder('adopted'));
+      final scope = alloyTestRoot()..adopt(Recorder('adopted'));
 
       expect(scope.isRegistered<Recorder>(), isFalse);
       await scope.dispose();
     });
 
     test('keeps ordering with everything else the scope owns', () async {
-      final scope = AlloyScope.root()..adopt(Recorder('first'));
+      final scope = alloyTestRoot()..adopt(Recorder('first'));
       scope.registerSingleton(Recorder('second'), name: 'second');
 
       await scope.dispose();
 
-      expect(disposeLog, ['second', 'first']);
+      expect(recorder.entries, ['second', 'first']);
     });
 
     test('a non-disposable is returned but not retained', () async {
-      final scope = AlloyScope.root();
+      final scope = alloyTestRoot();
       final value = scope.adopt(const Clock());
 
       await scope.dispose();
 
       expect(value, isA<Clock>());
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
     });
 
     test('is rejected once the scope is gone', () async {
-      final scope = AlloyScope.root();
+      final scope = alloyTestRoot();
       await scope.dispose();
 
       expect(

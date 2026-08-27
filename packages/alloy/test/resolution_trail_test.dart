@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 class Missing {}
@@ -20,11 +21,10 @@ class Repository {
 void main() {
   group('a failure inside a factory', () {
     test('names the registration that asked for it', () {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerLazySingleton<Repository>(
-          _Fn((resolver) => Repository(resolver.get<Missing>())),
+          FnFactory((resolver) => Repository(resolver.get<Missing>())),
         );
-      addTearDown(scope.dispose);
 
       expect(
         () => scope.get<Repository>(),
@@ -39,14 +39,13 @@ void main() {
     });
 
     test('names every step of a chain, outermost first', () {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerLazySingleton<Api>(
-          _Fn((resolver) => Api(resolver.get<Repository>())),
+          FnFactory((resolver) => Api(resolver.get<Repository>())),
         )
         ..registerLazySingleton<Repository>(
-          _Fn((resolver) => Repository(resolver.get<Missing>())),
+          FnFactory((resolver) => Repository(resolver.get<Missing>())),
         );
-      addTearDown(scope.dispose);
 
       expect(
         () => scope.get<Api>(),
@@ -61,11 +60,10 @@ void main() {
     });
 
     test('carries the trail as keys, not only as prose', () {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerLazySingleton<Repository>(
-          _Fn((resolver) => Repository(resolver.get<Missing>())),
+          FnFactory((resolver) => Repository(resolver.get<Missing>())),
         );
-      addTearDown(scope.dispose);
 
       try {
         scope.get<Repository>();
@@ -77,12 +75,11 @@ void main() {
     });
 
     test('an async singleton asked for too early names the asker too', () {
-      final scope = AlloyScope.root(name: 'app')
-        ..registerAsyncSingleton<Ready>(_AsyncFn((_) async => Ready()))
+      final scope = alloyTestRoot(name: 'app')
+        ..registerAsyncSingleton<Ready>(AsyncFnFactory((_) async => Ready()))
         ..registerLazySingleton<Repository>(
-          _Fn((resolver) => Repository(resolver.get<Ready>())),
+          FnFactory((resolver) => Repository(resolver.get<Ready>())),
         );
-      addTearDown(scope.dispose);
 
       expect(
         () => scope.get<Repository>(),
@@ -99,8 +96,7 @@ void main() {
 
   group('a failure outside one', () {
     test('asking from the top has no trail to report', () {
-      final scope = AlloyScope.root(name: 'app');
-      addTearDown(scope.dispose);
+      final scope = alloyTestRoot(name: 'app');
 
       expect(
         () => scope.get<Missing>(),
@@ -120,17 +116,16 @@ void main() {
     /// suspends, so both keys are under construction at once. Reading that as
     /// a chain would print a caller that never called.
     test('a parallel init level does not invent a caller', () async {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerAsyncSingleton<Ready>(
-          _AsyncFn((_) async {
+          AsyncFnFactory((_) async {
             await Future<void>.delayed(const Duration(milliseconds: 5));
             return Ready();
           }),
         )
         ..registerAsyncSingleton<Api>(
-          _AsyncFn((resolver) async => Api(resolver.get<Missing>())),
+          AsyncFnFactory((resolver) async => Api(resolver.get<Missing>())),
         );
-      addTearDown(scope.dispose);
 
       await expectLater(
         scope.init(),
@@ -142,22 +137,4 @@ void main() {
       );
     });
   });
-}
-
-final class _Fn<T extends Object> implements AlloyFactory<T> {
-  const _Fn(this.build);
-
-  final T Function(AlloyResolver resolver) build;
-
-  @override
-  T create(AlloyResolver resolver) => build(resolver);
-}
-
-final class _AsyncFn<T extends Object> implements AlloyAsyncFactory<T> {
-  const _AsyncFn(this.build);
-
-  final Future<T> Function(AlloyResolver resolver) build;
-
-  @override
-  Future<T> create(AlloyResolver resolver) => build(resolver);
 }

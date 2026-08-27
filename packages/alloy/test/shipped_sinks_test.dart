@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 AlloyLogRecord _record(AlloyLogLevel level) => AlloyLogRecord(
@@ -99,7 +100,7 @@ void main() {
 
     test('reaches an observer end to end', () async {
       final reports = <AlloyErrorReport>[];
-      final scope = AlloyScope.root(
+      final scope = alloyTestRoot(
         name: 'app',
         observers: [AlloyErrorObserver(AlloyErrorSink.from(reports.add))],
       )..registerAsyncSingleton<Object>(const _Exploding());

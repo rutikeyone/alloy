@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 class DevWithMocks extends AlloyEnvironment {
@@ -71,7 +72,7 @@ void main() {
   group('a manually built graph', () {
     test('selects an implementation the same way the generator does', () async {
       Future<String> noteStoreIn(AlloyEnvironment environment) async {
-        final scope = AlloyScope.root(name: 'app');
+        final scope = alloyTestRoot(name: 'app');
         if (environment.matches(const {'prod'})) {
           scope.registerSingleton<String>('sql');
         }

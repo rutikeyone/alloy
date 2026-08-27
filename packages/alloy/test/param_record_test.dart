@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 class Repo {
@@ -55,10 +56,9 @@ void main() {
   /// record would be less readable than the constructor it replaced.
   group('a record as the runtime argument', () {
     test('a named record keeps the names, at both ends', () {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerSingleton<Repo>(const Repo())
         ..registerParamFactory<Editor, EditorArgs>(const EditorFactory());
-      addTearDown(scope.dispose);
 
       final editor = scope.getWithParam<Editor, EditorArgs>((
         id: 42,
@@ -79,9 +79,8 @@ void main() {
     });
 
     test('a positional record works too', () {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerParamFactory<Ticket, (int, String)>(const TicketFactory());
-      addTearDown(scope.dispose);
 
       final ticket = scope.getWithParam<Ticket, (int, String)>((7, 'B'));
 
@@ -90,9 +89,8 @@ void main() {
     });
 
     test('the wrong record shape is refused by the type check', () {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerParamFactory<Ticket, (int, String)>(const TicketFactory());
-      addTearDown(scope.dispose);
 
       expect(
         () => scope.getWithParam<Ticket, Object>('not a pair'),

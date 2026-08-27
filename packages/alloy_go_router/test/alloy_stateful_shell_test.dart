@@ -17,7 +17,6 @@ void main() {
   });
 
   Future<void> start(WidgetTester tester, GoRouter router) async {
-    addTearDown(router.dispose);
     await tester.pumpWidget(app(root, router));
     await settle(tester);
     await settle(tester);

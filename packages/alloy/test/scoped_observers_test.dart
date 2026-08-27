@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 class Marker {}
@@ -21,8 +22,7 @@ void main() {
   group('an observer added when a scope is pushed', () {
     test('sees that scope and its descendants, and nothing above', () async {
       final seen = <String>[];
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       final session = root.push(
         'session',
@@ -48,11 +48,10 @@ void main() {
     test('does not replace the ones inherited from the root', () async {
       final root0 = <String>[];
       final added = <String>[];
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [_Recording('root', root0)],
       );
-      addTearDown(root.dispose);
 
       root.push('session', observers: [_Recording('added', added)]);
 
@@ -62,8 +61,7 @@ void main() {
 
     test('the first thing it sees is the push that installed it', () {
       final seen = <String>[];
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       root.push('session', observers: [_Recording('session', seen)]);
 
@@ -72,25 +70,15 @@ void main() {
 
     test('pushing without observers is unchanged', () {
       final seen = <String>[];
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [_Recording('root', seen)],
       );
-      addTearDown(root.dispose);
 
       final child = root.push('session');
-      child.registerLazySingleton<Marker>(_Fn((_) => Marker()));
+      child.registerLazySingleton<Marker>(FnFactory((_) => Marker()));
 
       expect(seen, ['root:pushed:app/session']);
     });
   });
-}
-
-final class _Fn<T extends Object> implements AlloyFactory<T> {
-  const _Fn(this.build);
-
-  final T Function(AlloyResolver resolver) build;
-
-  @override
-  T create(AlloyResolver resolver) => build(resolver);
 }

@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -28,8 +29,12 @@ class TrunkFactory implements AlloyFactory<Trunk> {
 }
 
 class AsyncLeaf implements AsyncDisposable {
+  AsyncLeaf() : _recorder = recorder;
+
+  final DisposeRecorder _recorder;
+
   @override
-  Future<void> dispose() async => disposeLog.add('AsyncLeaf');
+  Future<void> dispose() async => _recorder.record('AsyncLeaf');
 }
 
 class AsyncLeafFactory implements AlloyAsyncFactory<AsyncLeaf> {
@@ -44,58 +49,57 @@ void main() {
 
   group('dispose ordering', () {
     test('disposes by creation order, not registration order', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Trunk>(const TrunkFactory())
         ..registerLazySingleton<Leaf>(const LeafFactory());
 
       scope.get<Trunk>();
       await scope.dispose();
 
-      expect(disposeLog, ['Trunk', 'Leaf']);
+      expect(recorder.entries, ['Trunk', 'Leaf']);
     });
 
     test('children are disposed before the parent', () async {
-      final root = AlloyScope.root()..registerSingleton(Recorder('root'));
+      final root = alloyTestRoot()..registerSingleton(Recorder('root'));
       final child = root.push('child')..registerSingleton(Recorder('child'));
       child.push('grandchild').registerSingleton(Recorder('grandchild'));
 
       await root.dispose();
 
-      expect(disposeLog, ['grandchild', 'child', 'root']);
+      expect(recorder.entries, ['grandchild', 'child', 'root']);
     });
 
     test('sibling scopes dispose last in first out', () async {
-      final root = AlloyScope.root();
+      final root = alloyTestRoot();
       root.push('first').registerSingleton(Recorder('first'));
       root.push('second').registerSingleton(Recorder('second'));
 
       await root.dispose();
 
-      expect(disposeLog, ['second', 'first']);
+      expect(recorder.entries, ['second', 'first']);
     });
 
     test('async disposables are awaited', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerSingleton(AsyncRecorder('slow'))
         ..registerSingleton(Recorder('fast'));
 
       await scope.dispose();
 
-      expect(disposeLog, ['fast', 'slow']);
+      expect(recorder.entries, ['fast', 'slow']);
     });
 
     test('transient instances are not owned by the scope', () async {
-      final scope = AlloyScope.root()
-        ..registerFactory<Leaf>(const LeafFactory());
+      final scope = alloyTestRoot()..registerFactory<Leaf>(const LeafFactory());
 
       scope.get<Leaf>();
       await scope.dispose();
 
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
     });
 
     test('a disposed child detaches from its parent', () async {
-      final root = AlloyScope.root();
+      final root = alloyTestRoot();
       final child = root.push('child');
 
       await child.dispose();
@@ -106,16 +110,16 @@ void main() {
     });
 
     test('dispose is idempotent', () async {
-      final scope = AlloyScope.root()..registerSingleton(Recorder('only'));
+      final scope = alloyTestRoot()..registerSingleton(Recorder('only'));
 
       await scope.dispose();
       await scope.dispose();
 
-      expect(disposeLog, ['only']);
+      expect(recorder.entries, ['only']);
     });
 
     test('a disposed scope refuses further use', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Leaf>(const LeafFactory());
       await scope.dispose();
 
@@ -126,7 +130,7 @@ void main() {
 
   group('async initialization', () {
     test('runs dependents strictly after their dependencies', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(const SlowFactory('database', 10))
         ..registerAsyncSingleton<AsyncLeaf>(
           const AsyncLeafFactory(),
@@ -140,7 +144,7 @@ void main() {
     });
 
     test('independent branches run in parallel', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(const SlowFactory('a', 120))
         ..registerAsyncSingleton<SlowService>(
           const SlowFactory('b', 120),
@@ -156,7 +160,7 @@ void main() {
     });
 
     test('a dependent chain runs sequentially', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(const SlowFactory('first', 120))
         ..registerAsyncSingleton<SlowService>(
           const SlowFactory('second', 120),
@@ -173,7 +177,7 @@ void main() {
     });
 
     test('an async singleton is unavailable before init', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(const SlowFactory('x', 0));
 
       expect(
@@ -183,7 +187,7 @@ void main() {
     });
 
     test('a cycle fails loudly instead of deadlocking', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(
           const SlowFactory('a', 0),
           dependsOn: {const AlloyKey(AsyncLeaf)},
@@ -197,7 +201,7 @@ void main() {
     });
 
     test('init is idempotent', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<SlowService>(const SlowFactory('once', 0));
 
       await scope.init();
@@ -209,13 +213,13 @@ void main() {
     test(
       'async singletons are disposed like any other owned instance',
       () async {
-        final scope = AlloyScope.root()
+        final scope = alloyTestRoot()
           ..registerAsyncSingleton<AsyncLeaf>(const AsyncLeafFactory());
 
         await scope.init();
         await scope.dispose();
 
-        expect(disposeLog, ['AsyncLeaf']);
+        expect(recorder.entries, ['AsyncLeaf']);
       },
     );
   });

@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -8,21 +9,21 @@ void main() {
 
   group('registration and resolution', () {
     test('lazy singleton returns the same instance', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(scope.get<Logger>(), same(scope.get<Logger>()));
     });
 
     test('factory returns a new instance every time', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerFactory<Logger>(const LoggerFactory());
 
       expect(scope.get<Logger>(), isNot(same(scope.get<Logger>())));
     });
 
     test('missing registration names the key and the scope', () {
-      final scope = AlloyScope.root(name: 'app');
+      final scope = alloyTestRoot(name: 'app');
 
       expect(
         () => scope.get<Logger>(),
@@ -31,7 +32,7 @@ void main() {
     });
 
     test('duplicate registration in one scope throws', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       expect(
@@ -43,7 +44,7 @@ void main() {
     test('named registrations coexist with unnamed ones', () {
       final primary = Logger();
       final backup = Logger();
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerSingleton<Logger>(primary)
         ..registerSingleton<Logger>(backup, name: 'backup');
 
@@ -52,14 +53,14 @@ void main() {
     });
 
     test('parameterized factory receives the argument', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<Greeting, String>(const GreetingFactory());
 
       expect(scope.getWithParam<Greeting, String>('alloy').text, 'hi alloy');
     });
 
     test('a value the factory cannot take names both types', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<Greeting, String>(const GreetingFactory());
 
       expect(
@@ -83,7 +84,7 @@ void main() {
     });
 
     test('the check happens before the factory runs', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<Greeting, String>(const GreetingFactory());
 
       expect(
@@ -97,7 +98,7 @@ void main() {
     /// A type test, not a comparison of `Type`s: a factory registered for a
     /// supertype should take a subtype, exactly as its body would.
     test('a subtype of the registered parameter is accepted', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<Greeting, Object>(const AnyGreetingFactory());
 
       expect(scope.getWithParam<Greeting, Object>('ada').text, 'hi ada');
@@ -105,7 +106,7 @@ void main() {
     });
 
     test('a named parameterized registration is checked too', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<Greeting, String>(
           const GreetingFactory(),
           name: 'formal',
@@ -124,7 +125,7 @@ void main() {
     });
 
     test('parameterized registration rejects plain get', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerParamFactory<Greeting, String>(const GreetingFactory());
 
       expect(() => scope.get<Greeting>(), throwsA(isA<AlloyError>()));
@@ -133,7 +134,7 @@ void main() {
 
   group('hierarchy', () {
     test('child resolves through the parent', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
       final child = root.push('session');
 
@@ -143,7 +144,7 @@ void main() {
     test('child shadows the parent without touching it', () {
       final rootLogger = Logger();
       final childLogger = Logger();
-      final root = AlloyScope.root()..registerSingleton<Logger>(rootLogger);
+      final root = alloyTestRoot()..registerSingleton<Logger>(rootLogger);
       final child = root.push('session')
         ..registerSingleton<Logger>(childLogger);
 
@@ -152,7 +153,7 @@ void main() {
     });
 
     test('dependencies resolve in the scope that owns them', () {
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory());
       final child = root.push('session')
         ..registerLazySingleton<ApiClient>(const ApiClientFactory());
@@ -161,7 +162,7 @@ void main() {
     });
 
     test('two sibling scopes are independent subtrees', () {
-      final root = AlloyScope.root();
+      final root = alloyTestRoot();
       final a = root.push('a')
         ..registerLazySingleton<Logger>(const LoggerFactory());
       final b = root.push('b')
@@ -174,7 +175,7 @@ void main() {
 
   group('multi-injection', () {
     test('getAll collects every registration of a type', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerSingleton<Logger>(Logger())
         ..registerSingleton<Logger>(Logger(), name: 'second')
         ..registerSingleton<Logger>(Logger(), name: 'third');
@@ -187,7 +188,7 @@ void main() {
       final rootExtra = Logger();
       final childDefault = Logger();
 
-      final root = AlloyScope.root()
+      final root = alloyTestRoot()
         ..registerSingleton<Logger>(rootDefault)
         ..registerSingleton<Logger>(rootExtra, name: 'extra');
       final child = root.push('session')
@@ -199,7 +200,7 @@ void main() {
 
   group('property injection', () {
     test('onInject runs immediately after construction', () {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerFactory<PropertyTarget>(const PropertyTargetFactory());
 

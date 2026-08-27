@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -114,22 +115,21 @@ void main() {
 
   group('a graph with no observers', () {
     test('behaves exactly as before', () async {
-      final root = AlloyScope.root(name: 'app')
+      final root = alloyTestRoot(name: 'app')
         ..registerLazySingleton<Logger>(const LoggerFactory());
       await root.init();
 
       expect(root.get<Logger>(), isA<Logger>());
       await root.dispose();
 
-      expect(disposeLog, ['Logger']);
+      expect(recorder.entries, ['Logger']);
     });
   });
 
   group('scope events', () {
     test('a push is reported with the parent it hangs from', () {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer]);
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app', observers: [observer]);
 
       root.push('session');
 
@@ -138,8 +138,7 @@ void main() {
 
     test('a child inherits the observers of its parent', () {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer]);
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app', observers: [observer]);
 
       root.push('session').push('screen');
 
@@ -148,13 +147,11 @@ void main() {
 
     test('the ref describes the scope without exposing it', () {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer]);
-      addTearDown(root.dispose);
+      alloyTestRoot(name: 'app', observers: [observer]);
       AlloyScopeRef? seen;
 
       final captured = _CapturingObserver((ref) => seen = ref);
-      final other = AlloyScope.root(name: 'app', observers: [captured]);
-      addTearDown(other.dispose);
+      final other = alloyTestRoot(name: 'app', observers: [captured]);
       other.push('session');
 
       expect(seen!.name, 'session');
@@ -167,9 +164,8 @@ void main() {
   group('instance events', () {
     test('a lazy singleton is reported once, on first resolve', () {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer])
+      final root = alloyTestRoot(name: 'app', observers: [observer])
         ..registerLazySingleton<Logger>(const LoggerFactory());
-      addTearDown(root.dispose);
 
       root
         ..get<Logger>()
@@ -180,9 +176,8 @@ void main() {
 
     test('a transient is reported every time and marked loose', () {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer])
+      final root = alloyTestRoot(name: 'app', observers: [observer])
         ..registerFactory<Logger>(const LoggerFactory());
-      addTearDown(root.dispose);
 
       root
         ..get<Logger>()
@@ -196,9 +191,8 @@ void main() {
 
     test('a parameterized factory is reported as loose', () {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer])
+      final root = alloyTestRoot(name: 'app', observers: [observer])
         ..registerParamFactory<Greeting, String>(const GreetingFactory());
-      addTearDown(root.dispose);
 
       root.getWithParam<Greeting, String>('there');
 
@@ -207,9 +201,8 @@ void main() {
 
     test('a named registration keeps its name in the key', () {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer])
+      final root = alloyTestRoot(name: 'app', observers: [observer])
         ..registerLazySingleton<Logger>(const LoggerFactory(), name: 'audit');
-      addTearDown(root.dispose);
 
       root.get<Logger>(name: 'audit');
 
@@ -220,11 +213,10 @@ void main() {
   group('init events', () {
     test('report the level count and completion', () async {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer])
+      final root = alloyTestRoot(name: 'app', observers: [observer])
         ..registerAsyncSingleton<AsyncRecorder>(const RecorderFactory());
 
       await root.init();
-      addTearDown(root.dispose);
 
       expect(observer.events.first, 'init-started:app:1');
       expect(observer.events, contains('init-done:app'));
@@ -232,11 +224,10 @@ void main() {
 
     test('are silent when there is nothing async to build', () async {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer])
+      final root = alloyTestRoot(name: 'app', observers: [observer])
         ..registerLazySingleton<Logger>(const LoggerFactory());
 
       await root.init();
-      addTearDown(root.dispose);
 
       expect(observer.events.where((e) => e.startsWith('init-')), isEmpty);
     });
@@ -245,7 +236,7 @@ void main() {
   group('the lifetime a creation reports', () {
     test('an eager singleton reports nothing, having been built already', () {
       final observer = RecordingObserver();
-      AlloyScope.root(
+      alloyTestRoot(
         name: 'app',
         observers: [observer],
       ).registerSingleton<Logger>(Logger());
@@ -259,9 +250,8 @@ void main() {
 
     test('an async singleton is told apart from a lazy one', () async {
       final observer = RecordingObserver();
-      final scope = AlloyScope.root(name: 'app', observers: [observer])
+      final scope = alloyTestRoot(name: 'app', observers: [observer])
         ..registerAsyncSingleton<SlowService>(const SlowFactory('db', 0));
-      addTearDown(scope.dispose);
 
       await scope.init();
 
@@ -273,7 +263,7 @@ void main() {
 
     test('the record carries the lifetime as a value, not as prose', () {
       final records = <AlloyLogRecord>[];
-      final scope = AlloyScope.root(
+      final scope = alloyTestRoot(
         name: 'app',
         observers: [
           AlloyLogObserver(
@@ -282,7 +272,6 @@ void main() {
           ),
         ],
       )..registerFactory<Logger>(const LoggerFactory());
-      addTearDown(scope.dispose);
 
       scope.get<Logger>();
 
@@ -298,7 +287,7 @@ void main() {
   group('dispose events', () {
     test('report the order teardown actually happened in', () async {
       final observer = RecordingObserver();
-      final root = AlloyScope.root(name: 'app', observers: [observer])
+      final root = alloyTestRoot(name: 'app', observers: [observer])
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerLazySingleton<ApiClient>(const ApiClientFactory());
       root.get<ApiClient>();
@@ -319,7 +308,7 @@ void main() {
       'a failed release is counted, and the instance is not reported',
       () async {
         final observer = RecordingObserver();
-        final root = AlloyScope.root(name: 'app', observers: [observer])
+        final root = alloyTestRoot(name: 'app', observers: [observer])
           ..registerSingleton<_Angry>(_Angry());
 
         await expectLater(root.dispose(), throwsA(isA<AlloyDisposeError>()));
@@ -333,13 +322,12 @@ void main() {
   group('bootstrap events', () {
     test('bracket every step', () async {
       final observer = RecordingObserver();
-      final scope = await AlloyApplication.start(
+      await alloyTestScope(
         root: const TwoStepScope(),
         bootstrap: [NoisyStep('platform'), NoisyStep('config')],
         rootName: 'app',
         observers: [observer],
       );
-      addTearDown(scope.dispose);
 
       expect(observer.events.take(4), [
         'boot-start:platform',
@@ -379,11 +367,10 @@ void main() {
 
   group('an observer that throws', () {
     test('cannot break the graph it is watching', () {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [const ExplodingObserver()],
       )..registerLazySingleton<Logger>(const LoggerFactory());
-      addTearDown(root.dispose);
 
       expect(root.push('session'), isA<AlloyScope>());
       expect(root.get<Logger>(), isA<Logger>());

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -33,15 +34,17 @@ class NeverFinishes implements AsyncDisposable {
 }
 
 class SlowDisposable implements AsyncDisposable {
-  SlowDisposable(this.label, this.delay);
+  SlowDisposable(this.label, this.delay) : _recorder = recorder;
 
   final String label;
+
+  final DisposeRecorder _recorder;
   final Duration delay;
 
   @override
   Future<void> dispose() async {
     await Future<void>.delayed(delay);
-    disposeLog.add(label);
+    _recorder.record(label);
   }
 }
 
@@ -73,7 +76,7 @@ void main() {
   setUp(resetLogs);
 
   test('a hanging init no longer blocks teardown forever', () async {
-    final scope = AlloyScope.root(name: 'app')
+    final scope = alloyTestRoot(name: 'app')
       ..registerAsyncSingleton<Recorder>(const StuckInit());
     unawaited(scope.init());
 
@@ -95,7 +98,7 @@ void main() {
   });
 
   test('a hanging disposable is reported by type', () async {
-    final scope = AlloyScope.root()..registerSingleton(NeverFinishes('stuck'));
+    final scope = alloyTestRoot()..registerSingleton(NeverFinishes('stuck'));
 
     await expectLater(
       scope.dispose(timeout: const Duration(milliseconds: 50)),
@@ -112,7 +115,7 @@ void main() {
   });
 
   test('teardown continues past a step that timed out', () async {
-    final scope = AlloyScope.root()
+    final scope = alloyTestRoot()
       ..registerSingleton(Recorder('first'), name: 'first')
       ..registerSingleton(NeverFinishes('stuck'))
       ..registerSingleton(Recorder('last'), name: 'last');
@@ -122,14 +125,14 @@ void main() {
       throwsA(isA<AlloyDisposeError>()),
     );
 
-    expect(disposeLog, [
+    expect(recorder.entries, [
       'last',
       'first',
     ], reason: 'the sync disposables on both sides of the stuck one still ran');
   });
 
   test('the deadline covers the whole tree, not each step', () async {
-    final scope = AlloyScope.root()
+    final scope = alloyTestRoot()
       ..registerSingleton(NeverFinishes('a'), name: 'a')
       ..registerSingleton(NeverFinishes('b'), name: 'b')
       ..registerSingleton(NeverFinishes('c'), name: 'c');
@@ -145,7 +148,7 @@ void main() {
   });
 
   test('a child that overruns is reported under its own name', () async {
-    final root = AlloyScope.root(name: 'app');
+    final root = alloyTestRoot(name: 'app');
     root.push('session').registerSingleton(NeverFinishes('stuck'));
 
     await expectLater(
@@ -163,19 +166,19 @@ void main() {
   });
 
   test('teardown well inside the budget stays quiet', () async {
-    final scope = AlloyScope.root()
+    final scope = alloyTestRoot()
       ..registerSingleton(
         SlowDisposable('slow', const Duration(milliseconds: 10)),
       );
 
     await scope.dispose(timeout: const Duration(seconds: 5));
 
-    expect(disposeLog, ['slow']);
+    expect(recorder.entries, ['slow']);
     expect(scope.state, AlloyScopeState.disposed);
   });
 
   test('a throwing disposable does not strand the rest', () async {
-    final scope = AlloyScope.root()
+    final scope = alloyTestRoot()
       ..registerSingleton(Recorder('first'), name: 'first')
       ..registerSingleton(ThrowingDisposable('broken'))
       ..registerSingleton(Recorder('last'), name: 'last');
@@ -190,12 +193,12 @@ void main() {
       ),
     );
 
-    expect(disposeLog, ['last', 'first']);
+    expect(recorder.entries, ['last', 'first']);
     expect(scope.state, AlloyScopeState.disposed);
   });
 
   test('an async disposable that throws is recorded too', () async {
-    final scope = AlloyScope.root()
+    final scope = alloyTestRoot()
       ..registerSingleton(ThrowingAsyncDisposable('broken'));
 
     await expectLater(
@@ -211,7 +214,7 @@ void main() {
   });
 
   test('timeouts and exceptions are reported together', () async {
-    final scope = AlloyScope.root()
+    final scope = alloyTestRoot()
       ..registerSingleton(ThrowingDisposable('broken'))
       ..registerSingleton(NeverFinishes('stuck'));
 
@@ -226,7 +229,7 @@ void main() {
   });
 
   test('a failure inside a child is reported under the child name', () async {
-    final root = AlloyScope.root(name: 'app');
+    final root = alloyTestRoot(name: 'app');
     root.push('session').registerSingleton(ThrowingDisposable('broken'));
 
     await expectLater(
@@ -245,19 +248,19 @@ void main() {
 
   group('a failed init', () {
     test('does not make teardown itself fail', () async {
-      final scope = AlloyScope.root(name: 'app')
+      final scope = alloyTestRoot(name: 'app')
         ..registerSingleton(Recorder('early'))
         ..registerAsyncSingleton<Recorder>(const FailingInit(), name: 'async');
       await expectLater(scope.init(), throwsA(isA<StateError>()));
 
       await scope.dispose();
 
-      expect(disposeLog, ['early']);
+      expect(recorder.entries, ['early']);
       expect(scope.state, AlloyScopeState.disposed);
     });
 
     test('is listed as context when teardown also fails', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerSingleton(ThrowingDisposable('broken'))
         ..registerAsyncSingleton<Recorder>(const FailingInit());
       await expectLater(scope.init(), throwsA(isA<StateError>()));
@@ -278,7 +281,7 @@ void main() {
     });
 
     test('a still-running init that hangs is a teardown failure', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<Recorder>(const StuckInit());
       unawaited(scope.init());
 
@@ -292,12 +295,12 @@ void main() {
   });
 
   test('the default budget is generous enough for ordinary teardown', () async {
-    final scope = AlloyScope.root()
+    final scope = alloyTestRoot()
       ..registerSingleton(AsyncRecorder('async'))
       ..registerSingleton(Recorder('sync'));
 
     await scope.dispose();
 
-    expect(disposeLog, ['sync', 'async']);
+    expect(recorder.entries, ['sync', 'async']);
   });
 }

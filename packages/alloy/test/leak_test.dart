@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:leak_tracker/leak_tracker.dart';
 import 'package:test/test.dart';
 
@@ -27,7 +28,7 @@ void main() {
   setUp(resetLogs);
 
   test('a live scope keeps its singletons reachable', () async {
-    final scope = AlloyScope.root();
+    final scope = alloyTestRoot();
     final ref = seed(scope);
 
     await collect();
@@ -37,11 +38,11 @@ void main() {
   });
 
   test('a disposed scope releases its singletons to the collector', () async {
-    var scope = AlloyScope.root();
+    var scope = alloyTestRoot();
     final ref = seed(scope);
 
     await scope.dispose();
-    scope = AlloyScope.root();
+    scope = alloyTestRoot();
 
     await collect();
 
@@ -50,11 +51,11 @@ void main() {
   });
 
   test('disposing a parent releases instances owned by its children', () async {
-    var root = AlloyScope.root();
+    var root = alloyTestRoot();
     final ref = seed(root.push('child'));
 
     await root.dispose();
-    root = AlloyScope.root();
+    root = alloyTestRoot();
 
     await collect();
 
@@ -63,7 +64,7 @@ void main() {
   });
 
   test('a parent keeps an unreferenced child alive until dispose', () async {
-    final root = AlloyScope.root();
+    final root = alloyTestRoot();
     final ref = seed(root.push('child'));
 
     await collect();
@@ -80,11 +81,11 @@ void main() {
   test(
     'a dropped scope that was never disposed still leaks, by design',
     () async {
-      var scope = AlloyScope.root();
+      var scope = alloyTestRoot();
       final ref = seed(scope);
       final keepAlive = scope;
 
-      scope = AlloyScope.root();
+      scope = alloyTestRoot();
       await collect();
 
       expect(ref.target, isNotNull, reason: 'owner never called dispose');

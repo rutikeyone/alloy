@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';
@@ -8,14 +9,16 @@ import 'support.dart';
 /// A type Alloy cannot recognise: it closes, but says so in its own vocabulary
 /// rather than through [Disposable]. Every third-party client looks like this.
 class Connection {
-  Connection(this.label);
+  Connection(this.label) : _recorder = recorder;
 
   final String label;
+
+  final DisposeRecorder _recorder;
   var isOpen = true;
 
   void close() {
     isOpen = false;
-    disposeLog.add(label);
+    _recorder.record(label);
   }
 }
 
@@ -45,7 +48,7 @@ void main() {
 
   group('a registration that says how to close itself', () {
     test('is closed with the scope', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Connection>(
           const ConnectionFactory('db'),
           dispose: (connection) => connection.close(),
@@ -57,12 +60,12 @@ void main() {
       await scope.dispose();
 
       expect(connection.isOpen, isFalse);
-      expect(disposeLog, ['db']);
+      expect(recorder.entries, ['db']);
     });
 
     test('receives the instance the scope built, not a copy', () async {
       Connection? closed;
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Connection>(
           const ConnectionFactory('db'),
           dispose: (connection) => closed = connection,
@@ -75,7 +78,7 @@ void main() {
     });
 
     test('is not called when nothing ever resolved it', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Connection>(
           const ConnectionFactory('db'),
           dispose: (connection) => connection.close(),
@@ -83,12 +86,12 @@ void main() {
 
       await scope.dispose();
 
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
     });
 
     test('an eager singleton is closed too', () async {
       final connection = Connection('eager');
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerSingleton<Connection>(
           connection,
           dispose: (it) => it.close(),
@@ -100,7 +103,7 @@ void main() {
     });
 
     test('an async singleton is closed too', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerAsyncSingleton<Connection>(
           const SlowConnectionFactory('async'),
           dispose: (connection) => connection.close(),
@@ -109,11 +112,11 @@ void main() {
 
       await scope.dispose();
 
-      expect(disposeLog, ['async']);
+      expect(recorder.entries, ['async']);
     });
 
     test('an asynchronous close is awaited before teardown moves on', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Connection>(
           const ConnectionFactory('slow'),
           dispose: (connection) async {
@@ -129,13 +132,13 @@ void main() {
 
       await scope.dispose();
 
-      expect(disposeLog, ['slow', 'Logger']);
+      expect(recorder.entries, ['slow', 'Logger']);
     });
   });
 
   group('ordering and failure', () {
     test('closes in reverse creation order, mixed with Disposable', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerLazySingleton<Connection>(
           const ConnectionFactory('db'),
@@ -149,11 +152,11 @@ void main() {
 
       await scope.dispose();
 
-      expect(disposeLog, ['Logger', 'db']);
+      expect(recorder.entries, ['Logger', 'db']);
     });
 
     test('a close that throws is recorded and the rest still run', () async {
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..registerLazySingleton<Logger>(const LoggerFactory())
         ..registerLazySingleton<Connection>(
           const ConnectionFactory('db'),
@@ -175,14 +178,14 @@ void main() {
         ),
       );
 
-      expect(disposeLog, ['Logger']);
+      expect(recorder.entries, ['Logger']);
     });
   });
 
   group('adopt', () {
     test('retains an unrecognised object once told how to close it', () async {
       final connection = Connection('adopted');
-      final scope = AlloyScope.root()
+      final scope = alloyTestRoot()
         ..adopt(connection, dispose: (it) => it.close());
 
       await scope.dispose();
@@ -192,12 +195,12 @@ void main() {
 
     test('still ignores one it cannot close', () async {
       final connection = Connection('ignored');
-      final scope = AlloyScope.root()..adopt(connection);
+      final scope = alloyTestRoot()..adopt(connection);
 
       await scope.dispose();
 
       expect(connection.isOpen, isTrue);
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
     });
   });
 }

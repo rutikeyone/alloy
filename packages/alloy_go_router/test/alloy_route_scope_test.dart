@@ -41,7 +41,6 @@ void main() {
           ),
         ],
       );
-      addTearDown(router.dispose);
 
       await tester.pumpWidget(app(root, router));
       await settle(tester);
@@ -109,7 +108,6 @@ void main() {
           ),
         ],
       );
-      addTearDown(router.dispose);
 
       await tester.pumpWidget(app(root, router));
       await settle(tester);
