@@ -38,6 +38,26 @@ void main() {
         reason: '${entry.title} never finished starting its graph',
       );
       expect(tester.takeException(), isNull, reason: entry.title);
+
+      // One palette, examples included. Read from inside the example rather
+      // than above it: a theme an example brought with it would sit between
+      // the gallery's and its own scaffolds, and only this side of it sees
+      // the difference.
+      final scaffolds = tester.elementList(find.byType(Scaffold));
+      expect(
+        scaffolds,
+        isNotEmpty,
+        reason: '${entry.title} rendered no scaffold',
+      );
+      for (final scaffold in scaffolds) {
+        expect(
+          Theme.of(scaffold).scaffoldBackgroundColor,
+          GalleryColors.canvas,
+          reason:
+              '${entry.title} paints on a background of its own; the gallery '
+              'has one palette and every example is painted by it',
+        );
+      }
     }
   });
 }

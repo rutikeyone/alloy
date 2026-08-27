@@ -10,8 +10,8 @@ import 'package:gallery/design/gallery_theme.dart';
 /// than through `.builder`: there is already a `MaterialApp` above, so loading
 /// and error render under the gallery's theme without one of their own.
 ///
-/// The example keeps its own colours. A gallery that repainted every example
-/// in its own palette would be showing you the gallery, not the example.
+/// There is no per-example palette. Every example is painted by the one theme
+/// above, so moving between them changes what the graph does and nothing else.
 class ExampleHost extends StatelessWidget {
   const ExampleHost({
     required this.root,
@@ -19,7 +19,6 @@ class ExampleHost extends StatelessWidget {
     this.bootstrap,
     this.rootName = 'root',
     this.observers = const [],
-    this.seedColor,
     super.key,
   });
 
@@ -29,35 +28,17 @@ class ExampleHost extends StatelessWidget {
   final String rootName;
   final List<AlloyObserver> observers;
 
-  /// The example's own seed colour, applied to its subtree only.
-  final Color? seedColor;
-
   @override
-  Widget build(BuildContext context) {
-    final seed = seedColor;
-
-    final scoped = AlloyAppScope(
-      root: root,
-      bootstrap: bootstrap,
-      rootName: rootName,
-      observers: observers,
-      loading: const _Starting(),
-      errorBuilder: (context, error, retry) =>
-          _StartupFailed(error: error, retry: retry),
-      child: child,
-    );
-
-    if (seed == null) return scoped;
-    return Theme(
-      data: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: seed,
-          brightness: Brightness.dark,
-        ),
-      ),
-      child: scoped,
-    );
-  }
+  Widget build(BuildContext context) => AlloyAppScope(
+    root: root,
+    bootstrap: bootstrap,
+    rootName: rootName,
+    observers: observers,
+    loading: const _Starting(),
+    errorBuilder: (context, error, retry) =>
+        _StartupFailed(error: error, retry: retry),
+    child: child,
+  );
 }
 
 class _Starting extends StatelessWidget {

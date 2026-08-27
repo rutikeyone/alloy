@@ -40,7 +40,6 @@ class _NotesExampleState extends State<_NotesExample> {
     root: const NotesScope(notesEnvironment),
     bootstrap: () => $alloyBootstrap(notesEnvironment),
     rootName: $alloyRootScopeName,
-    seedColor: Colors.indigo,
     child: widget.screen,
   );
 }

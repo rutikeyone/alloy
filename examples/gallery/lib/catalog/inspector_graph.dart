@@ -1,0 +1,152 @@
+import 'package:alloy_flutter/alloy_flutter.dart';
+
+/// The graph the inspector entry looks at, owned by that entry alone.
+///
+/// It borrows nothing from the other examples: open this one and `Graph
+/// events` and you get two graphs that share no registration, no scope name
+/// and no instance. Nothing here is reachable from another entry, which is the
+/// property the gallery is asserting every time it builds a graph on entry and
+/// disposes it on the way out.
+///
+/// One registration per lifetime, because telling them apart is what the
+/// inspector is for — the eager singleton included, and it is the interesting
+/// one: it shows in the tree and never in the built list, because the caller
+/// built it and the scope only took ownership.
+
+/// Handed to the graph already built — an eager singleton.
+class Settings {
+  Settings(this.channel);
+
+  final String channel;
+}
+
+/// Built on first resolve and closed with the scope — a lazy singleton.
+class Database implements Disposable {
+  var isOpen = true;
+
+  @override
+  void dispose() => isOpen = false;
+}
+
+final class DatabaseFactory implements AlloyFactory<Database> {
+  const DatabaseFactory();
+
+  @override
+  Database create(AlloyResolver resolver) => Database();
+}
+
+/// Needs I/O before it is usable, so it is built during `init()` — an async
+/// singleton, and the reason the entry shows a loading frame at all.
+class SearchIndex {
+  SearchIndex(this.database);
+
+  final Database database;
+}
+
+final class SearchIndexFactory implements AlloyAsyncFactory<SearchIndex> {
+  const SearchIndexFactory();
+
+  @override
+  Future<SearchIndex> create(AlloyResolver resolver) async {
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    return SearchIndex(resolver.get<Database>());
+  }
+}
+
+/// A fresh one per resolve, which the scope does not retain — a transient.
+class Query {
+  Query(this.database);
+
+  final Database database;
+}
+
+final class QueryFactory implements AlloyFactory<Query> {
+  const QueryFactory();
+
+  @override
+  Query create(AlloyResolver resolver) => Query(resolver.get<Database>());
+}
+
+/// Takes a value the container cannot supply, so the inspector can describe it
+/// and not build it.
+class Ticket {
+  Ticket(this.id);
+
+  final String id;
+}
+
+final class TicketFactory implements AlloyParamFactory<Ticket, String> {
+  const TicketFactory();
+
+  @override
+  Ticket create(AlloyResolver resolver, String param) => Ticket(param);
+}
+
+/// What the entry owns for as long as it is open.
+final class InspectorScope implements AlloyScopeBuilder {
+  const InspectorScope();
+
+  @override
+  void build(AlloyScope scope) {
+    scope.registerSingleton<Settings>(Settings('stable'));
+    scope.registerLazySingleton<Database>(const DatabaseFactory());
+    scope.registerAsyncSingleton<SearchIndex>(const SearchIndexFactory());
+    scope.registerFactory<Query>(const QueryFactory());
+    scope.registerParamFactory<Ticket, String>(const TicketFactory());
+  }
+}
+
+/// A bootstrap step, so phase 0 shows up in the log too.
+class InspectorWarmUp implements AlloyBootstrapStep, Disposable {
+  InspectorWarmUp();
+
+  @override
+  String get name => 'warm-up';
+
+  @override
+  Future<void> run() async =>
+      Future<void>.delayed(const Duration(milliseconds: 20));
+
+  @override
+  void dispose() {}
+}
+
+/// Something to open and close while watching the tree.
+class SessionCache implements Disposable {
+  var isOpen = true;
+
+  @override
+  void dispose() => isOpen = false;
+}
+
+final class SessionCacheFactory implements AlloyAsyncFactory<SessionCache> {
+  const SessionCacheFactory();
+
+  @override
+  Future<SessionCache> create(AlloyResolver resolver) async {
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    return SessionCache();
+  }
+}
+
+class Draft {
+  final lines = <String>[];
+}
+
+final class DraftFactory implements AlloyFactory<Draft> {
+  const DraftFactory();
+
+  @override
+  Draft create(AlloyResolver resolver) => Draft();
+}
+
+/// A child scope with a life of its own, and its own lifetimes inside it.
+final class InspectorSessionScope implements AlloyScopeBuilder {
+  const InspectorSessionScope();
+
+  @override
+  void build(AlloyScope scope) {
+    scope.registerAsyncSingleton<SessionCache>(const SessionCacheFactory());
+    scope.registerLazySingleton<Draft>(const DraftFactory());
+  }
+}

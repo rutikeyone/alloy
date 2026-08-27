@@ -49,7 +49,6 @@ class _FlowScopesHostState extends State<FlowScopesHost> {
   Widget build(BuildContext context) => ExampleHost(
     root: const AppScope(),
     rootName: 'app',
-    seedColor: Colors.teal,
     // Spelled out rather than Router.withConfig, which takes the dispatcher
     // from the config and gives no way to substitute the child one.
     child: Router<Object>(

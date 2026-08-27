@@ -87,15 +87,114 @@ abstract final class GalleryText {
   );
 }
 
+/// One theme for the whole app, examples included.
+///
+/// Every example renders under this and nothing else. An example that brought
+/// its own palette would be showing you two designs at once — and the seam
+/// between them reads as a bug long before it reads as a distinction.
 ThemeData galleryTheme() {
-  final base = ThemeData.dark(useMaterial3: true);
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: GalleryColors.screen,
+        brightness: Brightness.dark,
+      ).copyWith(
+        primary: GalleryColors.screen,
+        onPrimary: GalleryColors.canvas,
+        secondary: GalleryColors.terminal,
+        onSecondary: GalleryColors.canvas,
+        surface: GalleryColors.canvas,
+        onSurface: GalleryColors.text,
+        onSurfaceVariant: GalleryColors.textMuted,
+        surfaceContainerLowest: GalleryColors.terminalSurface,
+        surfaceContainerLow: GalleryColors.canvas,
+        surfaceContainer: GalleryColors.card,
+        surfaceContainerHigh: GalleryColors.card,
+        surfaceContainerHighest: GalleryColors.card,
+        outline: GalleryColors.hairline,
+        outlineVariant: GalleryColors.hairline,
+      );
+
+  final base = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: scheme,
+  );
+
   return base.copyWith(
     scaffoldBackgroundColor: GalleryColors.canvas,
-    colorScheme: base.colorScheme.copyWith(
-      surface: GalleryColors.canvas,
-      primary: GalleryColors.screen,
-      onPrimary: GalleryColors.canvas,
-    ),
+    canvasColor: GalleryColors.canvas,
     textTheme: GoogleFonts.spaceGroteskTextTheme(base.textTheme),
+    // Flat and untinted, so an example's app bar is the same colour scrolled
+    // as it is at rest. Material 3 tints it on scroll by default, which on a
+    // dark canvas looks like the background changed underneath you.
+    appBarTheme: AppBarTheme(
+      backgroundColor: GalleryColors.canvas,
+      foregroundColor: GalleryColors.text,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: true,
+      titleTextStyle: GalleryText.cardTitle.copyWith(fontSize: 17),
+    ),
+    cardTheme: CardThemeData(
+      color: GalleryColors.card,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: GalleryColors.hairline),
+      ),
+    ),
+    dividerTheme: const DividerThemeData(
+      color: GalleryColors.hairline,
+      space: 1,
+      thickness: 1,
+    ),
+    listTileTheme: const ListTileThemeData(
+      iconColor: GalleryColors.textMuted,
+      textColor: GalleryColors.text,
+      subtitleTextStyle: TextStyle(
+        fontSize: 12.5,
+        color: GalleryColors.textFaint,
+      ),
+    ),
+    expansionTileTheme: const ExpansionTileThemeData(
+      iconColor: GalleryColors.screen,
+      collapsedIconColor: GalleryColors.textFaint,
+      textColor: GalleryColors.text,
+      collapsedTextColor: GalleryColors.text,
+      backgroundColor: Colors.transparent,
+      collapsedBackgroundColor: Colors.transparent,
+      shape: Border(),
+      collapsedShape: Border(),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: GalleryColors.card,
+      surfaceTintColor: Colors.transparent,
+      modalBackgroundColor: GalleryColors.card,
+    ),
+    dialogTheme: const DialogThemeData(
+      backgroundColor: GalleryColors.card,
+      surfaceTintColor: Colors.transparent,
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: GalleryColors.card,
+      contentTextStyle: TextStyle(color: GalleryColors.text),
+      behavior: SnackBarBehavior.floating,
+    ),
+    tabBarTheme: const TabBarThemeData(
+      labelColor: GalleryColors.screen,
+      unselectedLabelColor: GalleryColors.textFaint,
+      indicatorColor: GalleryColors.screen,
+      dividerColor: GalleryColors.hairline,
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: GalleryColors.card,
+      selectedColor: GalleryColors.screen.withValues(alpha: 0.18),
+      side: const BorderSide(color: GalleryColors.hairline),
+      labelStyle: GalleryText.cardBody,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    ),
   );
 }

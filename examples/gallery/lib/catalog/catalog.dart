@@ -8,12 +8,12 @@ import 'package:gallery/catalog/example_host.dart';
 import 'package:gallery/catalog/example_section.dart';
 import 'package:gallery/catalog/flow_scopes_host.dart';
 import 'package:gallery/catalog/glyphs.dart';
+import 'package:gallery/catalog/inspector_graph.dart';
 import 'package:gallery/catalog/notes_graph.dart';
 import 'package:graph_events/app/app_scope.dart';
 import 'package:graph_events/app/audit_log.dart';
 import 'package:graph_events/app/observers.dart';
 import 'package:graph_events/app/report_log.dart';
-import 'package:graph_events/features/session/session_scope.dart';
 import 'package:graph_events/features/home/ui/home_screen.dart' as events;
 import 'package:notes_app/features/diagnostics/ui/scope_tree_screen.dart';
 import 'package:notes_app/features/environments/ui/environments_screen.dart';
@@ -215,7 +215,6 @@ List<ExampleEntry> buildCatalog() => [
     open: (_) => const ExampleHost(
       root: codegen.$AlloyRootScope(),
       rootName: codegen.$alloyRootScopeName,
-      seedColor: Colors.teal,
       child: CounterScreen(),
     ),
   ),
@@ -307,14 +306,11 @@ List<SectionedEntries<ExampleEntry>> buildSections() {
   ];
 }
 
-/// Builds the observability example, everything it watches with, per open.
+/// The inspector entry, with a graph of its own beneath it.
 ///
-/// Fresh each visit rather than shared: the observers hold this talker and
-/// this report log, and a second visit should start with an empty trail rather
-/// than the last one's.
-/// The inspector's log has to be installed when the graph is built, because
-/// observers are fixed at construction — so the host owns one per visit, and a
-/// second visit starts with an empty trail.
+/// The log has to be installed when the graph is built, because observers are
+/// fixed at construction — so the host owns one per visit, and a second visit
+/// starts with an empty trail rather than the last one's.
 class _InspectorHost extends StatefulWidget {
   const _InspectorHost();
 
@@ -333,11 +329,10 @@ class _InspectorHostState extends State<_InspectorHost> {
 
   @override
   Widget build(BuildContext context) => ExampleHost(
-    root: const AppScope(),
-    bootstrap: () => [WarmUp()],
-    rootName: 'app',
+    root: const InspectorScope(),
+    bootstrap: () => [InspectorWarmUp()],
+    rootName: 'inspector',
     observers: [_log],
-    seedColor: Colors.deepOrange,
     child: _InspectorDemo(log: _log),
   );
 }
@@ -358,7 +353,7 @@ class _InspectorDemoState extends State<_InspectorDemo> {
   Future<void> _openSession() async {
     if (_session != null) return;
     final scope = context.alloyScope.push('session');
-    const SessionScope(breaks: false).build(scope);
+    const InspectorSessionScope().build(scope);
     await scope.init();
     if (!mounted) return;
     setState(() => _session = scope);
@@ -423,6 +418,10 @@ class _InspectorDemoState extends State<_InspectorDemo> {
   );
 }
 
+/// The observability entry, with everything it watches with built per open.
+///
+/// Fresh each visit rather than shared: the observers hold this talker and
+/// this report log, and a second visit should start with an empty trail.
 class _GraphEventsHost extends StatefulWidget {
   const _GraphEventsHost();
 
@@ -451,7 +450,6 @@ class _GraphEventsHostState extends State<_GraphEventsHost> {
       audit: _audit,
       reports: _reports,
     ),
-    seedColor: Colors.deepOrange,
     child: events.HomeScreen(talker: _talker, reports: _reports),
   );
 }
