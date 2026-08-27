@@ -102,7 +102,8 @@ final tabB = app.push('tab:b');   // сосед, а не «сверху на tab
   `({int id, String title})`: она сохраняет имена и на месте вызова, и в фабрике, чего позиционная
   не делает. В запись едут только значения, которых контейнер знать не может, — зависимости
   по-прежнему приходят из резолвера, поэтому запись обычно короче списка параметров, который она
-  заменяет.
+  заменяет. В Code-Gen Mode всё это писать не нужно: пометьте параметры `@AlloyParam`, и генератор
+  сам напишет тип записи, фабрику и регистрацию.
 - **`registerFactoryAsync`, `registerLazySingletonAsync`** — асинхронное построение принадлежит
   `registerAsyncSingleton`, который участвует в фазе 1, поэтому ленивой async-регистрации и
   `getAsync` нет. Работу откладывает время жизни: положите дорогое в дочерний скоуп и пушьте его,
@@ -130,6 +131,7 @@ final tabB = app.push('tab:b');   // сосед, а не «сверху на tab
 | `@preResolve` | `@AlloyInit()` |
 | `@disposeMethod` | `implements Disposable` / `AsyncDisposable` |
 | `@factoryMethod` | первый публичный генеративный конструктор, а если нужен не он — член `@AlloyModule` |
+| `@factoryParam` | `@AlloyParam` на параметре конструктора |
 | `@InjectableInit()` + `configureDependencies()` | `@AlloyScopeRoot()` + сгенерированный `$startAlloy()` |
 
 ### Что меняет форму

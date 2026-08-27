@@ -1,6 +1,7 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
 import 'package:alloy_annotations/alloy_annotations.dart';
 import 'package:alloy_generator/src/emitters/alloy_factory_names.dart';
+import 'package:alloy_generator/src/emitters/alloy_references.dart';
 import 'package:alloy_generator/src/emitters/bootstrap_emitter.dart';
 import 'package:alloy_generator/src/emitters/injectable_factory_emitter.dart';
 import 'package:alloy_generator/src/emitters/root_scope_emitter.dart';
@@ -50,6 +51,9 @@ class ContainerSourceEmitter {
       (b) => b
         ..body.addAll([
           for (final declaration in ordered)
+            if (declaration.takesCallSiteValues)
+              _argsTypedef(declaration, names),
+          for (final declaration in ordered)
             _factories.emit(declaration, names),
           if (ordered.isNotEmpty)
             _rootScope.emit(
@@ -83,6 +87,27 @@ class ContainerSourceEmitter {
 
     return DartFormatter(languageVersion: DartFormatter.latestLanguageVersion)
         .format('$_header\n\n$emitted');
+  }
+
+  /// The record a parameterized registration is resolved with.
+  ///
+  /// Named rather than positional, and named even for a single value: adding
+  /// a second one then changes what the call site passes rather than the name
+  /// of the type, and the call keeps reading like the constructor it stands
+  /// for. It lives here rather than beside the class so that annotating a
+  /// parameter does not also require a `part` directive.
+  Spec _argsTypedef(AlloyInjectableClass declaration, AlloyFactoryNames names) {
+    return TypeDef(
+      (b) => b
+        ..name = names.argsOf(declaration)
+        ..definition = RecordType(
+          (r) => r
+            ..namedFieldTypes.addAll({
+              for (final value in declaration.callSiteValues)
+                value.field: typeReferenceOf(value.type),
+            }),
+        ),
+    );
   }
 
   List<AlloyInjectableClass> _ordered(List<AlloyInjectableClass> injectables) {
@@ -327,9 +352,16 @@ class ContainerSourceEmitter {
     return byKey;
   }
 
+  /// The graph edges of one declaration.
+  ///
+  /// An `@AlloyParam` is skipped here rather than in the completeness check,
+  /// which is the opposite of how an optional dependency is handled: an
+  /// optional one is still an ordering edge when the type happens to be
+  /// registered, while a call-site value is no edge at all — nothing registers
+  /// an `int`, and demanding one would fail every parameterized graph.
   Iterable<_Dependency> _dependenciesOf(AlloyInjectableClass declaration) => [
     for (final parameter in declaration.constructorParameters)
-      _dependency(parameter.type, parameter.name),
+      if (!parameter.isParam) _dependency(parameter.type, parameter.name),
     for (final property in declaration.properties)
       _dependency(property.type, property.name),
     for (final dependency in declaration.dependsOn)

@@ -31,6 +31,14 @@ class SearchIndex implements AsyncInitializable {
   Future<void> init() async { /* build the index */ }
 }
 
+@alloyInject
+class NoteEditor {
+  NoteEditor(this.store, {@alloyParam required this.id});
+
+  final NoteStore store;
+  final int id;
+}
+
 @alloyTransient
 class NotesController with _$NotesController {
   NotesController();
@@ -46,3 +54,7 @@ A full application using every annotation lives in
 `SearchIndex` may state `dependsOn: [Database]` only because `Database` is `@AlloyInit` too.
 `dependsOn` sequences phase 1, so it can wait for an async registration and nothing else; naming a
 plain one fails the build.
+
+`NoteEditor` takes an `@alloyParam`, so it is registered as a parameterized factory and the
+generator writes `typedef $NoteEditorArgs = ({int id});` beside the container. Resolve it with
+`getWithParam<NoteEditor, $NoteEditorArgs>((id: 7))` — the store still comes from the graph.

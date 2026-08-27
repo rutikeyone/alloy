@@ -109,6 +109,19 @@ class AlloyInjectableClass {
 
   bool get hasPropertyInjection => properties.isNotEmpty;
 
+  /// The constructor parameters the call site supplies, in order.
+  ///
+  /// Empty for the ordinary case. When it is not, the class is registered as
+  /// a parameterized factory and these become the fields of its record.
+  List<AlloyInjectedProperty> get callSiteValues => [
+    for (final parameter in constructorParameters)
+      if (parameter.isParam) parameter,
+  ];
+
+  /// Whether anything in this class comes from the call site.
+  bool get takesCallSiteValues =>
+      constructorParameters.any((parameter) => parameter.isParam);
+
   Map<String, dynamic> toJson() => {
     'type': type.toJson(),
     'lifetime': lifetime.name,

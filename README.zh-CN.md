@@ -281,6 +281,20 @@ provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) wh
 something outside the generated container registers it.
 ```
 
+标了 `@AlloyParam` 的参数不算在内：它由调用处提供，因此没有人注册它，也没有围绕它的顺序。加上这个标记
+后该类就成为参数化注册，生成器会在容器旁写出它的参数类型，形式是具名 record：
+
+```dart
+@alloyInject
+class NoteEditor {
+  NoteEditor(this._notes, {@alloyParam required this.id, @alloyParam this.draft = false});
+  ...
+}
+
+// typedef $NoteEditorArgs = ({int id, bool draft});
+context.alloyWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
+```
+
 构造函数参数、`@injected` 字段和 `@AlloyInit(dependsOn:)` 都算在内；`@Named` 限定名是键的一部分，
 因此在只有匿名 `Logger` 时请求 `@Named('audit') Logger` 同样是缺口。每个环境单独检查，所以只在
 `dev` 下注册的东西无法满足同时运行于 `prod` 的消费者。

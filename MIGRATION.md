@@ -106,7 +106,10 @@ Be aware of these before you commit to the move:
   form, `({int id, String title})`: it keeps the names at the call site and in
   the factory, which a positional record does not. Only the values the
   container cannot know go in it — dependencies still come from the resolver,
-  so the record is usually smaller than the parameter list it replaces.
+  so the record is usually smaller than the parameter list it replaces. In
+  Code-Gen Mode you do not write any of that: mark the parameters with
+  `@AlloyParam` and the generator emits the record type, the factory and the
+  registration.
 - **`registerFactoryAsync`, `registerLazySingletonAsync`** — async construction
   belongs to `registerAsyncSingleton`, which participates in phase 1, so there
   is no per-registration lazy async build and no `getAsync`. What defers the
@@ -135,6 +138,7 @@ Be aware of these before you commit to the move:
 | `@preResolve` | `@AlloyInit()` |
 | `@disposeMethod` | `implements Disposable` / `AsyncDisposable` |
 | `@factoryMethod` | the first public generative constructor, or an `@AlloyModule` member when it is not that one |
+| `@factoryParam` | `@AlloyParam` on the constructor parameter |
 | `@InjectableInit()` + `configureDependencies()` | `@AlloyScopeRoot()` + generated `$startAlloy()` |
 
 ### What changes shape

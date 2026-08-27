@@ -90,7 +90,11 @@ class _Visitor extends SimpleAstVisitor<void> {
     // one entry and whichever came first would decide whether the required one
     // is checked at all.
     final wanted = <AlloyTypeRef>[
-      for (final parameter in declaration.constructorParameters) parameter.type,
+      // An `@AlloyParam` is not a dependency: the call site supplies it, and
+      // nothing registers an `int`. Without this the rule reports every
+      // parameterized class as broken.
+      for (final parameter in declaration.constructorParameters)
+        if (!parameter.isParam) parameter.type,
       for (final property in declaration.properties) property.type,
       ...declaration.dependsOn,
     ];

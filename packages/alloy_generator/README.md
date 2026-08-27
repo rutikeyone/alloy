@@ -175,3 +175,59 @@ in the worst way: the container registered the class and awaited its `init()`, t
 written, the `@injected` fields stayed unassigned, and the first read threw a
 `LateInitializationError` — while the lint told you to mix in something nothing would generate.
 Both halves now read the declaration the same way.
+
+## Values the call site supplies
+
+Most of a constructor comes from the graph. `@AlloyParam` marks what does not — a record id, a
+route argument, a flag chosen on the screen that opened this one:
+
+```dart
+@alloyInject
+class NoteEditor {
+  NoteEditor(this._notes, {@alloyParam required this.id, @alloyParam this.draft = false});
+
+  final NoteRepository _notes;
+  final int id;
+  final bool draft;
+}
+```
+
+The class becomes a parameterized registration, and the generator writes the argument type beside
+the container as a **named record** built from the marked parameters:
+
+```dart
+typedef $NoteEditorArgs = ({int id, bool draft});
+
+final class _NoteEditorFactory implements AlloyParamFactory<NoteEditor, $NoteEditorArgs> {
+  const _NoteEditorFactory();
+  @override
+  NoteEditor create(AlloyResolver resolver, $NoteEditorArgs args) =>
+      NoteEditor(resolver.get<NoteRepository>(), id: args.id, draft: args.draft);
+}
+```
+
+```dart
+context.alloyWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
+```
+
+A record even for a single value, and a named one: adding a second argument then changes what the
+call site passes rather than the name of the type, and the call keeps reading like the constructor
+it stands for. The typedef lives in the container rather than beside the class, so annotating a
+parameter does not also require a `part` directive.
+
+A marked parameter is not a dependency. Nothing registers an `int`, so it is skipped by the
+completeness check and is no edge in the ordering — while everything beside it is checked and
+ordered exactly as before.
+
+Three combinations are refused, each naming the fix: `@AlloyInit`, because there is no asynchronous
+parameterized factory; `lifetime: singleton`, because a singleton is built while the container is
+assembled, when no call site has supplied anything; and a module member, because a module registers
+types you did not write while a call-site value belongs to a class you did.
+
+## Constructors with named parameters
+
+A constructor is called the way it was declared — positional arguments positionally, named ones by
+name, mixed in one call where a class mixes them. This is worth stating because it used not to be
+true: every argument went in positionally, which produced a file that did not compile, and no
+injectable class in this repository's own examples happened to use a named parameter, so nothing
+noticed until a production graph was read.

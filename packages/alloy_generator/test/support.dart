@@ -19,11 +19,23 @@ AlloyInjectedProperty dep(
   String type, {
   String? name,
   bool isNullable = false,
+  bool isNamed = false,
+  String? field,
 }) => AlloyInjectedProperty(
-  field: type.toLowerCase(),
+  field: field ?? type.toLowerCase(),
   type: ref(type, isNullable: isNullable),
   name: name,
+  isNamed: isNamed,
 );
+
+/// A constructor parameter the call site supplies, as `@AlloyParam` marks it.
+AlloyInjectedProperty arg(String field, String type, {bool isNamed = true}) =>
+    AlloyInjectedProperty(
+      field: field,
+      type: AlloyTypeRef(name: type, import: 'dart:core'),
+      isNamed: isNamed,
+      isParam: true,
+    );
 
 AlloyInjectableClass declare(
   String type, {

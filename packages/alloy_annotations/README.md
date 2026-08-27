@@ -13,6 +13,7 @@ re-exports everything here.
 | `@alloySingleton` / `@alloyTransient` | class | shorthands for the other two lifetimes |
 | `@Injected` / `@injected` | `late final` field | fills the field through the generated mixin |
 | `@Named` | parameter or field | selects a named registration |
+| `@AlloyParam` / `@alloyParam` | constructor parameter | the call site supplies it, not the graph |
 | `@AlloyBootstrap` | class | a phase-0 step, run before the container exists |
 | `@AlloyInit` | class | an async singleton, with `dependsOn` |
 | `@AlloyModule` / `@alloyModule` | class | its annotated members register types you do not own |

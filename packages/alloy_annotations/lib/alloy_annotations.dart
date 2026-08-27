@@ -12,6 +12,7 @@ export 'package:alloy_annotations/src/alloy_init.dart';
 export 'package:alloy_annotations/src/alloy_inject.dart';
 export 'package:alloy_annotations/src/alloy_lifetime.dart';
 export 'package:alloy_annotations/src/alloy_module.dart';
+export 'package:alloy_annotations/src/alloy_param.dart';
 export 'package:alloy_annotations/src/alloy_provided.dart';
 export 'package:alloy_annotations/src/alloy_scope_root.dart';
 export 'package:alloy_annotations/src/injected.dart';

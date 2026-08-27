@@ -9,6 +9,7 @@ import 'package:alloy_external_consumer/src/clock.dart' as _i713;
 import 'package:alloy_external_consumer/src/database.dart' as _i629;
 import 'package:alloy_external_consumer/src/device_info.dart' as _i28;
 import 'package:alloy_external_consumer/src/diagnostics.dart' as _i628;
+import 'package:alloy_external_consumer/src/note_editor.dart' as _i662;
 import 'package:alloy_external_consumer/src/platform_module.dart' as _i505;
 import 'package:alloy_external_consumer/src/report.dart' as _i552;
 import 'package:alloy_external_consumer/src/reporter.dart' as _i578;
@@ -16,6 +17,8 @@ import 'package:alloy_external_consumer/src/repository.dart' as _i309;
 import 'package:alloy_external_consumer/src/search_index.dart' as _i115;
 import 'package:alloy_external_consumer/src/system_clock.dart' as _i358;
 import 'package:alloy_external_consumer/src/telemetry.dart' as _i954;
+
+typedef $NoteEditorArgs = ({int id, String title, bool draft});
 
 final class _SystemClockFactory implements _i178.AlloyFactory<_i713.Clock> {
   const _SystemClockFactory();
@@ -45,6 +48,20 @@ final class _DiagnosticsFactory
     resolver.get<_i28.DeviceInfo>(),
     resolver.get<_i713.Clock>(),
   );
+}
+
+final class _NoteEditorFactory
+    implements _i178.AlloyParamFactory<_i662.NoteEditor, $NoteEditorArgs> {
+  const _NoteEditorFactory();
+
+  @override
+  _i662.NoteEditor create(_i178.AlloyResolver resolver, $NoteEditorArgs args) =>
+      _i662.NoteEditor(
+        resolver.get<_i713.Clock>(),
+        id: args.id,
+        title: args.title,
+        draft: args.draft,
+      );
 }
 
 final class _PlatformModuleChannelFactory
@@ -142,6 +159,9 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
       const _UserRepositoryFactory(),
     );
     scope.registerLazySingleton<_i628.Diagnostics>(const _DiagnosticsFactory());
+    scope.registerParamFactory<_i662.NoteEditor, $NoteEditorArgs>(
+      const _NoteEditorFactory(),
+    );
     scope.registerAsyncSingleton<_i505.Envelope>(
       const _PlatformModuleEnvelopeFactory(),
     );

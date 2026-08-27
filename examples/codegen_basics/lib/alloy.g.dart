@@ -6,8 +6,11 @@ import 'dart:math' as _i407;
 
 import 'package:alloy/alloy.dart' as _i178;
 import 'package:codegen_basics/counter_bloc.dart' as _i1015;
+import 'package:codegen_basics/greeting.dart' as _i767;
 import 'package:codegen_basics/platform_module.dart' as _i122;
 import 'package:codegen_basics/services.dart' as _i700;
+
+typedef $GreetingArgs = ({String name, bool loud});
 
 final class _PlatformModuleEventsFactory
     implements _i178.AlloyFactory<_i687.StreamController<String>> {
@@ -34,6 +37,19 @@ final class _CounterBlocFactory
   @override
   _i1015.CounterBloc create(_i178.AlloyResolver resolver) =>
       _i1015.CounterBloc();
+}
+
+final class _GreetingFactory
+    implements _i178.AlloyParamFactory<_i767.Greeting, $GreetingArgs> {
+  const _GreetingFactory();
+
+  @override
+  _i767.Greeting create(_i178.AlloyResolver resolver, $GreetingArgs args) =>
+      _i767.Greeting(
+        resolver.get<_i700.Config>(),
+        name: args.name,
+        loud: args.loud,
+      );
 }
 
 final class _ConfigFactory implements _i178.AlloyFactory<_i700.Config> {
@@ -72,6 +88,9 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
     );
     scope.registerLazySingleton<_i700.Config>(const _ConfigFactory());
     scope.registerLazySingleton<_i700.Telemetry>(const _TelemetryFactory());
+    scope.registerParamFactory<_i767.Greeting, $GreetingArgs>(
+      const _GreetingFactory(),
+    );
     scope.registerLazySingleton<_i700.Repository>(const _RepositoryFactory());
     scope.registerFactory<_i1015.CounterBloc>(const _CounterBlocFactory());
   }

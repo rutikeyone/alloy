@@ -27,6 +27,12 @@ class AlloyScopeRoot {
   final List<Object> provides;
 }
 
+class AlloyParam {
+  const AlloyParam();
+}
+
+const alloyParam = AlloyParam();
+
 class Injected {
   const Injected({this.name});
   final String? name;

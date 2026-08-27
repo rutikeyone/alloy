@@ -153,4 +153,50 @@ void main() {
       expect(report.isComplete, isTrue, reason: '$report');
     });
   });
+
+  group('a class taking values from the call site', () {
+    test('is registered as a parameterized factory, not a plain one', () {
+      expect(
+        scope.debugKindOf(const AlloyKey(NoteEditor)),
+        AlloyRegistrationKind.parameterized,
+      );
+      expect(
+        () => scope.get<NoteEditor>(),
+        throwsA(isA<AlloyParamRequiredError>()),
+      );
+    });
+
+    test('takes its values by name and the rest from the graph', () {
+      final editor = scope.getWithParam<NoteEditor, $NoteEditorArgs>((
+        id: 7,
+        title: 'notes',
+        draft: true,
+      ));
+
+      expect(
+        editor.describe(),
+        '7 "notes" (draft) at 2026-08-23T00:00:00.000Z',
+      );
+      expect(
+        editor.clock,
+        isA<SystemClock>(),
+        reason: 'the clock came from the container, the rest from here',
+      );
+    });
+
+    test('builds a fresh one per call, and the scope keeps neither', () {
+      final first = scope.getWithParam<NoteEditor, $NoteEditorArgs>((
+        id: 1,
+        title: 'a',
+        draft: false,
+      ));
+      final second = scope.getWithParam<NoteEditor, $NoteEditorArgs>((
+        id: 1,
+        title: 'a',
+        draft: false,
+      ));
+
+      expect(identical(first, second), isFalse);
+    });
+  });
 }

@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- `alloy_dependency_is_not_registered` and `alloy_dependency_cycle` skip
+  `@AlloyParam` parameters, which nothing registers and which close no cycle.
 - `alloy_injected_field_needs_an_injectable` reports `@injected` on a class the
   container never registers, where no mixin is generated and
   `alloy_missing_injection_mixin` would have sent you to a name that does not

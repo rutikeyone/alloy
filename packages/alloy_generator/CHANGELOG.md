@@ -1,5 +1,12 @@
 ## 0.1.0
 
+- A class with `@AlloyParam` parameters is generated as a parameterized
+  factory, with a named record type emitted beside the container. Marked
+  parameters are not dependencies: they are skipped by the completeness check
+  and are no edge in the ordering.
+- Constructors with named parameters are called the way they were declared.
+  Every argument used to go in positionally, producing a file that did not
+  compile.
 - The `_$ClassName` injection mixin is written for every class the container
   registers, `@AlloyInit` included. Such a class used to be registered and left
   with its `@injected` fields unassigned.

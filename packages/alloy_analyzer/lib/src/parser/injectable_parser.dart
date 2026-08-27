@@ -34,6 +34,29 @@ class AlloyInjectableParser {
     }
 
     final constructor = _constructorOf(clazz);
+    final takesParams = constructor.formalParameters.any(paramMatcher.matches);
+
+    if (takesParams && isAsyncInit) {
+      throw AlloyParseError(
+        '${clazz.displayName} is annotated with @AlloyInit and takes an '
+        '@AlloyParam. There is no asynchronous parameterized factory: phase 1 '
+        'builds what it finds, and a call-site value does not exist yet. Take '
+        "the value through a child scope's registration instead.",
+        clazz,
+      );
+    }
+
+    if (takesParams &&
+        _lifetimeOf(annotation, isAsyncInit: false) ==
+            AlloyLifetime.singleton) {
+      throw AlloyParseError(
+        '${clazz.displayName} asks for a singleton and takes an @AlloyParam. '
+        'A singleton is built while the container is assembled, when no call '
+        'site has supplied anything yet. Drop the lifetime — a parameterized '
+        'registration is never retained by the scope.',
+        clazz,
+      );
+    }
 
     if (isAsyncInit && !_hasInitMethod(clazz)) {
       throw AlloyParseError(
@@ -57,6 +80,8 @@ class AlloyInjectableParser {
             field: parameter.name ?? '',
             type: typeRefOf(parameter.type),
             name: namedMatcher.firstOf(parameter)?.readString('name'),
+            isNamed: parameter.isNamed,
+            isParam: paramMatcher.matches(parameter),
           ),
       ],
       properties: [

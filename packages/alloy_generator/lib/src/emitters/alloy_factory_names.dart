@@ -32,6 +32,20 @@ class AlloyFactoryNames {
     return '$base\$${_aliasOf(_libraryOf(declaration))}';
   }
 
+  /// The name of the record type holding [declaration]'s call-site values.
+  ///
+  /// Contested the same way the factory name is, and for the same reason: both
+  /// are derived from the class name, so two classes of one name in different
+  /// libraries collide in both places at once.
+  String argsOf(AlloyInjectableClass declaration) {
+    final base = _baseNameOf(declaration);
+    final name =
+        '\$${_capitalised(declaration.type.name)}'
+        '${_capitalised(declaration.name)}Args';
+    if (!_contested.contains(base)) return name;
+    return '$name\$${_aliasOf(_libraryOf(declaration))}';
+  }
+
   static Set<String> _contestedIn(Iterable<AlloyInjectableClass> declarations) {
     final seen = <String>{};
     final twice = <String>{};

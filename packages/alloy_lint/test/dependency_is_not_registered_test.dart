@@ -423,4 +423,44 @@ class Catalog {
 }
 ''');
   }
+
+  /// Without the skip, `int` is reported as a dependency nothing registers —
+  /// on every parameterized class there is.
+  void test_callSiteValue_isNotADependency() async {
+    await assertNoDiagnostics(r'''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+@alloyInject
+class Repo {
+  Repo();
+}
+
+@alloyInject
+class NoteEditor {
+  NoteEditor(this.repo, {@alloyParam required this.id});
+
+  final Repo repo;
+  final int id;
+}
+''');
+  }
+
+  void test_aRealDependencyBesideACallSiteValue_isStillChecked() async {
+    await assertDiagnostics(
+      r'''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+@alloyInject
+class NoteEditor {
+  NoteEditor(this.repo, {@alloyParam required this.id});
+
+  final Repo repo;
+  final int id;
+}
+
+class Repo {}
+''',
+      [lint(79, 10)],
+    );
+  }
 }

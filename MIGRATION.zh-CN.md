@@ -92,7 +92,8 @@ final tabB = app.push('tab:b');   // 是兄弟，而不是压在 tabA 上面
 - **`registerFactoryParam<T, P1, P2>`** —— Alloy 的 `registerParamFactory<T, P>` 只接受一个参数，
   多个参数合并成一个 record。请用**具名**形式 `({int id, String title})`：它在调用处和工厂里都保留
   参数名，位置式 record 做不到。只有容器无法知道的值才进 record —— 依赖仍从 resolver 取，
-  所以 record 通常比它替换掉的参数列表更短。
+  所以 record 通常比它替换掉的参数列表更短。在 Code-Gen Mode 下这些都不用手写：给参数加上
+  `@AlloyParam`，生成器会写出 record 类型、工厂和注册。
 - **`registerFactoryAsync`、`registerLazySingletonAsync`** —— 异步构造属于 `registerAsyncSingleton`，
   它参与第一阶段，因此没有按注册项的惰性异步构建，也没有 `getAsync`。推迟工作的是生命周期：把昂贵的东西
   放进子作用域，在进入该功能时压入它，`AlloyScopeWidget` 会在其 `init()` 运行期间显示 `loading`。
@@ -116,6 +117,7 @@ final tabB = app.push('tab:b');   // 是兄弟，而不是压在 tabA 上面
 | `@preResolve` | `@AlloyInit()` |
 | `@disposeMethod` | `implements Disposable` / `AsyncDisposable` |
 | `@factoryMethod` | 第一个公开的生成式构造函数；若需要的不是它，则用 `@AlloyModule` 成员 |
+| `@factoryParam` | 构造函数参数上的 `@AlloyParam` |
 | `@InjectableInit()` + `configureDependencies()` | `@AlloyScopeRoot()` + 生成的 `$startAlloy()` |
 
 ### 形态发生变化的部分

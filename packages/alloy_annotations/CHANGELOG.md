@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- `@AlloyParam` marks a constructor parameter the call site supplies rather
+  than the graph.
 - Initial release.
 - Annotations shared by the generator and the lint plugin, with no runtime and
   no analyzer dependency: `@AlloyInject` (plus the `@alloyInject` /

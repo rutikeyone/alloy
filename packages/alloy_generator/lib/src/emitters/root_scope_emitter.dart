@@ -80,6 +80,13 @@ class RootScopeEmitter {
       if (dispose != null) 'dispose': functionReferenceOf(dispose),
     };
 
+    if (declaration.takesCallSiteValues) {
+      return refer('scope')
+          .property('registerParamFactory')
+          .call([factory], named, [exposed, refer(names.argsOf(declaration))])
+          .statement;
+    }
+
     final method = declaration.isAsyncInit
         ? 'registerAsyncSingleton'
         : switch (declaration.lifetime) {

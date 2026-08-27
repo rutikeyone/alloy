@@ -1,5 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:codegen_basics/alloy.g.dart';
 import 'package:codegen_basics/counter_bloc.dart';
+import 'package:codegen_basics/greeting.dart';
 import 'package:flutter/material.dart';
 
 class CounterScreen extends StatelessWidget {
@@ -48,6 +50,14 @@ class _CounterState extends State<_Counter> {
           style: Theme.of(context).textTheme.displayMedium,
         ),
         Text('environment: ${_bloc.environment}'),
+        // A parameterized registration: the config comes from the graph, the
+        // name and the flag from here.
+        Text(
+          context.alloyWithParam<Greeting, $GreetingArgs>((
+            name: 'Alloy',
+            loud: false,
+          )).render(),
+        ),
         const SizedBox(height: 16),
         FilledButton(
           onPressed: () => setState(_bloc.increment),

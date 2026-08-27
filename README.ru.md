@@ -317,6 +317,21 @@ provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) wh
 something outside the generated container registers it.
 ```
 
+Параметр, помеченный `@AlloyParam`, не считается: его подаёт место вызова, поэтому его никто не
+регистрирует и вокруг него нечего упорядочивать. Такая пометка делает класс параметризованной
+регистрацией, а генератор пишет тип аргумента рядом с контейнером как именованную запись:
+
+```dart
+@alloyInject
+class NoteEditor {
+  NoteEditor(this._notes, {@alloyParam required this.id, @alloyParam this.draft = false});
+  ...
+}
+
+// typedef $NoteEditorArgs = ({int id, bool draft});
+context.alloyWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
+```
+
 Считаются параметры конструктора, поля `@injected` и `@AlloyInit(dependsOn:)`, а имя из `@Named`
 входит в ключ: запрос `@Named('audit') Logger` при одном лишь безымянном `Logger` — тоже пробел.
 Каждое окружение проверяется отдельно, поэтому регистрация только для `dev` не удовлетворяет

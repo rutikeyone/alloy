@@ -205,6 +205,14 @@ class AlloyModuleParser {
         member,
       );
     }
+    if (paramMatcher.matches(parameter)) {
+      throw AlloyParseError(
+        '$where takes an @AlloyParam. A module registers types you did not '
+        'write, and a call-site value belongs to a class you did — put '
+        '@AlloyParam on its constructor instead.',
+        member,
+      );
+    }
     if (parameter.isOptional) {
       throw AlloyParseError(
         '$where takes the optional parameter ${parameter.displayName}. Every '

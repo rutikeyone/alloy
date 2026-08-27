@@ -223,6 +223,7 @@ class _IndexBuilder {
     Set<String> out,
   ) {
     if (parameter is SuperFormalParameter) return;
+    if (_isCallSiteValue(parameter)) return;
     final name = parameter.name?.lexeme;
     final type =
         _returnedName(parameter.type) ??
@@ -231,6 +232,16 @@ class _IndexBuilder {
             : null);
     if (type != null) out.add(type);
   }
+
+  /// Whether `@AlloyParam` marks this parameter.
+  ///
+  /// Such a value comes from the call site, so it is neither a dependency the
+  /// package must register nor an edge that can close a cycle.
+  static bool _isCallSiteValue(FormalParameter parameter) =>
+      parameter.metadata.any((annotation) {
+        final name = annotation.name.name.split('.').last;
+        return name == 'AlloyParam' || name == 'alloyParam';
+      });
 
   void _addInjectedFields(ClassDeclaration node, Set<String> out) {
     for (final member in node.body.members) {

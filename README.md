@@ -309,6 +309,21 @@ provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) wh
 something outside the generated container registers it.
 ```
 
+A parameter marked `@AlloyParam` is exempt: the call site supplies it, so nothing registers it and
+nothing orders around it. Marking one turns the class into a parameterized registration, and the
+generator writes its argument type beside the container as a named record:
+
+```dart
+@alloyInject
+class NoteEditor {
+  NoteEditor(this._notes, {@alloyParam required this.id, @alloyParam this.draft = false});
+  ...
+}
+
+// typedef $NoteEditorArgs = ({int id, bool draft});
+context.alloyWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
+```
+
 Constructor parameters, `@injected` fields and `@AlloyInit(dependsOn:)` all count, and a
 `@Named` qualifier is part of the key — asking for `@Named('audit') Logger` where only an unnamed
 `Logger` exists is a gap. Each environment is checked separately, so a `dev`-only registration
