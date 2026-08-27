@@ -529,7 +529,7 @@ cd examples/gallery && flutter run
 ## Плагин линтера
 
 `alloy_lint` — это `analysis_server_plugin`, а не плагин `custom_lint` (см. «Инструментарий»). Он
-поставляет восемь warning-правил, все построены на том же слое разбора `alloy_analyzer`, что и
+поставляет девять warning-правил, все построены на том же слое разбора `alloy_analyzer`, что и
 генератор, поэтому ошибка всплывает в IDE, а не только на прогоне `build_runner`:
 
 | Правило | Что ловит |
@@ -541,6 +541,7 @@ cd examples/gallery && flutter run
 | `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` на классе без `run()` |
 | `alloy_bootstrap_step_cannot_inject` | bootstrap-шаг, чей конструктор требует параметры |
 | `alloy_dependency_is_not_registered` | зависимость, которую в пакете никто не регистрирует |
+| `alloy_dependency_cycle` | инъектируемый класс, который в итоге зависит от самого себя |
 | `alloy_environment_needs_a_registration` | `@AlloyEnvironment` на классе, который никто не регистрирует, где она молча ничего не делает |
 
 Две вещи при подключении стоят реального времени и легко делаются неправильно:

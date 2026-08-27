@@ -40,22 +40,23 @@ plugins:
 | `alloy_bootstrap_step_cannot_inject` | a bootstrap step whose constructor takes required parameters |
 | `alloy_environment_needs_a_registration` | `@AlloyEnvironment` on a class nothing registers, where it silently does nothing |
 | `alloy_dependency_is_not_registered` | an injected dependency nothing in the package registers |
+| `alloy_dependency_cycle` | an injectable class that depends, eventually, on itself |
 
 All rules are warnings, so they are on by default. Every rule reads annotations through
 `alloy_analyzer`, the same layer the generator uses.
 
-## Why the graph rule reports less than the build does
+## Why the graph rules report less than the build does
 
-Seven of the eight rules answer a question about one declaration. The eighth,
-`alloy_dependency_is_not_registered`, answers one about the whole package, and the analysis
-server does not offer that view: it hands a rule one library at a time, and the only synchronous
-window onto the others is their **parsed**, unresolved source.
+Seven of the nine rules answer a question about one declaration. The other two —
+`alloy_dependency_is_not_registered` and `alloy_dependency_cycle` — answer one about the whole
+package, and the analysis server does not offer that view: it hands a rule one library at a time,
+and the only synchronous window onto the others is their **parsed**, unresolved source.
 
-So the rule keeps its own index of every type name the package registers — `@AlloyInject` classes,
+So they share an index of what the package registers, read from syntax — `@AlloyInject` classes,
 their `exposeAs` targets, `@AlloyModule` members (indexed by return type, with one `Future` layer
-removed) and `@AlloyScopeRoot(provides: [...])` entries — read from syntax. It holds bare names: no
-library, no type arguments, no `@Named` qualifier. Each of those omissions makes the index match
-**more**, so the rule stays quiet where the build still objects:
+removed) and `@AlloyScopeRoot(provides: [...])` entries — together with what each registration
+asks for. It holds bare names: no library, no type arguments, no `@Named` qualifier. Each of those
+omissions makes the index match **more**, so the rule stays quiet where the build still objects:
 
 | Case | Build | Rule |
 |---|---|---|
@@ -65,8 +66,14 @@ library, no type arguments, no `@Named` qualifier. Each of those omissions makes
 | two same-named classes from different libraries, one registered | error | silent |
 
 That asymmetry is deliberate. A false report from an editor that cannot see the whole graph costs
-more than a missed one, because the build is still there and is still exact. Treat the rule as the
+more than a missed one, because the build is still there and is still exact. Treat the rules as the
 fast path, never as the authority.
+
+For a cycle the same coarseness cuts the other way, and needs the opposite care: a shared name
+makes the graph *denser*, and a dense graph can grow a loop no real one has. So a name two
+declarations in the package both claim is dropped from the graph rather than fused, and every
+registration on the loop is reported — each is a place the loop could be broken. Only one loop is
+reported at a time, which is what the build does with the same graph.
 
 The index is rebuilt when a file in `lib` changes, and checked by modification stamp otherwise —
 listing costs a stat per file, building costs a parse per file. If any file will not parse, the

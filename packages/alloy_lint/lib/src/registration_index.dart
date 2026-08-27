@@ -1,52 +1,119 @@
+import 'package:alloy_analyzer/alloy_analyzer.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/file_system/file_system.dart';
 
-/// Every type name something in the package registers.
+/// What the package registers, and what each registration asks for.
 ///
-/// The generator answers "is this dependency registered?" from a fully
-/// resolved, whole-package IR. A rule cannot: the analysis server hands it one
-/// library at a time, and the only synchronous view of the others is their
-/// parsed source. So this index is built from syntax, and is deliberately
-/// coarser than `AlloyTypeRef.signature` in one direction only.
+/// The generator answers both questions from a fully resolved, whole-package
+/// IR. A rule cannot: the analysis server hands it one library at a time, and
+/// the only synchronous view of the others is their parsed source. So this
+/// index is built from syntax, and is deliberately coarser than
+/// `AlloyTypeRef.signature` in one direction only.
 ///
 /// It holds bare type names — no library, no type arguments, no `@Named`
-/// qualifier. Every one of those omissions makes the index match *more*, so
-/// the rule stays silent in cases the build still rejects. Missing a report is
-/// acceptable; inventing one from an editor that cannot see the whole graph is
-/// not. The build remains the authority.
+/// qualifier. Every one of those omissions makes [contains] match *more*, so
+/// the rule built on it stays silent in cases the build still rejects. Missing
+/// a report is acceptable; inventing one from an editor that cannot see the
+/// whole graph is not. The build remains the authority.
+///
+/// [cycle] needs the opposite care. There a coarser name makes the graph
+/// *denser*, and a dense graph can grow a loop that no real one has — so a
+/// name two declarations in the package both claim is dropped from the graph
+/// entirely rather than fused. See [ambiguous].
 class AlloyRegistrationIndex {
-  const AlloyRegistrationIndex(this.names);
+  const AlloyRegistrationIndex(
+    this.names,
+    this.edges,
+    this.ambiguous,
+    this.cycle,
+  );
 
+  /// Every type name something in the package registers.
   final Set<String> names;
+
+  /// What each registration asks for, keyed by the name it registers.
+  ///
+  /// Nullable dependencies are edges like any other: the generator skips them
+  /// only when checking completeness, never when ordering, because an optional
+  /// dependency that *is* registered still has to be built first.
+  final Map<String, Set<String>> edges;
+
+  /// Names claimed by more than one declaration, excluded from [edges].
+  ///
+  /// Two classes called `Clock` in different libraries are two registrations
+  /// the build is happy with. Merging them by name would hand one of them the
+  /// other's dependencies, which is how a graph with no loop grows one.
+  final Set<String> ambiguous;
+
+  /// One cycle in the graph, or null when there is none.
+  ///
+  /// One, not all: `layeredTopologicalSort` reports the first loop it finds,
+  /// and the generator shows the same one for the same graph. Reporting a
+  /// different set than the build would make the two disagree about a question
+  /// they answer identically.
+  final List<String>? cycle;
 
   bool contains(String typeName) => names.contains(typeName);
 
   /// Reads [files], or returns null when any of them will not parse.
   ///
   /// Null rather than a partial index on purpose: a file that was skipped is a
-  /// file whose registrations are missing, and the rule would then report them
-  /// as unregistered. Silence is the only safe answer to an incomplete read.
+  /// file whose registrations are missing, and the rules would then report
+  /// them as unregistered, or miss the half of a loop that lived there.
+  /// Silence is the only safe answer to an incomplete read.
   static AlloyRegistrationIndex? read(
     Iterable<String> files,
     AnalysisSession session,
   ) {
-    final names = <String>{};
+    final builder = _IndexBuilder();
     for (final path in files) {
       final parsed = session.getParsedUnit(path);
       if (parsed is! ParsedUnitResult || parsed.diagnostics.isNotEmpty) {
         return null;
       }
-      _collect(parsed.unit, names);
+      builder.collect(parsed.unit);
     }
-    return AlloyRegistrationIndex(names);
+    return builder.build();
+  }
+}
+
+/// Collects one package's registrations and edges as it walks parsed units.
+class _IndexBuilder {
+  final names = <String>{};
+  final edges = <String, Set<String>>{};
+  final ambiguous = <String>{};
+
+  AlloyRegistrationIndex build() {
+    final nodes = {
+      for (final entry in edges.entries)
+        if (!ambiguous.contains(entry.key)) entry.key,
+    };
+
+    List<String>? cycle;
+    try {
+      layeredTopologicalSort<String>(
+        nodes,
+        (node) => edges[node]!.where(nodes.contains),
+        labelOf: (node) => node,
+      );
+    } on AlloyCycleError catch (error) {
+      cycle = error.cycle;
+    }
+
+    return AlloyRegistrationIndex(names, edges, ambiguous, cycle);
   }
 
-  static void _collect(CompilationUnit unit, Set<String> names) {
+  void collect(CompilationUnit unit) {
     for (final declaration in unit.declarations) {
       if (declaration is! ClassDeclaration) continue;
+
+      var registers = false;
       var isModule = false;
+      String? exposed;
+      final wanted = <String>{};
+
       for (final annotation in declaration.metadata) {
         switch (annotation.name.name.split('.').last) {
           case 'AlloyInject':
@@ -55,8 +122,11 @@ class AlloyRegistrationIndex {
           case 'alloyTransient':
           case 'AlloyInit':
           case 'alloyInit':
+            registers = true;
             names.add(declaration.namePart.typeName.lexeme);
             _addArgument(annotation, 'exposeAs', names);
+            exposed ??= _firstName(_namedArgument(annotation, 'exposeAs'));
+            _addArgumentList(annotation, 'dependsOn', wanted);
           case 'AlloyScopeRoot':
             _addArgumentList(annotation, 'provides', names);
           case 'AlloyModule':
@@ -64,16 +134,22 @@ class AlloyRegistrationIndex {
             isModule = true;
         }
       }
-      if (isModule) _collectMembers(declaration, names);
+
+      if (registers) {
+        _addConstructorParameters(declaration, wanted);
+        _addInjectedFields(declaration, wanted);
+        _link(exposed ?? declaration.namePart.typeName.lexeme, wanted);
+      }
+      if (isModule) _collectMembers(declaration);
     }
   }
 
-  /// Adds what a module's members register.
+  /// Adds what a module's members register, and what they ask for.
   ///
   /// Only inside a class that says it is a module: a return type is a much
   /// weaker signal than an annotated class, and reading every method of every
   /// class would quietly answer for types nobody registers.
-  static void _collectMembers(ClassDeclaration module, Set<String> names) {
+  void _collectMembers(ClassDeclaration module) {
     for (final member in module.body.members) {
       if (member is! MethodDeclaration) continue;
       for (final annotation in member.metadata) {
@@ -84,6 +160,87 @@ class AlloyRegistrationIndex {
           case 'alloyTransient':
             _addTypeAnnotation(member.returnType, names);
             _addArgument(annotation, 'exposeAs', names);
+
+            final node =
+                _firstName(_namedArgument(annotation, 'exposeAs')) ??
+                _returnedName(member.returnType);
+            if (node == null) continue;
+
+            final wanted = <String>{};
+            for (final parameter
+                in member.parameters?.parameters ?? const <FormalParameter>[]) {
+              _addParameter(parameter, const {}, wanted);
+            }
+            _link(node, wanted);
+        }
+      }
+    }
+  }
+
+  /// Records that [node] depends on [wanted], or marks it [ambiguous].
+  void _link(String node, Set<String> wanted) {
+    if (edges.containsKey(node)) {
+      ambiguous.add(node);
+      return;
+    }
+    edges[node] = wanted;
+  }
+
+  /// Adds the types the first public generative constructor takes.
+  ///
+  /// `this.field` carries no type of its own, so the field declarations are
+  /// read first to give it one.
+  void _addConstructorParameters(ClassDeclaration node, Set<String> out) {
+    final fieldTypes = <String, String>{};
+    for (final member in node.body.members) {
+      if (member is! FieldDeclaration) continue;
+      final type = _returnedName(member.fields.type);
+      if (type == null) continue;
+      for (final variable in member.fields.variables) {
+        fieldTypes[variable.name.lexeme] = type;
+      }
+    }
+
+    for (final member in node.body.members) {
+      if (member is! ConstructorDeclaration) continue;
+      if (member.factoryKeyword != null) continue;
+      if (member.name?.lexeme.startsWith('_') ?? false) continue;
+      for (final parameter in member.parameters.parameters) {
+        _addParameter(parameter, fieldTypes, out);
+      }
+      return;
+    }
+  }
+
+  /// Adds the type one parameter contributes, if it names one.
+  ///
+  /// A `super.field` parameter is skipped: its type lives in a class this unit
+  /// may not contain, and a missed edge only costs a cycle that goes
+  /// unreported. An untyped `this.field` falls back to [fieldTypes].
+  void _addParameter(
+    FormalParameter parameter,
+    Map<String, String> fieldTypes,
+    Set<String> out,
+  ) {
+    if (parameter is SuperFormalParameter) return;
+    final name = parameter.name?.lexeme;
+    final type =
+        _returnedName(parameter.type) ??
+        (parameter is FieldFormalParameter && name != null
+            ? fieldTypes[name]
+            : null);
+    if (type != null) out.add(type);
+  }
+
+  void _addInjectedFields(ClassDeclaration node, Set<String> out) {
+    for (final member in node.body.members) {
+      if (member is! FieldDeclaration) continue;
+      for (final annotation in member.metadata) {
+        switch (annotation.name.name.split('.').last) {
+          case 'Injected':
+          case 'injected':
+            final type = _returnedName(member.fields.type);
+            if (type != null) out.add(type);
         }
       }
     }
@@ -96,14 +253,15 @@ class AlloyRegistrationIndex {
   /// written return type adds nothing — a silent miss, which is the direction
   /// this index is allowed to fail in.
   static void _addTypeAnnotation(TypeAnnotation? type, Set<String> names) {
-    if (type is! NamedType) return;
+    final name = _returnedName(type);
+    if (name != null) names.add(name);
+  }
+
+  static String? _returnedName(TypeAnnotation? type) {
+    if (type is! NamedType) return null;
     final name = type.name.lexeme;
-    if (name != 'Future') {
-      names.add(name);
-      return;
-    }
-    final argument = type.typeArguments?.arguments.firstOrNull;
-    if (argument != null) _addTypeAnnotation(argument, names);
+    if (name != 'Future') return name;
+    return _returnedName(type.typeArguments?.arguments.firstOrNull);
   }
 
   static void _addArgument(
@@ -127,6 +285,13 @@ class AlloyRegistrationIndex {
     }
   }
 
+  static String? _firstName(Expression? expression) {
+    if (expression == null) return null;
+    final found = <String>{};
+    _addExpression(expression, found);
+    return found.firstOrNull;
+  }
+
   static Expression? _namedArgument(Annotation annotation, String parameter) {
     for (final argument
         in annotation.arguments?.arguments ?? const <Argument>[]) {
@@ -137,9 +302,9 @@ class AlloyRegistrationIndex {
     return null;
   }
 
-  /// Reads the type an expression names, in every shape `provides` and
-  /// `exposeAs` accept: `Foo`, `prefix.Foo`, `Repository<User>` and
-  /// `AlloyProvided(Foo, name: 'x')`.
+  /// Reads the type an expression names, in every shape `provides`,
+  /// `exposeAs` and `dependsOn` accept: `Foo`, `prefix.Foo`,
+  /// `Repository<User>` and `AlloyProvided(Foo, name: 'x')`.
   static void _addExpression(Expression expression, Set<String> names) {
     switch (expression) {
       case SimpleIdentifier(:final name):
@@ -169,7 +334,7 @@ class AlloyRegistrationIndex {
 /// Keeps one [AlloyRegistrationIndex] per package, rebuilt when a file
 /// changes.
 ///
-/// The rule needs the whole package to answer a question about one class, so
+/// The rules need the whole package to answer a question about one class, so
 /// without this the package would be reparsed once per analysed library. What
 /// makes caching affordable is that checking is far cheaper than building:
 /// listing `lib` and reading modification stamps costs a stat per file,

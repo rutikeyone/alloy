@@ -6,6 +6,7 @@ library;
 
 import 'package:alloy_lint/src/rules/bootstrap_requires_run_method.dart';
 import 'package:alloy_lint/src/rules/bootstrap_step_cannot_inject.dart';
+import 'package:alloy_lint/src/rules/dependency_cycle.dart';
 import 'package:alloy_lint/src/rules/dependency_is_not_registered.dart';
 import 'package:alloy_lint/src/rules/environment_needs_a_registration.dart';
 import 'package:alloy_lint/src/rules/init_requires_init_method.dart';
@@ -30,6 +31,7 @@ class _AlloyPlugin extends Plugin {
   void register(PluginRegistry registry) {
     registry.registerWarningRule(BootstrapRequiresRunMethod());
     registry.registerWarningRule(BootstrapStepCannotInject());
+    registry.registerWarningRule(DependencyCycle());
     registry.registerWarningRule(DependencyIsNotRegistered());
     registry.registerWarningRule(EnvironmentNeedsARegistration());
     registry.registerWarningRule(InitRequiresInitMethod());
