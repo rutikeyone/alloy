@@ -104,7 +104,7 @@ class ContainerSourceEmitter {
           (r) => r
             ..namedFieldTypes.addAll({
               for (final value in declaration.callSiteValues)
-                value.field: typeReferenceOf(value.type),
+                value.field: recordFieldTypeOf(value.type),
             }),
         ),
     );

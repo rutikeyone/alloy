@@ -36,6 +36,17 @@ class AlloyInjectableParser {
     final constructor = _constructorOf(clazz);
     final takesParams = constructor.formalParameters.any(paramMatcher.matches);
 
+    for (final parameter in constructor.formalParameters) {
+      if (!paramMatcher.matches(parameter) || !parameter.isOptional) continue;
+      throw AlloyParseError(
+        '${clazz.displayName} marks ${parameter.displayName} with @AlloyParam '
+        'and leaves it optional. The record the call site passes has no '
+        'defaults, so the default would never be used. Make it required, or '
+        'make its type nullable and pass null.',
+        clazz,
+      );
+    }
+
     if (takesParams && isAsyncInit) {
       throw AlloyParseError(
         '${clazz.displayName} is annotated with @AlloyInit and takes an '

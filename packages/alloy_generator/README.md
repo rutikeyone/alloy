@@ -221,6 +221,11 @@ A marked parameter is not a dependency. Nothing registers an `int`, so it is ski
 completeness check and is no edge in the ordering — while everything beside it is checked and
 ordered exactly as before.
 
+Nullability is kept: `@alloyParam String? title` becomes a `({String? title})` field, so a
+constructor willing to take null still can. A **default** is not, and an optional marked parameter
+is refused rather than silently ignored — a record carries no defaults, so `@alloyParam this.draft =
+false` would leave the caller obliged to pass it anyway. Make it required, or make it nullable.
+
 Three combinations are refused, each naming the fix: `@AlloyInit`, because there is no asynchronous
 parameterized factory; `lifetime: singleton`, because a singleton is built while the container is
 assembled, when no call site has supplied anything; and a module member, because a module registers

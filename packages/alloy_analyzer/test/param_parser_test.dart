@@ -105,6 +105,46 @@ class Editor {
       );
     });
 
+    test('an optional parameter', () async {
+      final clazz = await classNamed('Editor', '''
+@alloyInject
+class Editor {
+  Editor({@alloyParam this.draft = false});
+
+  final bool draft;
+}
+''');
+
+      expect(
+        () => parser.parseClass(clazz),
+        throwsA(
+          isA<AlloyParseError>().having(
+            (error) => error.message,
+            'message',
+            allOf(contains('draft'), contains('has no defaults')),
+          ),
+        ),
+        reason:
+            'a record carries no defaults, so the one written here would '
+            'never be used',
+      );
+    });
+
+    test('a nullable value is fine, and stays nullable', () async {
+      final clazz = await classNamed('Editor', '''
+@alloyInject
+class Editor {
+  Editor({@alloyParam required this.title});
+
+  final String? title;
+}
+''');
+
+      final parsed = parser.parseClass(clazz);
+
+      expect(parsed.callSiteValues.single.type.isNullable, isTrue);
+    });
+
     test('a module member', () async {
       final clazz = await classNamed('PlatformModule', '''
 class Channel {}

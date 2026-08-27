@@ -1,5 +1,8 @@
 ## 0.1.0
 
+- A nullable `@AlloyParam` keeps its `?` in the generated record. It used to
+  be dropped, narrowing an argument the constructor was willing to take as
+  null.
 - A module member may take named parameters. They were refused because the
   emitter passed everything positionally; it no longer does. An optional
   parameter is still refused, for the reason it always was.

@@ -22,6 +22,25 @@ Reference typeReferenceOf(AlloyTypeRef type) {
   );
 }
 
+/// The type of one field of a call-site record.
+///
+/// Unlike [typeReferenceOf] this keeps the `?`. That function deliberately
+/// drops it, because it also builds `registerLazySingleton<T>` and
+/// `AlloyKey(T)`, where nullability would change the registration. A record
+/// field is the opposite case: dropping it there narrows the argument, so a
+/// constructor willing to take null would be handed a type that cannot
+/// express it.
+Reference recordFieldTypeOf(AlloyTypeRef type) {
+  if (!type.isNullable) return typeReferenceOf(type);
+  return TypeReference(
+    (b) => b
+      ..symbol = type.name
+      ..url = type.import
+      ..isNullable = true
+      ..types.addAll([for (final a in type.typeArguments) typeReferenceOf(a)]),
+  );
+}
+
 /// Refers to a function the generated code calls by name.
 Expression functionReferenceOf(AlloyFunctionRef function) {
   final owner = function.owner;

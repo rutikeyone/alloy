@@ -11,7 +11,7 @@ class Greeting {
   Greeting(
     this._config, {
     @alloyParam required this.name,
-    @alloyParam this.loud = false,
+    @alloyParam required this.loud,
   });
 
   final Config _config;

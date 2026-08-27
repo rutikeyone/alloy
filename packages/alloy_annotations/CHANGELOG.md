@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- An optional `@AlloyParam` parameter is refused: the record the call site
+  passes carries no defaults, so the default could never be used.
 - `@AlloyParam` marks a constructor parameter the call site supplies rather
   than the graph.
 - Initial release.

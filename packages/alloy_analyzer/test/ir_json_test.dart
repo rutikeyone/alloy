@@ -121,4 +121,68 @@ void main() {
       expect(result.scopeRoots.single.provides, isEmpty);
     });
   });
+
+  /// The IR is the contract between the two build phases: the scan builder
+  /// writes it, the container builder reads it. A flag lost here turns every
+  /// parameterized class back into a plain registration, and until this test
+  /// existed only a full build in another package noticed.
+  test('a constructor parameter keeps its flags through JSON', () {
+    final declaration = AlloyInjectableClass(
+      type: const AlloyTypeRef(
+        name: 'NoteEditor',
+        import: 'package:app/a.dart',
+      ),
+      lifetime: AlloyLifetime.lazySingleton,
+      constructorParameters: const [
+        AlloyInjectedProperty(
+          field: 'repo',
+          type: AlloyTypeRef(name: 'Repo', import: 'package:app/a.dart'),
+        ),
+        AlloyInjectedProperty(
+          field: 'id',
+          type: AlloyTypeRef(name: 'int', import: 'dart:core'),
+          isNamed: true,
+          isParam: true,
+        ),
+        AlloyInjectedProperty(
+          field: 'label',
+          type: AlloyTypeRef(
+            name: 'String',
+            import: 'dart:core',
+            isNullable: true,
+          ),
+          name: 'audit',
+          isNamed: true,
+          isParam: true,
+        ),
+      ],
+      properties: const [],
+    );
+
+    final decoded = AlloyInjectableClass.fromJson(
+      jsonDecode(jsonEncode(declaration.toJson())) as Map<String, dynamic>,
+    );
+
+    expect(
+      decoded.constructorParameters.map((each) => (each.isNamed, each.isParam)),
+      [(false, false), (true, true), (true, true)],
+    );
+    expect(decoded.callSiteValues.map((each) => each.field), ['id', 'label']);
+    expect(decoded.constructorParameters.last.type.isNullable, isTrue);
+    expect(decoded.constructorParameters.last.name, 'audit');
+  });
+
+  test('a parameter written by an older build reads as neither', () {
+    final decoded = AlloyInjectedProperty.fromJson({
+      'field': 'repo',
+      'type': const AlloyTypeRef(
+        name: 'Repo',
+        import: 'package:app/a.dart',
+      ).toJson(),
+      'name': null,
+    });
+
+    expect(decoded.isNamed, isFalse);
+    expect(decoded.isParam, isFalse);
+  });
 }
