@@ -71,7 +71,7 @@ dart format --output=none --set-exit-if-changed .
 ```
 
 `tool/coverage.sh` measures line coverage of the eleven publishable packages that have tests, prints
-them worst-first, and fails under a floor on the **total** — 85%, against 89.5% today. The floor is
+them worst-first, and fails under a floor on the **total** — 85%, against 91.8% today. The floor is
 on the total rather than per package deliberately: coverage is measured per package while the code
 is shared, so `alloy_analyzer`'s parsers are driven far more from `alloy_generator`'s tests and from
 `compat/external_consumer` than from their own suite. A per-package floor would demand tests written

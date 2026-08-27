@@ -157,5 +157,103 @@ void main() {
 
       expect(root.children, isEmpty);
     });
+
+    /// The primary constructor, which mirrors `StatefulShellRoute.new` and
+    /// takes the container builder itself. Only `.indexedStack` was exercised
+    /// before, and tabs are the feature.
+    testWidgets('the primary constructor owns a scope just the same', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/w/feed',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => const Scaffold(body: Text('out')),
+          ),
+          AlloyStatefulShellRoute(
+            key: shellKey,
+            name: 'workspace',
+            scope: (_) => const TrackedScope('workspace'),
+            navigatorContainerBuilder: (_, navigationShell, children) =>
+                IndexedStack(
+                  index: navigationShell.currentIndex,
+                  children: children,
+                ),
+            branches: [
+              AlloyStatefulShellBranch(
+                name: 'feed',
+                scope: (_) => const TrackedScope('feed'),
+                routes: [
+                  GoRoute(
+                    path: '/w/feed',
+                    builder: (_, _) => const ScopeChain(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await start(tester, router);
+      await settle(tester);
+
+      expect(find.text('chain:feed<workspace<app'), findsOneWidget);
+      expect(root.children.single.name, 'workspace');
+
+      router.go('/');
+      await settle(tester);
+
+      expect(
+        root.children,
+        isEmpty,
+        reason:
+            'the scope itself, not its teardown log: nobody resolved the '
+            'workspace Tracked, so a lazy singleton was never built and there '
+            'is nothing to have released',
+      );
+    });
+
+    /// `shell` is the wrapper the tab bar lives in; without it the shell route
+    /// renders the navigation shell bare.
+    testWidgets('the shell wrapper is rendered around the branches', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/w/feed',
+        routes: [
+          AlloyStatefulShellRoute.indexedStack(
+            key: shellKey,
+            name: 'workspace',
+            scope: (_) => const TrackedScope('workspace'),
+            shell: (_, _, navigationShell) => Column(
+              children: [
+                const Text('tabs'),
+                Expanded(child: navigationShell),
+              ],
+            ),
+            branches: [
+              AlloyStatefulShellBranch(
+                name: 'feed',
+                scope: (_) => const TrackedScope('feed'),
+                routes: [
+                  GoRoute(
+                    path: '/w/feed',
+                    builder: (_, _) => const ScopeChain(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await start(tester, router);
+      await settle(tester);
+
+      expect(find.text('tabs'), findsOneWidget);
+      expect(find.text('chain:feed<workspace<app'), findsOneWidget);
+    });
   });
 }
