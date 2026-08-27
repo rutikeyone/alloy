@@ -1,5 +1,8 @@
 ## 0.1.0
 
+- A module member may take named parameters. They were refused because the
+  emitter passed everything positionally; it no longer does. An optional
+  parameter is still refused, for the reason it always was.
 - A class with `@AlloyParam` parameters is generated as a parameterized
   factory, with a named record type emitted beside the container. Marked
   parameters are not dependencies: they are skipped by the completeness check

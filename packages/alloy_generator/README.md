@@ -57,8 +57,10 @@ resolved from the scope like constructor parameters.
 
 The class needs a public `const` constructor taking no arguments — the emitted
 factory holds `const NetworkModule()`, so it allocates nothing and carries no
-state. Members must be public instance members taking only positional
-parameters.
+state. Members must be public instance members, and every parameter must be
+required — positional or named, called the way it was declared. An optional one
+is refused, because every parameter is resolved from the scope and there is
+nothing for a default to mean.
 
 **`Future<T>` is the only async signal.** A member returning it registers `T`
 as an async singleton built during startup; there is no `@AlloyInit` on a
@@ -227,7 +229,8 @@ types you did not write while a call-site value belongs to a class you did.
 ## Constructors with named parameters
 
 A constructor is called the way it was declared — positional arguments positionally, named ones by
-name, mixed in one call where a class mixes them. This is worth stating because it used not to be
-true: every argument went in positionally, which produced a file that did not compile, and no
-injectable class in this repository's own examples happened to use a named parameter, so nothing
-noticed until a production graph was read.
+name, mixed in one call where a class mixes them, and the same for a module member. This is worth
+stating because it used not to be true: every argument went in positionally, which produced a file
+that did not compile, and no injectable class in this repository's own examples happened to use a
+named parameter, so nothing noticed until a production graph was read. Module members were refused
+outright for the same reason, which stopped being a reason once the emitter could do it.

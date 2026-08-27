@@ -38,8 +38,11 @@ class PlatformModule {
   @AlloyInject(dispose: closeChannel)
   Channel channel() => Channel('channel');
 
+  /// Named parameters, which a member may take like any constructor. Real
+  /// clients from other packages are built this way far more often than
+  /// positionally.
   @alloyInject
-  Future<Envelope> envelope(Channel channel) async {
+  Future<Envelope> envelope({required Channel channel}) async {
     await Future<void>.delayed(Duration.zero);
     return Envelope(channel, 'stamped');
   }

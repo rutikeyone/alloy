@@ -201,4 +201,23 @@ void main() {
       expect(source, contains('.Closers.close'));
     });
   });
+
+  test('a member taking a named parameter is called by name', () {
+    final source = generate([
+      declare('Config'),
+      provide(
+        'NetworkModule',
+        'dio',
+        'Dio',
+        parameters: [dep('Config', isNamed: true, field: 'config')],
+      ),
+    ]);
+
+    expect(source, contains('config: resolver.get<_i137.Config>()'));
+    expect(
+      'resolver.get<_i137.Config>()'.allMatches(source).length,
+      1,
+      reason: 'passed once, by name — not also among the positionals',
+    );
+  });
 }

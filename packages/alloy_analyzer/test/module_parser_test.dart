@@ -237,10 +237,31 @@ $member
       );
     });
 
-    test('a named parameter is rejected', () async {
+    test('a required named parameter is taken as declared', () async {
+      final parsed = await parse('''
+class Dio {}
+
+class Config {}
+
+@alloyModule
+class Module {
+  const Module();
+
+  @alloyInject
+  Dio dio(Config config, {required Config other}) => Dio();
+}
+''');
+
+      expect(parsed.single.constructorParameters.map((each) => each.isNamed), [
+        false,
+        true,
+      ], reason: 'the call is rebuilt the way the member declared it');
+    });
+
+    test('an optional named parameter is still rejected', () async {
       await expectRejected(
         '  @alloyInject\n  Dio dio({Dio? other}) => Dio();',
-        contains('named parameter'),
+        contains('optional'),
       );
     });
 

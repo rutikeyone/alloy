@@ -80,7 +80,7 @@ final class _PlatformModuleEnvelopeFactory
   @override
   _i687.Future<_i505.Envelope> create(_i178.AlloyResolver resolver) async =>
       await const _i505.PlatformModule().envelope(
-        resolver.get<_i505.Channel>(),
+        channel: resolver.get<_i505.Channel>(),
       );
 }
 

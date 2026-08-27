@@ -197,14 +197,6 @@ class AlloyModuleParser {
     String where,
     ExecutableElement member,
   ) {
-    if (parameter.isNamed) {
-      throw AlloyParseError(
-        '$where takes the named parameter ${parameter.displayName}. Module '
-        'member parameters are resolved positionally, so they have to be '
-        'declared positionally.',
-        member,
-      );
-    }
     if (paramMatcher.matches(parameter)) {
       throw AlloyParseError(
         '$where takes an @AlloyParam. A module registers types you did not '
@@ -225,6 +217,7 @@ class AlloyModuleParser {
       field: parameter.name ?? '',
       type: typeRefOf(parameter.type),
       name: namedMatcher.firstOf(parameter)?.readString('name'),
+      isNamed: parameter.isNamed,
     );
   }
 
