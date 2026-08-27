@@ -195,6 +195,29 @@ rule is simply that each isolate builds its own graph.
 If you offload work with `Isolate.run` or `compute`, pass the *data* the work
 needs, not the scope or anything resolved from it.
 
+## What resolution costs
+
+Measured rather than asserted, on a graph shaped like the production apps this framework was written
+for — 205 registrations in one scope, five of them implementations of one interface. Run it with
+`dart run benchmark/resolve_benchmark.dart`.
+
+| | µs per call |
+|---|---|
+| `get<T>()`, cache hit in the same scope | 0.05 |
+| `get<T>()`, four scopes up | 0.12 |
+| `isRegistered<T>()` | 0.03 |
+| `getAll<T>()`, 5 matches among 205 | 1.4 |
+
+`get` is a map lookup per scope on the way up, so it costs the depth of the tree and nothing else.
+`getAll` is the one that scales with the *size* of a scope rather than with what it returns: it has
+to look at every registration to find the ones of a type, which measured 1.5 µs at 55 registrations,
+1.4 at 205 and 17.7 at 2005. That is linear and nowhere near mattering for the way multi-injection
+is used — a handful of calls per screen — so it is documented rather than indexed. Indexing by type
+would buy microseconds and cost a second structure to keep correct through shadowing.
+
+The benchmark is not in CI: on a shared runner the numbers say more about the runner than about the
+code.
+
 ## Watching one subtree
 
 Observers are fixed when a scope is built, and inherited by its children. `push` takes its own, so

@@ -436,10 +436,12 @@ final class AlloyScope implements AlloyResolver {
     final seen = <AlloyKey>{};
     final result = <T>[];
     for (AlloyScope? scope = this; scope != null; scope = scope.parent) {
-      final matching =
-          scope._registrations.values.where((r) => r.key.type == T).toList()
-            ..sort((a, b) => a.order.compareTo(b.order));
-      for (final registration in matching) {
+      // No sort: `_registrations` is insertion-ordered and `_put` only ever
+      // inserts — a duplicate key throws — so iterating it is already
+      // ascending `order`. Sorting a copy of the matches said the same thing
+      // at the cost of a list per call.
+      for (final registration in scope._registrations.values) {
+        if (registration.key.type != T) continue;
         if (!seen.add(registration.key)) continue;
         result.add(scope._materialize(registration) as T);
       }

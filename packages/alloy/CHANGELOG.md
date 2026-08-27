@@ -1,5 +1,9 @@
 ## 0.1.0
 
+- `getAll` no longer sorts a copy of the matches on every call: registrations
+  are already iterated in registration order, so the sort said the same thing
+  at the cost of a list per call. About a third off its cost, order unchanged
+  and now pinned by tests.
 - `push` takes `observers`, added to the inherited ones, so a subtree can be
   watched without installing anything at startup.
 - An async registration made once `init()` has started is refused rather than
