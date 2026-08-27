@@ -84,3 +84,36 @@ pub.dev rather than from the consumer's pubspec, which is why
 `compat/external_consumer/analysis_options.yaml` names local paths. Drop that
 block once the packages are live, and the stand starts proving the real
 installation path too.
+
+## What `pana` can and cannot tell you before the first publish
+
+`pana` resolves against pub.dev and strips `dependency_overrides`, so it scores a package only once
+everything it depends on is published. Before the first release that means exactly one package can
+be measured — `alloy_annotations`, whose only dependency is `meta` — and each later one becomes
+measurable as the one below it lands. Run it as you go rather than saving it for the end:
+
+```bash
+dart pub global activate pana
+(cd packages/alloy_annotations && dart pub global run pana --no-warning .)
+```
+
+Measured 2026-08-27: `alloy_annotations` scores **160/160**, with all six platforms detected and
+`is:wasm-ready`, without declaring a `platforms:` key. Two things follow, and both save work:
+declaring platforms by hand buys nothing here and can only contradict what the analysis finds; and
+the documentation criterion is *20% or more* of the public API, not all of it, so chasing complete
+dartdoc coverage is a matter of taste rather than of score.
+
+## Lower bounds
+
+`pana` also checks that a package resolves and analyses at the bottom of its own constraints.
+That one is runnable locally against the whole workspace:
+
+```bash
+flutter pub downgrade && dart analyze --fatal-infos .
+flutter pub get
+```
+
+Measured 2026-08-27: clean. The test *runner* cannot run down there — `frontend_server_client`
+resolves to 3.2.0, which invokes a `frontend_server.dart.snapshot` that Dart 3.13 no longer ships —
+but that is a transitive dev dependency nothing here declares, and it is invisible to consumers,
+who never run these tests.

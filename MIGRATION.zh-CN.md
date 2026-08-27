@@ -113,7 +113,7 @@ final tabB = app.push('tab:b');   // 是兄弟，而不是压在 tabA 上面
 | `@Environment(Environment.dev)` | `@AlloyEnvironment.dev` —— 需要多个时重复该注解 |
 | `@preResolve` | `@AlloyInit()` |
 | `@disposeMethod` | `implements Disposable` / `AsyncDisposable` |
-| `@factoryMethod` | 第一个公开的生成式构造函数 |
+| `@factoryMethod` | 第一个公开的生成式构造函数；若需要的不是它，则用 `@AlloyModule` 成员 |
 | `@InjectableInit()` + `configureDependencies()` | `@AlloyScopeRoot()` + 生成的 `$startAlloy()` |
 
 ### 形态发生变化的部分

@@ -130,7 +130,7 @@ Be aware of these before you commit to the move:
 | `@Environment(Environment.dev)` | `@AlloyEnvironment.dev` — repeat the annotation for several |
 | `@preResolve` | `@AlloyInit()` |
 | `@disposeMethod` | `implements Disposable` / `AsyncDisposable` |
-| `@factoryMethod` | the first public generative constructor |
+| `@factoryMethod` | the first public generative constructor, or an `@AlloyModule` member when it is not that one |
 | `@InjectableInit()` + `configureDependencies()` | `@AlloyScopeRoot()` + generated `$startAlloy()` |
 
 ### What changes shape

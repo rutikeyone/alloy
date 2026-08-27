@@ -125,7 +125,7 @@ final tabB = app.push('tab:b');   // сосед, а не «сверху на tab
 | `@Environment(Environment.dev)` | `@AlloyEnvironment.dev` — повторите аннотацию для нескольких |
 | `@preResolve` | `@AlloyInit()` |
 | `@disposeMethod` | `implements Disposable` / `AsyncDisposable` |
-| `@factoryMethod` | первый публичный генеративный конструктор |
+| `@factoryMethod` | первый публичный генеративный конструктор, а если нужен не он — член `@AlloyModule` |
 | `@InjectableInit()` + `configureDependencies()` | `@AlloyScopeRoot()` + сгенерированный `$startAlloy()` |
 
 ### Что меняет форму
