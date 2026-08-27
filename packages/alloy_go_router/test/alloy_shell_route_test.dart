@@ -1,5 +1,6 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -29,15 +30,12 @@ void main() {
   late GoRouter router;
 
   setUp(() {
-    disposeLog.clear();
-    root = AlloyScope.root(name: 'app');
+    recorder = DisposeRecorder();
+    root = alloyTestRoot(name: 'app');
     router = flowRouter();
   });
 
-  tearDown(() async {
-    router.dispose();
-    await root.dispose();
-  });
+  tearDown(() => router.dispose());
 
   Future<void> open(WidgetTester tester, String location) async {
     router.go(location);
@@ -60,7 +58,7 @@ void main() {
     });
 
     testWidgets('the flow shadows the root while it is open', (tester) async {
-      root.registerLazySingleton<Tracked>(const TrackedFactory('root'));
+      root.registerLazySingleton<Tracked>(FnFactory((_) => Tracked('root')));
 
       await start(tester);
       await open(tester, '/orders/7/summary');
@@ -79,7 +77,7 @@ void main() {
       await open(tester, '/orders/7/payment');
 
       expect(textStartingWith('instance:'), before);
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
       expect(root.children.single.name, 'order:7');
     });
   });
@@ -92,7 +90,7 @@ void main() {
 
       await open(tester, '/');
 
-      expect(disposeLog, ['order-7']);
+      expect(recorder.entries, ['order-7']);
       expect(root.children, isEmpty);
     });
 
@@ -117,7 +115,7 @@ void main() {
 
       await open(tester, '/orders/8/summary');
 
-      expect(disposeLog, ['order-7']);
+      expect(recorder.entries, ['order-7']);
       expect(find.text('label:order-8'), findsOneWidget);
       expect(textStartingWith('instance:'), isNot(first));
       expect(root.children.single.name, 'order:8');
@@ -154,7 +152,7 @@ void main() {
 
       expect(find.text('scope:wizard'), findsOneWidget);
       expect(textStartingWith('instance:'), before);
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
     });
   });
 

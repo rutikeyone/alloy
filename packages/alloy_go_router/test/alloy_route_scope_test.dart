@@ -1,5 +1,6 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,11 +10,9 @@ void main() {
   late AlloyScope root;
 
   setUp(() {
-    disposeLog.clear();
-    root = AlloyScope.root(name: 'app');
+    recorder = DisposeRecorder();
+    root = alloyTestRoot(name: 'app');
   });
-
-  tearDown(() async => root.dispose());
 
   group('a flow inside a flow', () {
     testWidgets('stacks scopes instead of replacing them', (tester) async {
@@ -120,7 +119,7 @@ void main() {
       await settle(tester);
 
       expect(
-        disposeLog,
+        recorder.entries,
         isEmpty,
         reason:
             'a branch is kept alive off-screen, so its scope outlives the tab '

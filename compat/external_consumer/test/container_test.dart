@@ -1,5 +1,6 @@
 import 'package:alloy/alloy.dart';
 import 'package:alloy_external_consumer/alloy_external_consumer.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -10,9 +11,9 @@ void main() {
     scope = await $startAlloy();
   });
 
-  tearDown(() async {
-    if (scope.state != AlloyScopeState.disposed) await scope.dispose();
-  });
+  // The closing form, because the tests below hand `scope` a different graph.
+  // No guard on the state: dispose() returns early when it already ran.
+  tearDown(() => scope.dispose());
 
   test('the generated container is named by @AlloyScopeRoot', () {
     expect(scope.name, 'consumer');
@@ -126,5 +127,30 @@ void main() {
         expect(scope.get<Diagnostics>().describe(), startsWith('pixel at '));
       },
     );
+  });
+
+  // checkGraph's own tests run on fixtures. This is the first time it walks a
+  // generated graph, and it does it from outside the workspace, where the
+  // helper package resolves like any other dependency.
+  group('checking the graph by running it', () {
+    test('names the promised registration nothing keeps', () async {
+      final report = await checkGraph(scope);
+
+      expect(report.isComplete, isFalse);
+      expect(
+        report.failures.map((f) => f.key.toString()),
+        contains(contains('Diagnostics')),
+        reason: 'provides tells the build to trust; only running finds out',
+      );
+    });
+
+    test('and reports it complete once a builder keeps it', () async {
+      await scope.dispose();
+      scope = await startConsumer(device: const DeviceInfo('pixel'));
+
+      final report = await checkGraph(scope);
+
+      expect(report.isComplete, isTrue, reason: '$report');
+    });
   });
 }

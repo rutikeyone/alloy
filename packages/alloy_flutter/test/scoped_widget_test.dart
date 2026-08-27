@@ -1,17 +1,25 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final disposeLog = <String>[];
+/// Where the fixtures report their teardown, replaced by every `setUp`.
+///
+/// It used to be a list cleared per test, which is not the same thing:
+/// teardown is not awaited, so a scope from the previous test can still be
+/// releasing and append after the clear. A [Service] captures the recorder it
+/// was *built* with, so a late report lands in the test it came from.
+late DisposeRecorder recorder;
 
 class Draft implements Disposable {
-  Draft(this.label);
+  Draft(this.label) : _recorder = recorder;
 
   final String label;
+  final DisposeRecorder _recorder;
   var text = '';
 
   @override
-  void dispose() => disposeLog.add(label);
+  void dispose() => _recorder.record(label);
 }
 
 class DraftFactory implements AlloyFactory<Draft> {
@@ -80,15 +88,14 @@ class CounterScreenState extends AlloyScopedState<CounterScreen> {
 }
 
 void main() {
-  setUp(disposeLog.clear);
+  setUp(() => recorder = DisposeRecorder());
 
   Widget host(AlloyScope scope, Widget child) =>
       AlloyScopeProvider(scope: scope, child: child);
 
   group('AlloyScopedWidget', () {
     testWidgets('pushes a scope named after the widget', (tester) async {
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       await tester.pumpWidget(host(root, const PlainScreen()));
       await tester.pumpAndSettle();
@@ -98,8 +105,7 @@ void main() {
     });
 
     testWidgets('an explicit scopeName wins', (tester) async {
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       await tester.pumpWidget(host(root, const NamedScreen()));
       await tester.pumpAndSettle();
@@ -108,8 +114,7 @@ void main() {
     });
 
     testWidgets('unmounting disposes what the scope built', (tester) async {
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       await tester.pumpWidget(host(root, const PlainScreen()));
       await tester.pumpAndSettle();
@@ -117,15 +122,14 @@ void main() {
       await tester.pumpWidget(host(root, const SizedBox.shrink()));
       await tester.pumpAndSettle();
 
-      expect(disposeLog, ['plain']);
+      expect(recorder.entries, ['plain']);
       expect(root.children, isEmpty);
     });
   });
 
   group('AlloyScopedStatefulWidget', () {
     testWidgets('setState rebuilds the content, not the scope', (tester) async {
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       await tester.pumpWidget(host(root, const CounterScreen()));
       await tester.pumpAndSettle();
@@ -143,26 +147,24 @@ void main() {
         before.split(' ').last,
         reason: 'the same Draft instance, so the scope was not rebuilt',
       );
-      expect(disposeLog, isEmpty);
+      expect(recorder.entries, isEmpty);
     });
 
     testWidgets('unmounting disposes the scope', (tester) async {
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       await tester.pumpWidget(host(root, const CounterScreen()));
       await tester.pumpAndSettle();
       await tester.pumpWidget(host(root, const SizedBox.shrink()));
       await tester.pumpAndSettle();
 
-      expect(disposeLog, ['counter']);
+      expect(recorder.entries, ['counter']);
     });
   });
 
   group('AlloyScopeWidget without a name', () {
     testWidgets('falls back to the builder type', (tester) async {
-      final root = AlloyScope.root(name: 'app');
-      addTearDown(root.dispose);
+      final root = alloyTestRoot(name: 'app');
 
       await tester.pumpWidget(
         host(

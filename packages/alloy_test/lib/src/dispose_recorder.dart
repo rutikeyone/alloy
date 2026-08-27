@@ -18,6 +18,15 @@ class DisposeRecorder {
   /// What has been disposed so far, in order.
   List<String> get entries => List.unmodifiable(_entries);
 
+  /// Records [label] as disposed, for a type of your own.
+  ///
+  /// [value] and [factory] cover the case where the recorder can supply the
+  /// object. When the test needs its own class — one carrying fields the
+  /// assertions read — that class calls this from its `dispose`, and captures
+  /// the recorder at construction so a late teardown reports into the test it
+  /// belongs to rather than whichever one is running.
+  void record(String label) => _entries.add(label);
+
   /// A disposable that records [label] when it is closed.
   Disposable value(String label) => _Recorded(label, _entries.add);
 

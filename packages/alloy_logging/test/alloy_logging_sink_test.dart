@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:alloy_logging/alloy_logging.dart';
 import 'package:logging/logging.dart' as logging;
 import 'package:test/test.dart';
@@ -52,7 +53,7 @@ void main() {
     });
 
     test('the graph drives it end to end', () async {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [AlloyLogObserver(sink)],
       );
@@ -69,11 +70,10 @@ void main() {
     });
 
     test('minimumLevel keeps per-instance noise out by default', () {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [AlloyLogObserver(sink)],
-      )..registerLazySingleton<Object>(const _MarkerFactory());
-      addTearDown(root.dispose);
+      )..registerLazySingleton<Object>(FnFactory((_) => Object()));
 
       root.get<Object>();
 
@@ -81,22 +81,14 @@ void main() {
     });
 
     test('lowering minimumLevel lets them through', () {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [AlloyLogObserver(sink, minimumLevel: AlloyLogLevel.trace)],
-      )..registerLazySingleton<Object>(const _MarkerFactory());
-      addTearDown(root.dispose);
+      )..registerLazySingleton<Object>(FnFactory((_) => Object()));
 
       root.get<Object>();
 
       expect(records.map((r) => r.message), contains(startsWith('built')));
     });
   });
-}
-
-final class _MarkerFactory implements AlloyFactory<Object> {
-  const _MarkerFactory();
-
-  @override
-  Object create(AlloyResolver resolver) => Object();
 }

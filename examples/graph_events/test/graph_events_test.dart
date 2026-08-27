@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:alloy_talker/alloy_talker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,13 +65,12 @@ void main() {
 
   group('startup reports itself', () {
     test('the bootstrap step and the init graph are both in the log', () async {
-      final scope = await AlloyApplication.start(
+      await alloyTestScope(
         root: const AppScope(),
         bootstrap: [WarmUp()],
         rootName: 'app',
         observers: [AlloyTalkerObserver(talker, verbose: true)],
       );
-      addTearDown(scope.dispose);
 
       expect(titles(), contains('alloy-startup'));
       expect(

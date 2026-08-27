@@ -1,28 +1,27 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-/// Everything disposed so far, in order, shared by the fixtures below.
-final disposeLog = <String>[];
+/// Where the fixtures below report their teardown, replaced by every `setUp`.
+///
+/// This was a plain list cleared at the start of each test, which does not
+/// isolate anything: teardown is not awaited, so the previous test's scope can
+/// still be releasing and append after the clear. A [Tracked] captures whichever
+/// recorder was current when it was *built*, so a late report lands in the test
+/// it belongs to instead of the one now running.
+late DisposeRecorder recorder;
 
 /// A flow-scoped value that reports its own teardown.
 class Tracked implements Disposable {
-  Tracked(this.label);
+  Tracked(this.label) : _recorder = recorder;
 
   final String label;
+  final DisposeRecorder _recorder;
 
   @override
-  void dispose() => disposeLog.add(label);
-}
-
-final class TrackedFactory implements AlloyFactory<Tracked> {
-  const TrackedFactory(this.label);
-
-  final String label;
-
-  @override
-  Tracked create(AlloyResolver resolver) => Tracked(label);
+  void dispose() => _recorder.record(label);
 }
 
 class TrackedScope implements AlloyScopeBuilder {
@@ -32,7 +31,7 @@ class TrackedScope implements AlloyScopeBuilder {
 
   @override
   void build(AlloyScope scope) =>
-      scope.registerLazySingleton<Tracked>(TrackedFactory(label));
+      scope.registerLazySingleton<Tracked>(FnFactory((_) => Tracked(label)));
 }
 
 /// Renders the resolved [Tracked] so a test can compare instances across

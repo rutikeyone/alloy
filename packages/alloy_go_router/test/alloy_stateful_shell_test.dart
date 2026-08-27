@@ -1,5 +1,6 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,12 +11,10 @@ void main() {
   late GlobalKey<StatefulNavigationShellState> shellKey;
 
   setUp(() {
-    disposeLog.clear();
-    root = AlloyScope.root(name: 'app');
+    recorder = DisposeRecorder();
+    root = alloyTestRoot(name: 'app');
     shellKey = GlobalKey<StatefulNavigationShellState>();
   });
-
-  tearDown(() async => root.dispose());
 
   Future<void> start(WidgetTester tester, GoRouter router) async {
     addTearDown(router.dispose);
@@ -89,7 +88,7 @@ void main() {
       await settle(tester);
 
       expect(
-        disposeLog,
+        recorder.entries,
         isEmpty,
         reason:
             'branch navigators are preserved off-screen, so a branch scope is '
@@ -111,7 +110,7 @@ void main() {
       await settle(tester);
 
       expect(root.children, isEmpty);
-      expect(disposeLog, containsAll(<String>['feed', 'profile']));
+      expect(recorder.entries, containsAll(<String>['feed', 'profile']));
     });
   });
 

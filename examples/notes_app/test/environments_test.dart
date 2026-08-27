@@ -14,7 +14,6 @@ void main() {
 
   Future<AlloyScope> start(AlloyEnvironment environment) async {
     final app = await startNotesGraph(environment: environment);
-    addTearDown(app.dispose);
     return app;
   }
 

@@ -15,7 +15,6 @@ void main() {
       expect(notesEnvironment.name, 'prod');
 
       final app = await startNotesGraph();
-      addTearDown(app.dispose);
 
       expect(app.get<ApiClient>(), isA<LiveApiClient>());
       expect(BootLog.steps, contains('report-crashes'));

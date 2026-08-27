@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:testing_patterns/testing_patterns.dart';
@@ -13,20 +14,14 @@ void main() {
     // initializer started in there hangs the test until the suite times out —
     // with no error pointing at the cause.
     setUp(() async {
-      app = await AlloyApplication.start(
-        root: const AppScope(),
-        rootName: 'app',
-      );
-      addTearDown(app.dispose);
+      app = await alloyTestScope(root: const AppScope(), rootName: 'app');
     });
 
     AlloyScope scopeWith(String greeting, int hour) {
-      final scope = app.push('test')
+      return app.pushForTest()
         ..registerSingleton<Clock>(FixedClock(DateTime.utc(2026, 8, 23, hour)))
         ..registerSingleton<GreetingStore>(InMemoryGreetingStore(greeting))
         ..registerLazySingleton<Greeter>(const GreeterFactory());
-      addTearDown(scope.dispose);
-      return scope;
     }
 
     Future<void> pump(WidgetTester tester, AlloyScope scope) async {
@@ -67,8 +62,7 @@ void main() {
   // zone, so real delays behave. Keep them out of testWidgets even when the app
   // under test is a Flutter app.
   test('the graph can be asserted on without any widgets', () async {
-    final app = await AlloyApplication.start(root: const AppScope());
-    addTearDown(app.dispose);
+    final app = await alloyTestScope(root: const AppScope());
 
     expect(app.isRegistered<Greeter>(), isTrue);
     expect(app.get<Clock>(), isA<SystemClock>());

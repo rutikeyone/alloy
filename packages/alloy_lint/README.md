@@ -46,7 +46,7 @@ All rules are warnings, so they are on by default. Every rule reads annotations 
 
 ## Why the graph rule reports less than the build does
 
-Six of the seven rules answer a question about one declaration. The seventh,
+Seven of the eight rules answer a question about one declaration. The eighth,
 `alloy_dependency_is_not_registered`, answers one about the whole package, and the analysis
 server does not offer that view: it hands a rule one library at a time, and the only synchronous
 window onto the others is their **parsed**, unresolved source.

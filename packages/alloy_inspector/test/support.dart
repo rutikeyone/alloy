@@ -1,5 +1,6 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_inspector/alloy_inspector.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter/material.dart';
 
 class Clock {
@@ -20,36 +21,24 @@ class Ticket {
 
 var clocksBuilt = 0;
 
-final class ClockFactory implements AlloyFactory<Clock> {
-  const ClockFactory();
-
-  @override
-  Clock create(AlloyResolver resolver) {
-    clocksBuilt++;
-    return const Clock();
-  }
-}
-
-final class ApiFactory implements AlloyFactory<Api> {
-  const ApiFactory();
-
-  @override
-  Api create(AlloyResolver resolver) => Api(resolver.get<Clock>());
-}
-
-final class TicketFactory implements AlloyParamFactory<Ticket, String> {
-  const TicketFactory();
-
-  @override
-  Ticket create(AlloyResolver resolver, String param) => Ticket(param);
-}
-
-/// A root with one of every shape the inspector has to render.
+/// A root with one of every shape the inspector has to render, disposed with
+/// the test.
+///
+/// [clocksBuilt] stays a plain global on purpose: unlike a teardown log it is
+/// written synchronously while the test runs, never after it, so resetting it
+/// in `setUp` really does isolate.
 AlloyScope buildGraph(AlloyInspectorLog log) =>
-    AlloyScope.root(name: 'app', observers: [log])
-      ..registerLazySingleton<Clock>(const ClockFactory())
-      ..registerFactory<Api>(const ApiFactory())
-      ..registerParamFactory<Ticket, String>(const TicketFactory());
+    alloyTestRoot(name: 'app', observers: [log])
+      ..registerLazySingleton<Clock>(
+        FnFactory((_) {
+          clocksBuilt++;
+          return const Clock();
+        }),
+      )
+      ..registerFactory<Api>(FnFactory((r) => Api(r.get<Clock>())))
+      ..registerParamFactory<Ticket, String>(
+        FnParamFactory((_, id) => Ticket(id)),
+      );
 
 Widget inspectorUnderTest(AlloyScope scope, AlloyInspectorLog log) =>
     MaterialApp(

@@ -43,3 +43,19 @@ class AsyncFnFactory<T extends Object> implements AlloyAsyncFactory<T> {
   @override
   Future<T> create(AlloyResolver resolver) => build(resolver);
 }
+
+/// An [AlloyParamFactory] built from a function.
+///
+/// The sibling of [FnFactory] for `registerParamFactory`, which needs its own
+/// interface because the argument the container cannot supply is passed in.
+class FnParamFactory<T extends Object, P extends Object>
+    implements AlloyParamFactory<T, P> {
+  /// Creates a factory that calls [build].
+  const FnParamFactory(this.build);
+
+  /// Builds the instance from the runtime argument.
+  final T Function(AlloyResolver resolver, P param) build;
+
+  @override
+  T create(AlloyResolver resolver, P param) => build(resolver, param);
+}

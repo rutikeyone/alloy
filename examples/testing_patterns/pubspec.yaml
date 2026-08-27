@@ -16,5 +16,6 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
+  alloy_test: ^0.1.0
   flutter_test:
     sdk: flutter

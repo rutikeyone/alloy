@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:alloy_talker/alloy_talker.dart';
 import 'package:talker/talker.dart';
 import 'package:test/test.dart';
@@ -6,13 +7,6 @@ import 'package:test/test.dart';
 class Marker implements Disposable {
   @override
   void dispose() {}
-}
-
-final class MarkerFactory implements AlloyFactory<Marker> {
-  const MarkerFactory();
-
-  @override
-  Marker create(AlloyResolver resolver) => Marker();
 }
 
 void main() {
@@ -25,7 +19,7 @@ void main() {
 
   group('AlloyTalkerObserver', () {
     test('files each kind of event under its own title', () async {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [AlloyTalkerObserver(talker)],
       );
@@ -40,11 +34,10 @@ void main() {
     });
 
     test('stays quiet about instances unless asked', () {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [AlloyTalkerObserver(talker)],
-      )..registerLazySingleton<Marker>(const MarkerFactory());
-      addTearDown(root.dispose);
+      )..registerLazySingleton<Marker>(FnFactory((_) => Marker()));
 
       root.get<Marker>();
 
@@ -52,11 +45,10 @@ void main() {
     });
 
     test('reports every instance in verbose mode', () {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [AlloyTalkerObserver(talker, verbose: true)],
-      )..registerLazySingleton<Marker>(const MarkerFactory());
-      addTearDown(root.dispose);
+      )..registerLazySingleton<Marker>(FnFactory((_) => Marker()));
 
       root.get<Marker>();
 
@@ -65,7 +57,7 @@ void main() {
     });
 
     test('a teardown failure becomes an alloy-failure entry', () async {
-      final root = AlloyScope.root(
+      final root = alloyTestRoot(
         name: 'app',
         observers: [AlloyTalkerObserver(talker)],
       )..registerSingleton<_Angry>(_Angry());
@@ -81,13 +73,12 @@ void main() {
     });
 
     test('startup milestones carry the step names', () async {
-      final scope = await AlloyApplication.start(
+      await alloyTestScope(
         root: const _MarkerScope(),
         bootstrap: [_Step('platform')],
         rootName: 'app',
         observers: [AlloyTalkerObserver(talker)],
       );
-      addTearDown(scope.dispose);
 
       expect(titles(), contains('alloy-startup'));
       expect(
@@ -106,7 +97,7 @@ final class _MarkerScope implements AlloyScopeBuilder {
 
   @override
   void build(AlloyScope scope) =>
-      scope.registerLazySingleton<Marker>(const MarkerFactory());
+      scope.registerLazySingleton<Marker>(FnFactory((_) => Marker()));
 }
 
 class _Step implements AlloyBootstrapStep {

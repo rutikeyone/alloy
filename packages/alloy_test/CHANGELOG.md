@@ -11,4 +11,9 @@
   whether an override will actually be seen.
 - `DisposeRecorder` keeps its log per instance rather than globally, because
   teardown is not awaited and a shared list fails the wrong test.
-- `CapturingObserver`, plus `FnFactory` / `ValueFactory` / `AsyncFnFactory`.
+- `CapturingObserver`, plus `FnFactory` / `ValueFactory` / `AsyncFnFactory` /
+  `FnParamFactory`.
+- `DisposeRecorder.record` reports a teardown for a fixture the recorder did not
+  build. Both it and `FnParamFactory` were found by the first packages to
+  actually use this one — the helpers covered what they could supply, not what a
+  test writes for itself.

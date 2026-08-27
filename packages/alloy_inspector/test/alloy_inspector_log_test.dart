@@ -1,5 +1,6 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_inspector/alloy_inspector.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support.dart';
@@ -9,8 +10,7 @@ void main() {
 
   test('records what the graph reports', () async {
     final log = AlloyInspectorLog();
-    final scope = buildGraph(log)..get<Clock>();
-    addTearDown(scope.dispose);
+    buildGraph(log).get<Clock>();
 
     await Future<void>.delayed(Duration.zero);
 
@@ -29,8 +29,7 @@ void main() {
     var notifications = 0;
     log.addListener(() => notifications++);
 
-    final scope = buildGraph(log)..get<Clock>();
-    addTearDown(scope.dispose);
+    buildGraph(log).get<Clock>();
 
     expect(
       notifications,
@@ -44,8 +43,7 @@ void main() {
     var notifications = 0;
     log.addListener(() => notifications++);
 
-    final scope = buildGraph(log)..get<Clock>();
-    addTearDown(scope.dispose);
+    buildGraph(log).get<Clock>();
     await Future<void>.delayed(Duration.zero);
 
     expect(notifications, greaterThan(0));
@@ -54,7 +52,6 @@ void main() {
   test('keeps only the last records', () async {
     final log = AlloyInspectorLog(capacity: 2);
     final scope = buildGraph(log);
-    addTearDown(scope.dispose);
 
     scope
       ..get<Api>()
@@ -79,9 +76,10 @@ void main() {
 
   test('an eager singleton is never reported as built', () async {
     final log = AlloyInspectorLog();
-    final scope = AlloyScope.root(name: 'app', observers: [log])
-      ..registerSingleton<Clock>(const Clock());
-    addTearDown(scope.dispose);
+    alloyTestRoot(
+      name: 'app',
+      observers: [log],
+    ).registerSingleton<Clock>(const Clock());
 
     await Future<void>.delayed(Duration.zero);
 

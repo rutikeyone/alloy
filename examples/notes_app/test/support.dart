@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/alloy.g.dart';
 import 'package:notes_app/app/app_startup.dart';
@@ -9,7 +10,7 @@ import 'package:notes_app/app/app_startup.dart';
 /// itself needs no such function, which is why this one lives in `test/`.
 Future<AlloyScope> startNotesGraph({
   AlloyEnvironment environment = notesEnvironment,
-}) => AlloyApplication.start(
+}) => alloyTestScope(
   root: NotesScope(environment),
   bootstrap: $alloyBootstrap(environment),
   rootName: $alloyRootScopeName,

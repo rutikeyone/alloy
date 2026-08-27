@@ -14,8 +14,7 @@ void main() {
 
   group('generated bootstrap', () {
     test('runs every annotated step, ordered by its declared order', () async {
-      final app = await startNotesGraph();
-      addTearDown(app.dispose);
+      await startNotesGraph();
 
       expect(BootLog.steps, [
         'bind-platform',
@@ -26,7 +25,6 @@ void main() {
 
     test('finishes before any dependency is constructed', () async {
       final app = await startNotesGraph();
-      addTearDown(app.dispose);
 
       final log = app.get<EventLog>().entries;
       expect(BootLog.steps, hasLength(3));
@@ -36,7 +34,6 @@ void main() {
 
     test('independent initializers share a level, so neither waits', () async {
       final app = await startNotesGraph();
-      addTearDown(app.dispose);
 
       final log = app.get<EventLog>().entries;
       expect(
@@ -53,7 +50,6 @@ void main() {
 
     test('the root scope takes its name from @AlloyScopeRoot', () async {
       final app = await startNotesGraph();
-      addTearDown(app.dispose);
 
       expect($alloyRootScopeName, 'app');
       expect(app.name, 'app');
@@ -90,8 +86,7 @@ void main() {
       await first.dispose();
 
       BootLog.reset();
-      final second = await startNotesGraph();
-      addTearDown(second.dispose);
+      await startNotesGraph();
 
       expect(BootLog.steps, [
         'bind-platform',
@@ -104,7 +99,6 @@ void main() {
   group('generated async init graph', () {
     test('every @AlloyInit service is ready when start returns', () async {
       final app = await startNotesGraph();
-      addTearDown(app.dispose);
 
       expect(app.get<NoteDatabase>().isOpen, isTrue);
       expect(app.get<SearchIndex>().isBuilt, isTrue);
@@ -113,7 +107,6 @@ void main() {
 
     test('dependsOn is honoured: the index waits for the database', () async {
       final app = await startNotesGraph();
-      addTearDown(app.dispose);
 
       final entries = app.get<EventLog>().entries;
       expect(
@@ -128,7 +121,6 @@ void main() {
         final watch = Stopwatch()..start();
         final app = await startNotesGraph();
         watch.stop();
-        addTearDown(app.dispose);
 
         expect(app.get<Telemetry>().isStarted, isTrue);
         expect(

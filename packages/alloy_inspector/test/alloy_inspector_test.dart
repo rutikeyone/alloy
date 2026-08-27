@@ -1,6 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_inspector/alloy_inspector.dart';
 import 'package:flutter/material.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support.dart';
@@ -13,7 +14,6 @@ void main() {
     clocksBuilt = 0;
     log = AlloyInspectorLog();
     scope = buildGraph(log);
-    addTearDown(scope.dispose);
   });
 
   group('the tree', () {
@@ -28,8 +28,7 @@ void main() {
     });
 
     testWidgets('names the owner of an inherited registration', (tester) async {
-      final child = scope.push('session');
-      addTearDown(child.dispose);
+      final child = scope.pushForTest('session');
 
       await tester.pumpWidget(inspectorUnderTest(child, log));
       await tester.pumpAndSettle();

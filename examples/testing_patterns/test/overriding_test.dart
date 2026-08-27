@@ -1,4 +1,5 @@
 import 'package:alloy/alloy.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:testing_patterns/testing_patterns.dart';
 
@@ -11,15 +12,10 @@ void main() {
   late AlloyScope app;
 
   setUp(() async {
-    app = await AlloyApplication.start(root: const AppScope(), rootName: 'app');
-    addTearDown(app.dispose);
+    app = await alloyTestScope(root: const AppScope(), rootName: 'app');
   });
 
-  AlloyScope underTest() {
-    final scope = app.push('test');
-    addTearDown(scope.dispose);
-    return scope;
-  }
+  AlloyScope underTest() => app.pushForTest();
 
   group('what shadowing does and does not reach', () {
     test('a child registration wins for whoever asks the child', () {
@@ -50,6 +46,11 @@ void main() {
         throwsUnsupportedError,
         reason: 'it reached the real store, not the fake one in the child',
       );
+
+      // And this is how to see it coming instead of debugging it: the consumer
+      // is owned higher up than the override, so the override cannot reach it.
+      expect(scope.ownerOf<Greeter>(), same(app));
+      expect(scope.ownerOf<GreetingStore>(), same(scope));
     });
 
     test(
@@ -84,10 +85,8 @@ void main() {
   test(
     'each test builds its own graph, so nothing leaks between them',
     () async {
-      final first = await AlloyApplication.start(root: const AppScope());
-      final second = await AlloyApplication.start(root: const AppScope());
-      addTearDown(first.dispose);
-      addTearDown(second.dispose);
+      final first = await alloyTestScope(root: const AppScope());
+      final second = await alloyTestScope(root: const AppScope());
 
       expect(
         identical(first.get<Greeter>(), second.get<Greeter>()),

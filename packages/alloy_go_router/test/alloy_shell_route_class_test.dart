@@ -1,5 +1,6 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,11 +41,9 @@ void main() {
   late AlloyScope root;
 
   setUp(() {
-    disposeLog.clear();
-    root = AlloyScope.root(name: 'app');
+    recorder = DisposeRecorder();
+    root = alloyTestRoot(name: 'app');
   });
-
-  tearDown(() async => root.dispose());
 
   Future<void> run(WidgetTester tester, GoRouter router) async {
     addTearDown(router.dispose);
@@ -91,12 +90,12 @@ void main() {
 
       router.go('/orders/8/summary');
       await settle(tester);
-      expect(disposeLog, ['order-7']);
+      expect(recorder.entries, ['order-7']);
       expect(root.children.single.name, 'order:8');
 
       router.go('/');
       await settle(tester);
-      expect(disposeLog, ['order-7', 'order-8']);
+      expect(recorder.entries, ['order-7', 'order-8']);
       expect(root.children, isEmpty);
     });
   });

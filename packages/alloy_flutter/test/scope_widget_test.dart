@@ -1,16 +1,24 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final disposeLog = <String>[];
+/// Where the fixtures report their teardown, replaced by every `setUp`.
+///
+/// It used to be a list cleared per test, which is not the same thing:
+/// teardown is not awaited, so a scope from the previous test can still be
+/// releasing and append after the clear. A [Service] captures the recorder it
+/// was *built* with, so a late report lands in the test it came from.
+late DisposeRecorder recorder;
 
 class Service implements Disposable {
-  Service(this.label);
+  Service(this.label) : _recorder = recorder;
 
   final String label;
+  final DisposeRecorder _recorder;
 
   @override
-  void dispose() => disposeLog.add(label);
+  void dispose() => _recorder.record(label);
 }
 
 class ServiceFactory implements AlloyFactory<Service> {
@@ -72,12 +80,11 @@ class LabelText extends StatelessWidget {
 }
 
 void main() {
-  setUp(disposeLog.clear);
+  setUp(() => recorder = DisposeRecorder());
 
   testWidgets('context.alloy resolves through the widget tree', (tester) async {
-    final root = AlloyScope.root(name: 'app')
+    final root = alloyTestRoot(name: 'app')
       ..registerLazySingleton<Service>(const ServiceFactory('root'));
-    addTearDown(root.dispose);
 
     await tester.pumpWidget(
       AlloyScopeProvider(scope: root, child: const LabelText()),
@@ -89,9 +96,8 @@ void main() {
   testWidgets('AlloyScopeWidget shadows the parent inside its subtree', (
     tester,
   ) async {
-    final root = AlloyScope.root(name: 'app')
+    final root = alloyTestRoot(name: 'app')
       ..registerLazySingleton<Service>(const ServiceFactory('root'));
-    addTearDown(root.dispose);
 
     await tester.pumpWidget(
       AlloyScopeProvider(
@@ -112,8 +118,7 @@ void main() {
   testWidgets('removing the widget disposes the scope it created', (
     tester,
   ) async {
-    final root = AlloyScope.root(name: 'app');
-    addTearDown(root.dispose);
+    final root = alloyTestRoot(name: 'app');
 
     await tester.pumpWidget(
       AlloyScopeProvider(
@@ -133,15 +138,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(disposeLog, ['session']);
+    expect(recorder.entries, ['session']);
     expect(root.children, isEmpty);
   });
 
   testWidgets('async scopes show the loading widget until init completes', (
     tester,
   ) async {
-    final root = AlloyScope.root(name: 'app');
-    addTearDown(root.dispose);
+    final root = alloyTestRoot(name: 'app');
 
     await tester.pumpWidget(
       AlloyScopeProvider(
@@ -161,8 +165,7 @@ void main() {
   });
 
   testWidgets('a failing init is routed to errorBuilder', (tester) async {
-    final root = AlloyScope.root(name: 'app');
-    addTearDown(root.dispose);
+    final root = alloyTestRoot(name: 'app');
 
     await tester.pumpWidget(
       AlloyScopeProvider(

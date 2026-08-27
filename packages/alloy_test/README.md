@@ -73,8 +73,10 @@ their owning scope initialised first.
 
 - `DisposeRecorder` — records teardown order. **Its log belongs to the recorder, not to the
   library**: teardown is not awaited, so a scope from one test can finish releasing while the next
-  one runs, and a shared list would fail the wrong test.
+  one runs, and a shared list would fail the wrong test. `value` and `factory` hand you a
+  disposable; `record` is for a fixture of your own, which should capture the recorder when it is
+  *built* so a late report lands in the test it came from.
 - `CapturingObserver` — collects every event, built on Alloy's own `AlloyRecordingObserver` so the
   wording comes from the runtime rather than a copy that drifts.
-- `FnFactory`, `ValueFactory`, `AsyncFnFactory` — a factory from a closure, instead of declaring a
-  class per stub.
+- `FnFactory`, `ValueFactory`, `AsyncFnFactory`, `FnParamFactory` — a factory from a closure,
+  instead of declaring a class per stub, for each of the four registration shapes that take one.

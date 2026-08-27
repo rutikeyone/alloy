@@ -44,7 +44,6 @@ void main() {
   /// A graph without widgets, for assertions that are about the graph alone.
   Future<AlloyScope> startGraph() async {
     final scope = await startNotesGraph();
-    addTearDown(scope.dispose);
     return scope;
   }
 
