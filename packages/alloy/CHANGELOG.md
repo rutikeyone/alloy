@@ -1,5 +1,10 @@
 ## 0.1.0
 
+- `AlloyNotRegisteredError` and `AlloyNotReadyError` carry the chain of
+  registrations under construction when the key was asked for, as `resolving`
+  and in the message. The chain is the synchronous one: an awaited build
+  contributes nothing, because a parallel init level holds several branches at
+  once and none of them called the others.
 - Initial release.
 - `AlloyScope`: a hierarchy of scopes, `O(1)` resolution, lazy and eager
   singletons, transients, named registrations, `getAll` and parameterized

@@ -1,5 +1,6 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
 import 'package:alloy_annotations/alloy_annotations.dart';
+import 'package:alloy_generator/src/emitters/alloy_factory_names.dart';
 import 'package:alloy_generator/src/emitters/alloy_references.dart';
 import 'package:code_builder/code_builder.dart';
 
@@ -7,7 +8,8 @@ class RootScopeEmitter {
   const RootScopeEmitter();
 
   Class emit(
-    List<AlloyInjectableClass> ordered, {
+    List<AlloyInjectableClass> ordered,
+    AlloyFactoryNames names, {
     required bool usesEnvironments,
   }) => Class(
     (b) => b
@@ -54,15 +56,18 @@ class RootScopeEmitter {
             )
             ..body = Block.of([
               for (final declaration in ordered)
-                guardedBy(declaration.environments, _register(declaration)),
+                guardedBy(
+                  declaration.environments,
+                  _register(declaration, names),
+                ),
             ]),
         ),
       ),
   );
 
-  Code _register(AlloyInjectableClass declaration) {
+  Code _register(AlloyInjectableClass declaration, AlloyFactoryNames names) {
     final exposed = typeReferenceOf(declaration.exposedType);
-    final factory = refer(factoryNameOf(declaration)).constInstance(const []);
+    final factory = refer(names.of(declaration)).constInstance(const []);
 
     final dispose = declaration.dispose;
     final named = <String, Expression>{

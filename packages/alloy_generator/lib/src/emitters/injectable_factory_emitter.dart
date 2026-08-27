@@ -1,11 +1,12 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
+import 'package:alloy_generator/src/emitters/alloy_factory_names.dart';
 import 'package:alloy_generator/src/emitters/alloy_references.dart';
 import 'package:code_builder/code_builder.dart';
 
 class InjectableFactoryEmitter {
   const InjectableFactoryEmitter();
 
-  Class emit(AlloyInjectableClass declaration) {
+  Class emit(AlloyInjectableClass declaration, AlloyFactoryNames names) {
     final exposed = typeReferenceOf(declaration.exposedType);
     final provider = declaration.provider;
     final construction = provider == null
@@ -14,7 +15,7 @@ class InjectableFactoryEmitter {
 
     return Class(
       (b) => b
-        ..name = factoryNameOf(declaration)
+        ..name = names.of(declaration)
         ..modifier = ClassModifier.final$
         ..implements.add(
           alloyGeneric(

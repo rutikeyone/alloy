@@ -138,3 +138,19 @@ registering `Foo` injects null rather than failing the build. It stays an orderi
 
 A module member may not return a nullable type. A nullable type marks a dependency optional; it
 cannot describe a registration, because `AlloyKey` has no way to represent `Foo?`.
+
+## Two classes with the same name
+
+A generated factory is named after what declares the registration — `_ClockFactory` for `Clock`,
+`_NetworkModuleDioFactory` for a module member — which handles two modules both providing a `Dio`.
+
+Two libraries in one package declaring their own `Clock` is different: the build accepts both,
+because a registration key is `import#name` and those are two distinct keys. Emitting
+`_ClockFactory` twice would produce a file that does not compile, and the error would name the
+generated symbol rather than either class you wrote.
+
+So a base name more than one declaration claims gets a suffix on **every** claimant, derived from
+the library it came from: `_ClockFactory$329` and `_ClockFactory$700`. Two properties follow, and
+both are on purpose — a name nobody contests is left exactly as it was, so adding a second `Clock`
+never renames anything else in the file; and the suffix is a function of the library alone, so it
+does not depend on visit order and does not move between builds.

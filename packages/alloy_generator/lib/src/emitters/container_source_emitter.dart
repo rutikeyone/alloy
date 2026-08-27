@@ -1,5 +1,6 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
 import 'package:alloy_annotations/alloy_annotations.dart';
+import 'package:alloy_generator/src/emitters/alloy_factory_names.dart';
 import 'package:alloy_generator/src/emitters/bootstrap_emitter.dart';
 import 'package:alloy_generator/src/emitters/injectable_factory_emitter.dart';
 import 'package:alloy_generator/src/emitters/root_scope_emitter.dart';
@@ -33,6 +34,7 @@ class ContainerSourceEmitter {
     _assertNoMissingDependencies(injectables, declarations.scopeRoots);
 
     final ordered = _withDerivedDependsOn(injectables);
+    final names = AlloyFactoryNames(ordered);
 
     final hasBootstrap = declarations.bootstrapSteps.isNotEmpty;
     final scopeUsesEnvironments = injectables.any(
@@ -45,10 +47,12 @@ class ContainerSourceEmitter {
     final library = Library(
       (b) => b
         ..body.addAll([
-          for (final declaration in ordered) _factories.emit(declaration),
+          for (final declaration in ordered)
+            _factories.emit(declaration, names),
           if (ordered.isNotEmpty)
             _rootScope.emit(
               _ordered(ordered),
+              names,
               usesEnvironments: scopeUsesEnvironments,
             ),
           if (hasBootstrap)

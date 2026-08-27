@@ -15,9 +15,26 @@ import 'package:alloy/src/key/alloy_key.dart';
 /// `AlloyNotReadyError` without ever reaching this class.
 final class AlloyResolutionTracker {
   final _stack = <AlloyKey>[];
+  final _chain = <AlloyKey>[];
 
   /// What is under construction right now, outermost first.
+  ///
+  /// Several branches at once during a parallel init level, so this answers
+  /// "what is being built", never "what asked for what". For the second
+  /// question use [chain].
   List<AlloyKey> get pending => List.unmodifiable(_stack);
+
+  /// The synchronous chain of factories currently on the Dart stack.
+  ///
+  /// Only [guard] adds to this, which is what makes it a chain rather than a
+  /// set: synchronous calls nest strictly, so the last entry really did ask
+  /// for the next thing resolved. [guardAsync] deliberately stays out — an
+  /// awaited build shares the stack with its siblings, and presenting those as
+  /// a chain would name a caller that never called.
+  ///
+  /// The cost of that is a shorter chain, never a wrong one: a resolve inside
+  /// an async factory shows the sync calls below it and stops there.
+  List<AlloyKey> get chain => List.unmodifiable(_chain);
 
   void enter(AlloyKey key) {
     final index = _stack.indexOf(key);
@@ -40,9 +57,11 @@ final class AlloyResolutionTracker {
 
   T guard<T>(AlloyKey key, T Function() build) {
     enter(key);
+    _chain.add(key);
     try {
       return build();
     } finally {
+      _chain.removeLast();
       exit(key);
     }
   }

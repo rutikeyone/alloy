@@ -22,23 +22,6 @@ Reference typeReferenceOf(AlloyTypeRef type) {
   );
 }
 
-String factoryNameOf(AlloyInjectableClass declaration) {
-  final suffix = _capitalised(declaration.name);
-  final provider = declaration.provider;
-  // A module member is named after where it lives, not after what it returns:
-  // two modules may legitimately both provide a Dio, and naming both factories
-  // after the return type would put two _DioFactory classes in one file.
-  if (provider != null) {
-    return '_${provider.module.name}${_capitalised(provider.member)}'
-        '${suffix}Factory';
-  }
-  return '_${declaration.type.name}${suffix}Factory';
-}
-
-String _capitalised(String? value) => value == null || value.isEmpty
-    ? ''
-    : '${value[0].toUpperCase()}${value.substring(1)}';
-
 /// Refers to a function the generated code calls by name.
 Expression functionReferenceOf(AlloyFunctionRef function) {
   final owner = function.owner;

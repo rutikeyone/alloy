@@ -187,6 +187,26 @@ rule is simply that each isolate builds its own graph.
 If you offload work with `Isolate.run` or `compute`, pass the *data* the work
 needs, not the scope or anything resolved from it.
 
+## What a failed resolve tells you
+
+A resolution that fails inside a factory names the trail that led to it, not only the key that was
+missing:
+
+```
+Config is not registered in scope "app" or its ancestors. Resolving: Api -> Repository -> Config.
+```
+
+`Api` is where you start looking; `Config` alone would leave you grepping. Both
+`AlloyNotRegisteredError` and `AlloyNotReadyError` carry it, as prose and as `resolving` — a list of
+keys, so a report can be built from it rather than parsed out of the message.
+
+The trail is the synchronous chain of factories on the stack. Asking from the top adds nothing,
+because nothing asked. And it stops at an `await`: `Future.wait` enters every registration of an
+init level before any of them suspends, so during phase 1 several branches are under construction
+at once and none of them called the others. Reading that as a chain would name a caller that never
+called, so an awaited build contributes nothing to the trail. The cost is a shorter trail, never a
+wrong one.
+
 ## Reporting failures
 
 `AlloyObserver` reports everything; `AlloyErrorObserver` reports only what went wrong, and brings

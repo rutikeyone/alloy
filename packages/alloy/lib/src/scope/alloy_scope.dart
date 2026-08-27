@@ -360,7 +360,9 @@ final class AlloyScope implements AlloyResolver {
     _assertUsable();
     final key = AlloyKey(T, name: name);
     final found = _lookup(key);
-    if (found == null) throw AlloyNotRegisteredError(key, this.name);
+    if (found == null) {
+      throw AlloyNotRegisteredError(key, this.name, resolving: _tracker.chain);
+    }
     return found.scope._materialize(found.registration) as T;
   }
 
@@ -369,7 +371,9 @@ final class AlloyScope implements AlloyResolver {
     _assertUsable();
     final key = AlloyKey(T, name: name);
     final found = _lookup(key);
-    if (found == null) throw AlloyNotRegisteredError(key, this.name);
+    if (found == null) {
+      throw AlloyNotRegisteredError(key, this.name, resolving: _tracker.chain);
+    }
     final registration = found.registration;
     if (registration is! ParamRegistration) {
       throw AlloyError('$key is not registered as a parameterized factory.');
@@ -710,7 +714,7 @@ final class AlloyScope implements AlloyResolver {
       case AsyncSingletonRegistration():
         final existing = registration.instance;
         if (existing == null || !registration.isReady) {
-          throw AlloyNotReadyError(registration.key);
+          throw AlloyNotReadyError(registration.key, resolving: _tracker.chain);
         }
         return existing;
 
