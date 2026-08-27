@@ -77,6 +77,12 @@ jobs:
             (cd "$package" && flutter test)
           done
 
+      - name: Coverage
+        if: matrix.channel == 'stable'
+        run: |
+          dart pub global activate coverage
+          ./tool/coverage.sh
+
       - name: Publish dry run
         run: |
           for package in packages/alloy_annotations packages/alloy \

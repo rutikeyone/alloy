@@ -71,7 +71,15 @@ dart format --output=none --set-exit-if-changed .
 (cd packages/alloy_inspector && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
+./tool/coverage.sh
 ```
+
+`tool/coverage.sh` меряет построчное покрытие одиннадцати публикуемых пакетов с тестами, печатает
+их от худшего и падает ниже порога по **сумме** — 85% против 88.6% сегодня. Порог именно на сумме,
+а не на каждом пакете, и это осознанно: покрытие меряется по пакетам, а код общий, поэтому парсеры
+`alloy_analyzer` гоняются куда больше из тестов `alloy_generator` и из `compat/external_consumer`,
+чем из собственного набора. Порог на пакет требовал бы писать тесты не там, где им место.
+Переопределяется через `COVERAGE_FLOOR=90 ./tool/coverage.sh`.
 
 CI (`.github/workflows/ci.yml`) гоняет всё перечисленное плюс `git diff --exit-code` после
 регенерации обоих примеров **и `compat/external_consumer`**, так что устаревший сгенерированный код

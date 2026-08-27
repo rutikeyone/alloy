@@ -65,7 +65,14 @@ dart format --output=none --set-exit-if-changed .
 (cd packages/alloy_inspector && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
+./tool/coverage.sh
 ```
+
+`tool/coverage.sh` 测量十一个有测试的可发布包的行覆盖率，从最低者开始打印，并在**总计**低于下限时失败
+——下限 85%，当前 88.6%。下限放在总计而非每个包上是有意为之：覆盖率按包测量，而代码是共享的，
+`alloy_analyzer` 的解析器主要由 `alloy_generator` 的测试和 `compat/external_consumer` 驱动，
+而非它自己的用例。按包设下限会迫使测试写在不属于它们的地方。可用
+`COVERAGE_FLOOR=90 ./tool/coverage.sh` 覆盖。
 
 CI（`.github/workflows/ci.yml`）会跑完上述全部内容，并在重新生成两个示例**以及
 `compat/external_consumer`** 之后执行 `git diff --exit-code`，因此过期的生成代码会让构建失败。

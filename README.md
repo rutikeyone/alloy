@@ -67,7 +67,15 @@ dart format --output=none --set-exit-if-changed .
 (cd packages/alloy_inspector && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
+./tool/coverage.sh
 ```
+
+`tool/coverage.sh` measures line coverage of the eleven publishable packages that have tests, prints
+them worst-first, and fails under a floor on the **total** — 85%, against 88.6% today. The floor is
+on the total rather than per package deliberately: coverage is measured per package while the code
+is shared, so `alloy_analyzer`'s parsers are driven far more from `alloy_generator`'s tests and from
+`compat/external_consumer` than from their own suite. A per-package floor would demand tests written
+where they do not belong. Override it with `COVERAGE_FLOOR=90 ./tool/coverage.sh`.
 
 CI (`.github/workflows/ci.yml`) runs all of the above plus a `git diff --exit-code` after
 regenerating both examples **and `compat/external_consumer`**, so stale generated code fails the
