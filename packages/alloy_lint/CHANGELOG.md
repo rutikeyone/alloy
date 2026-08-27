@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- `alloy_param_needs_an_injectable` reports `@AlloyParam` on a class nothing
+  registers, where the marking does nothing at all.
 - `alloy_dependency_is_not_registered` and `alloy_dependency_cycle` skip
   `@AlloyParam` parameters, which nothing registers and which close no cycle.
 - `alloy_injected_field_needs_an_injectable` reports `@injected` on a class the

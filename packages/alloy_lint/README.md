@@ -34,6 +34,7 @@ plugins:
 |---|---|
 | `alloy_missing_injection_mixin` | `@injected` fields without `with _$ClassName`, on a class the container registers |
 | `alloy_injected_field_needs_an_injectable` | `@injected` fields on a class the container never registers |
+| `alloy_param_needs_an_injectable` | `@AlloyParam` on a class the container never registers |
 | `alloy_injected_field_must_be_late_final` | `@injected` on a mutable, non-late or static field |
 | `alloy_injectable_must_be_constructible` | `@AlloyInject` on an abstract class or one with no public generative constructor |
 | `alloy_init_requires_init_method` | `@AlloyInit` on a class with no `init()` |
@@ -48,7 +49,7 @@ All rules are warnings, so they are on by default. Every rule reads annotations 
 
 ## Why the graph rules report less than the build does
 
-Eight of the ten rules answer a question about one declaration. The other two —
+Nine of the eleven rules answer a question about one declaration. The other two —
 `alloy_dependency_is_not_registered` and `alloy_dependency_cycle` — answer one about the whole
 package, and the analysis server does not offer that view: it hands a rule one library at a time,
 and the only synchronous window onto the others is their **parsed**, unresolved source.
@@ -92,3 +93,5 @@ generated; the fix is to annotate the class or drop `@injected`, which is
 `alloy_injected_field_needs_an_injectable`.
 
 Both use the same reading of "registers" the generator does — `@AlloyInject` and `@AlloyInit` alike.
+`alloy_param_needs_an_injectable` is the same shape for `@AlloyParam`: on a class the container does
+not know, the marking is read by nobody and the class is constructed by hand exactly as before.

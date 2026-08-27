@@ -14,6 +14,7 @@ import 'package:alloy_lint/src/rules/injected_field_needs_an_injectable.dart';
 import 'package:alloy_lint/src/rules/injectable_must_be_constructible.dart';
 import 'package:alloy_lint/src/rules/injected_field_must_be_late_final.dart';
 import 'package:alloy_lint/src/rules/missing_injection_mixin.dart';
+import 'package:alloy_lint/src/rules/param_needs_an_injectable.dart';
 import 'package:analysis_server_plugin/plugin.dart';
 import 'package:analysis_server_plugin/registry.dart';
 
@@ -40,5 +41,6 @@ class _AlloyPlugin extends Plugin {
     registry.registerWarningRule(InjectedFieldMustBeLateFinal());
     registry.registerWarningRule(InjectedFieldNeedsAnInjectable());
     registry.registerWarningRule(MissingInjectionMixin());
+    registry.registerWarningRule(ParamNeedsAnInjectable());
   }
 }
