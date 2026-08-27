@@ -10,6 +10,7 @@ import 'package:alloy_lint/src/rules/dependency_cycle.dart';
 import 'package:alloy_lint/src/rules/dependency_is_not_registered.dart';
 import 'package:alloy_lint/src/rules/environment_needs_a_registration.dart';
 import 'package:alloy_lint/src/rules/init_requires_init_method.dart';
+import 'package:alloy_lint/src/rules/injected_field_needs_an_injectable.dart';
 import 'package:alloy_lint/src/rules/injectable_must_be_constructible.dart';
 import 'package:alloy_lint/src/rules/injected_field_must_be_late_final.dart';
 import 'package:alloy_lint/src/rules/missing_injection_mixin.dart';
@@ -37,6 +38,7 @@ class _AlloyPlugin extends Plugin {
     registry.registerWarningRule(InitRequiresInitMethod());
     registry.registerWarningRule(InjectableMustBeConstructible());
     registry.registerWarningRule(InjectedFieldMustBeLateFinal());
+    registry.registerWarningRule(InjectedFieldNeedsAnInjectable());
     registry.registerWarningRule(MissingInjectionMixin());
   }
 }

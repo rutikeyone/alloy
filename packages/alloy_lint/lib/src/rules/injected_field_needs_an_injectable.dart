@@ -8,26 +8,29 @@ import 'package:analyzer/error/error.dart';
 
 const _injectedMatcher = AlloyAnnotationMatcher('Injected');
 
-/// Reports an injectable class with `@injected` fields that does not mix in
-/// its generated `_$ClassName`.
+/// Reports `@injected` fields on a class the container never registers.
 ///
-/// Without the mixin the fields are never assigned and the class fails at
-/// runtime with a `LateInitializationError` far from the actual mistake.
+/// `@injected` is filled by the generated `_$ClassName` mixin, and that mixin
+/// is written only for a class the container knows about. On a class that says
+/// nothing, `@injected` does nothing at all — the field stays unassigned and
+/// throws a `LateInitializationError` the first time it is read.
 ///
-/// Only for a class the container registers. A class nothing registers gets no
-/// mixin written for it either, so telling it to mix one in would send you to
-/// a name that does not exist — that case is
-/// `alloy_injected_field_needs_an_injectable`.
-class MissingInjectionMixin extends AnalysisRule {
+/// Reported separately from `alloy_missing_injection_mixin` because the fix is
+/// different: there is no mixin to add here, and asking for one sends you to a
+/// name the generator will never write.
+class InjectedFieldNeedsAnInjectable extends AnalysisRule {
   /// Creates the rule.
-  MissingInjectionMixin()
+  InjectedFieldNeedsAnInjectable()
     : super(name: code.lowerCaseName, description: code.problemMessage);
 
   /// The diagnostic this rule reports.
   static const code = LintCode(
-    'alloy_missing_injection_mixin',
-    "'{0}' has @injected fields but does not mix in '_\${0}'.",
-    correctionMessage: "Add 'with _\${0}' to the class and run build_runner.",
+    'alloy_injected_field_needs_an_injectable',
+    "'{0}' has @injected fields but nothing registers it.",
+    correctionMessage:
+        'Annotate the class with @AlloyInject or @AlloyInit so the mixin that '
+        'fills the fields is generated, or drop @injected and take the '
+        'dependency through the constructor.',
   );
 
   @override
@@ -51,21 +54,16 @@ class _Visitor extends SimpleAstVisitor<void> {
   void visitClassDeclaration(ClassDeclaration node) {
     final element = node.declaredFragment?.element;
     if (element == null) return;
-    if (!_parser.declares(element)) return;
+    if (_parser.declares(element)) return;
 
     final hasInjectedFields = element.fields.any(
       (field) => _injectedMatcher.matches(field),
     );
     if (!hasInjectedFields) return;
 
-    final name = node.namePart.typeName.lexeme;
-    final expected = '_\$$name';
-    final mixedIn =
-        node.withClause?.mixinTypes.any(
-          (type) => type.name.lexeme == expected,
-        ) ??
-        false;
-
-    if (!mixedIn) rule.reportAtNode(node.namePart, arguments: [name]);
+    rule.reportAtNode(
+      node.namePart,
+      arguments: [node.namePart.typeName.lexeme],
+    );
   }
 }

@@ -223,13 +223,25 @@ final class AlloyScope implements AlloyResolver {
 
   /// Creates a child scope that resolves through this one.
   ///
+  /// [observers] are added to the ones inherited from here, and watch this
+  /// child and its descendants only — the first thing they see is this scope
+  /// being pushed. Without it the list is fixed when the root is built, so
+  /// anything that wants to watch one subtree has to be installed at startup
+  /// and filter afterwards.
+  ///
   /// The child is retained until it is disposed, either directly or as part of
   /// disposing this scope. Use it for anything with a shorter life than the
   /// parent — a session, a screen, a request — and to override a dependency
   /// without touching the parent.
-  AlloyScope push(String childName) {
+  AlloyScope push(
+    String childName, {
+    List<AlloyObserver> observers = const [],
+  }) {
     _assertUsable();
-    final child = AlloyScope._(childName, this, _tracker, _observers);
+    final child = AlloyScope._(childName, this, _tracker, [
+      ..._observers,
+      ...observers,
+    ]);
     _children.add(child);
     child._notify((observer) => observer.onScopePushed(child.ref));
     return child;

@@ -32,7 +32,8 @@ plugins:
 
 | Rule | Catches |
 |---|---|
-| `alloy_missing_injection_mixin` | `@injected` fields without `with _$ClassName` |
+| `alloy_missing_injection_mixin` | `@injected` fields without `with _$ClassName`, on a class the container registers |
+| `alloy_injected_field_needs_an_injectable` | `@injected` fields on a class the container never registers |
 | `alloy_injected_field_must_be_late_final` | `@injected` on a mutable, non-late or static field |
 | `alloy_injectable_must_be_constructible` | `@AlloyInject` on an abstract class or one with no public generative constructor |
 | `alloy_init_requires_init_method` | `@AlloyInit` on a class with no `init()` |
@@ -47,7 +48,7 @@ All rules are warnings, so they are on by default. Every rule reads annotations 
 
 ## Why the graph rules report less than the build does
 
-Seven of the nine rules answer a question about one declaration. The other two —
+Eight of the ten rules answer a question about one declaration. The other two —
 `alloy_dependency_is_not_registered` and `alloy_dependency_cycle` — answer one about the whole
 package, and the analysis server does not offer that view: it hands a rule one library at a time,
 and the only synchronous window onto the others is their **parsed**, unresolved source.
@@ -81,3 +82,13 @@ rule reports nothing at all rather than mistake a skipped file for a missing reg
 
 Manual Mode is out of reach for the same reason it is out of reach for the generator: a
 hand-written factory resolves inside `create`, and nothing static can see what it will ask for.
+
+## Why `@injected` has two rules
+
+They look like one question and are two, with different answers. On a class the container registers,
+the mixin exists and the fix is to mix it in — `alloy_missing_injection_mixin`. On a class it does
+not, no mixin is written for it at all, so `with _$ClassName` sends you to a name that will never be
+generated; the fix is to annotate the class or drop `@injected`, which is
+`alloy_injected_field_needs_an_injectable`.
+
+Both use the same reading of "registers" the generator does — `@AlloyInject` and `@AlloyInit` alike.

@@ -78,5 +78,83 @@ class Controller {
         },
       );
     });
+
+    /// The hole this generator was rewritten to close.
+    ///
+    /// `@AlloyInit` makes a class injectable — the container registers it as
+    /// an async singleton — but the mixin used to be emitted only for
+    /// `@AlloyInject`. Such a class was registered, built, and left with its
+    /// fields unassigned, failing with a LateInitializationError at first use,
+    /// while the lint told you to mix in something nothing would write.
+    test('emits for an @AlloyInit class too, not only @AlloyInject', () async {
+      await testBuilder(
+        builder,
+        {
+          ...deps,
+          '$_pkg|lib/warmer.dart': '''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+class Config {}
+
+@AlloyInit()
+class Warmer {
+  Warmer();
+
+  @injected
+  late final Config _config;
+
+  Future<void> init() async {}
+}
+''',
+        },
+        packageConfig: packages,
+        generateFor: {'$_pkg|lib/warmer.dart'},
+        outputs: {
+          '$_pkg|lib/warmer.alloy.g.part': decodedMatches(
+            allOf(
+              contains(r'mixin _$Warmer implements AlloyInjectable'),
+              contains('set _config('),
+            ),
+          ),
+        },
+      );
+    });
+
+    test('emits one mixin per class in a library that has several', () async {
+      await testBuilder(
+        builder,
+        {
+          ...deps,
+          '$_pkg|lib/pair.dart': '''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+class Store {}
+
+@alloyInject
+class First {
+  First();
+
+  @injected
+  late final Store _store;
+}
+
+@alloyTransient
+class Second {
+  Second();
+
+  @injected
+  late final Store _store;
+}
+''',
+        },
+        packageConfig: packages,
+        generateFor: {'$_pkg|lib/pair.dart'},
+        outputs: {
+          '$_pkg|lib/pair.alloy.g.part': decodedMatches(
+            allOf(contains(r'mixin _$First'), contains(r'mixin _$Second')),
+          ),
+        },
+      );
+    });
   });
 }

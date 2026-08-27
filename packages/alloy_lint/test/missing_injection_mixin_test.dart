@@ -58,4 +58,33 @@ class Service {
 }
 ''');
   }
+
+  /// The mixin is written only for a class the container registers, so on a
+  /// class nothing registers this rule stays quiet and
+  /// `alloy_injected_field_needs_an_injectable` speaks instead.
+  void test_classNothingRegisters_isNotThisRule() async {
+    await assertNoDiagnostics(r'''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+class Orphan {
+  @injected
+  late final String value;
+}
+''');
+  }
+
+  void test_asyncInitClass_isReportedToo() async {
+    await assertDiagnostics(
+      r'''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+@AlloyInit()
+class Warmer {
+  @injected
+  late final String value;
+}
+''',
+      [lint(79, 6)],
+    );
+  }
 }

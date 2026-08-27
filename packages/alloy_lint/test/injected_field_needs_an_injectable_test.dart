@@ -1,0 +1,67 @@
+import 'package:alloy_lint/src/rules/injected_field_needs_an_injectable.dart';
+import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
+import 'package:test_reflective_loader/test_reflective_loader.dart';
+
+import 'support.dart';
+
+void main() {
+  defineReflectiveSuite(() {
+    defineReflectiveTests(InjectedFieldNeedsAnInjectableTest);
+  });
+}
+
+@reflectiveTest
+class InjectedFieldNeedsAnInjectableTest extends AnalysisRuleTest {
+  @override
+  void setUp() {
+    stubAlloyAnnotations(this);
+    rule = InjectedFieldNeedsAnInjectable();
+    super.setUp();
+  }
+
+  void test_unregisteredClass_isReported() async {
+    await assertDiagnostics(
+      r'''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+class Orphan {
+  @injected
+  late final String value;
+}
+''',
+      [lint(66, 6)],
+    );
+  }
+
+  void test_injectableClass_isClean() async {
+    await assertNoDiagnostics(r'''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+@alloyInject
+class Bloc {
+  @injected
+  late final String value;
+}
+''');
+  }
+
+  void test_asyncInitClass_isClean() async {
+    await assertNoDiagnostics(r'''
+import 'package:alloy_annotations/alloy_annotations.dart';
+
+@AlloyInit()
+class Warmer {
+  @injected
+  late final String value;
+}
+''');
+  }
+
+  void test_noInjectedFields_isClean() async {
+    await assertNoDiagnostics(r'''
+class Plain {
+  late final String value;
+}
+''');
+  }
+}

@@ -195,6 +195,18 @@ rule is simply that each isolate builds its own graph.
 If you offload work with `Isolate.run` or `compute`, pass the *data* the work
 needs, not the scope or anything resolved from it.
 
+## Watching one subtree
+
+Observers are fixed when a scope is built, and inherited by its children. `push` takes its own, so
+a screen or a session can be watched without installing anything at startup:
+
+```dart
+final session = root.push('session', observers: [AlloyLogObserver(sink)]);
+```
+
+They are added to the inherited ones rather than replacing them, they see this scope and everything
+below it and nothing beside it, and the first event they get is the push that installed them.
+
 ## When an async registration has to be made
 
 `init()` collects the async registrations it finds when it starts, and runs once — its future is

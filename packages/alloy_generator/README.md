@@ -166,3 +166,12 @@ the library it came from: `_ClockFactory$329` and `_ClockFactory$700`. Two prope
 both are on purpose — a name nobody contests is left exactly as it was, so adding a second `Clock`
 never renames anything else in the file; and the suffix is a function of the library alone, so it
 does not depend on visit order and does not move between builds.
+
+## Property injection covers `@AlloyInit` too
+
+The `_$ClassName` mixin is written for every class the container registers, which includes one
+annotated with `@AlloyInit` alone. That used to be `@AlloyInject` only, and the mismatch was silent
+in the worst way: the container registered the class and awaited its `init()`, the mixin was never
+written, the `@injected` fields stayed unassigned, and the first read threw a
+`LateInitializationError` — while the lint told you to mix in something nothing would generate.
+Both halves now read the declaration the same way.

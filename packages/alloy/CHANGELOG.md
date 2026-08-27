@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- `push` takes `observers`, added to the inherited ones, so a subtree can be
+  watched without installing anything at startup.
 - An async registration made once `init()` has started is refused rather than
   accepted and left unbuildable: phase 1 takes its list at the start and runs
   once, so such a registration could never be built. Sync registrations are

@@ -1,5 +1,9 @@
 ## 0.1.0
 
+- `alloy_injected_field_needs_an_injectable` reports `@injected` on a class the
+  container never registers, where no mixin is generated and
+  `alloy_missing_injection_mixin` would have sent you to a name that does not
+  exist. That rule now stays quiet there.
 - Initial release.
 - An `analysis_server_plugin` (not `custom_lint`, which is pinned to an
   incompatible analyzer) with nine warning rules, all reading annotations

@@ -1,5 +1,8 @@
 ## 0.1.0
 
+- The `_$ClassName` injection mixin is written for every class the container
+  registers, `@AlloyInit` included. Such a class used to be registered and left
+  with its `@injected` fields unassigned.
 - `@AlloyInit(dependsOn:)` naming a registration that is not itself `@AlloyInit`
   fails the build, listing every such edge at once.
 - Two libraries in one package declaring classes of the same name no longer emit
