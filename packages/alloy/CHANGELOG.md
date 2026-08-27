@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- Documented the named-record form of a parameterized factory's argument,
+  which keeps the argument names a positional record loses. Pinned by tests.
 - `getAll` no longer sorts a copy of the matches on every call: registrations
   are already iterated in registration order, so the sort said the same thing
   at the cost of a list per call. About a third off its cost, order unchanged

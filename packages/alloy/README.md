@@ -218,6 +218,26 @@ would buy microseconds and cost a second structure to keep correct through shado
 The benchmark is not in CI: on a shared runner the numbers say more about the runner than about the
 code.
 
+## Several runtime arguments
+
+`registerParamFactory` takes one parameter, and a record is how several become one. Use the **named**
+form — it keeps the argument names at both ends, so the call site reads like the constructor it
+replaced rather than like a tuple:
+
+```dart
+typedef EditorArgs = ({int id, String title, bool draft});
+
+scope.registerParamFactory<Editor, EditorArgs>(const EditorFactory());
+scope.getWithParam<Editor, EditorArgs>((id: 42, title: 'card', draft: true));
+```
+
+Only the values the container cannot know travel in the record; dependencies still come from the
+resolver. That matters more than it looks at first: a screen-scoped controller in a real app is
+handed an id and a couple of flags, and takes its repositories from the graph — so the record has
+three fields where the hand-written factory had eight parameters.
+
+Positional records work as well, and are fine for two values. Past that the names earn their keep.
+
 ## Watching one subtree
 
 Observers are fixed when a scope is built, and inherited by its children. `push` takes its own, so

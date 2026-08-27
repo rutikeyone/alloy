@@ -89,8 +89,10 @@ final tabB = app.push('tab:b');   // 是兄弟，而不是压在 tabA 上面
 
 在决定迁移之前请先知道这些：
 
-- **`registerFactoryParam<T, P1, P2>`** —— Alloy 的 `registerParamFactory<T, P>` 只接受一个参数。两个参数
-  请合并成一个 record 或一个小类。
+- **`registerFactoryParam<T, P1, P2>`** —— Alloy 的 `registerParamFactory<T, P>` 只接受一个参数，
+  多个参数合并成一个 record。请用**具名**形式 `({int id, String title})`：它在调用处和工厂里都保留
+  参数名，位置式 record 做不到。只有容器无法知道的值才进 record —— 依赖仍从 resolver 取，
+  所以 record 通常比它替换掉的参数列表更短。
 - **`registerFactoryAsync`、`registerLazySingletonAsync`** —— 异步构造属于 `registerAsyncSingleton`，
   它参与第一阶段，因此没有按注册项的惰性异步构建，也没有 `getAsync`。推迟工作的是生命周期：把昂贵的东西
   放进子作用域，在进入该功能时压入它，`AlloyScopeWidget` 会在其 `init()` 运行期间显示 `loading`。

@@ -102,7 +102,11 @@ Practical consequences when porting:
 Be aware of these before you commit to the move:
 
 - **`registerFactoryParam<T, P1, P2>`** — Alloy's `registerParamFactory<T, P>`
-  takes one parameter. Two parameters become one record or one small class.
+  takes one parameter, and a record is how several become one. Prefer the named
+  form, `({int id, String title})`: it keeps the names at the call site and in
+  the factory, which a positional record does not. Only the values the
+  container cannot know go in it — dependencies still come from the resolver,
+  so the record is usually smaller than the parameter list it replaces.
 - **`registerFactoryAsync`, `registerLazySingletonAsync`** — async construction
   belongs to `registerAsyncSingleton`, which participates in phase 1, so there
   is no per-registration lazy async build and no `getAsync`. What defers the
