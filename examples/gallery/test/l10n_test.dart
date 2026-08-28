@@ -5,7 +5,9 @@ import 'package:alloy_inspector/alloy_inspector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gallery/app/gallery_app.dart';
+import 'package:gallery/app/gallery_locale.dart';
 import 'package:gallery/catalog/catalog.dart';
+import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/features/hub/hub_screen.dart';
 import 'package:gallery/l10n/gallery_l10n.dart';
 
@@ -141,6 +143,88 @@ void main() {
       contains('JetBrainsMono_regular'),
       reason: 'the mono face does cover Cyrillic and must not have moved',
     );
+  });
+
+  testWidgets('every themed surface carries the face, not just the ones in '
+      'a screen', (tester) async {
+    await tester.pumpWidget(
+      galleryHarness(
+        locale: const Locale('ru'),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Column(
+              children: [
+                const ListTile(
+                  title: Text('плитка'),
+                  subtitle: Text('подпись плитки'),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(const SnackBar(content: Text('снек'))),
+                  child: const Text('go'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+
+    String? familyAt(String text) =>
+        DefaultTextStyle.of(tester.element(find.text(text))).style.fontFamily;
+
+    for (final text in ['плитка', 'подпись плитки', 'снек']) {
+      expect(
+        familyAt(text),
+        'Manrope_regular',
+        reason:
+            'a ThemeData entry written as a bare TextStyle names no family, '
+            'and Flutter takes that literally: the surface drops out of the '
+            'type scale and is set in whatever the platform happens to have — '
+            'in every language, English included',
+      );
+    }
+  });
+
+  test('the switcher offers exactly what was translated', () {
+    expect(
+      GalleryLocaleScope.supported,
+      GalleryL10n.supportedLocales,
+      reason:
+          'the translations decide the set; a second list beside them '
+          'could only ever disagree',
+    );
+    for (final locale in GalleryLocaleScope.supported) {
+      expect(
+        GalleryLocaleScope.endonyms,
+        contains(locale.languageCode),
+        reason:
+            'a language with no endonym shows as its own language code, '
+            'which is not what a reader is looking for',
+      );
+    }
+  });
+
+  test('a Cyrillic language is never set in a face that cannot write it', () {
+    // The rule defaults the other way — anything unclassified gets Manrope —
+    // so what this catches is the opposite mistake: adding a language to the
+    // house face because it looked Latin enough in the list.
+    const cyrillic = {'ru', 'uk', 'be', 'bg', 'sr', 'mk', 'kk'};
+
+    for (final locale in GalleryL10n.supportedLocales) {
+      if (!cyrillic.contains(locale.languageCode)) continue;
+      expect(
+        GalleryFace.of(locale),
+        isNot(GalleryFace.spaceGrotesk),
+        reason:
+            '${locale.languageCode} is written in Cyrillic, which Space '
+            'Grotesk has no glyphs for',
+      );
+    }
   });
 
   test('the catalog carries no prose of its own', () {

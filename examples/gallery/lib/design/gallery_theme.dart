@@ -46,9 +46,21 @@ enum GalleryFace {
   /// Manrope: for Cyrillic, which Space Grotesk has no glyphs for.
   manrope;
 
+  /// Languages set in the house face.
+  ///
+  /// Chinese is here despite not being Latin: no webfont worth downloading
+  /// carries CJK, so those glyphs come from the platform whichever face we
+  /// name, and the Latin beside them may as well be the gallery's own.
+  static const _houseFace = {'en', 'zh'};
+
   /// The face [locale] needs.
+  ///
+  /// Listed the way round that makes forgetting cheap. Manrope writes Latin
+  /// and Cyrillic both, so a language nobody classified is merely not in the
+  /// house face — where the other way round it would be set in a face that
+  /// cannot write its words, which is the whole reason this enum exists.
   static GalleryFace of(Locale locale) =>
-      locale.languageCode == 'ru' ? manrope : spaceGrotesk;
+      _houseFace.contains(locale.languageCode) ? spaceGrotesk : manrope;
 
   TextStyle _display({
     required double fontSize,
@@ -221,10 +233,13 @@ ThemeData galleryTheme(GalleryFace face) {
       space: 1,
       thickness: 1,
     ),
-    listTileTheme: const ListTileThemeData(
+    listTileTheme: ListTileThemeData(
       iconColor: GalleryColors.textMuted,
       textColor: GalleryColors.text,
-      subtitleTextStyle: TextStyle(
+      // Built from the scale rather than written fresh: a bare TextStyle here
+      // names no family, and Flutter takes that literally — the subtitle drops
+      // out of the type scale and is set in whatever the platform has.
+      subtitleTextStyle: text.cardBody.copyWith(
         fontSize: 12.5,
         color: GalleryColors.textFaint,
       ),
@@ -248,9 +263,9 @@ ThemeData galleryTheme(GalleryFace face) {
       backgroundColor: GalleryColors.card,
       surfaceTintColor: Colors.transparent,
     ),
-    snackBarTheme: const SnackBarThemeData(
+    snackBarTheme: SnackBarThemeData(
       backgroundColor: GalleryColors.card,
-      contentTextStyle: TextStyle(color: GalleryColors.text),
+      contentTextStyle: text.body.copyWith(color: GalleryColors.text),
       behavior: SnackBarBehavior.floating,
     ),
     tabBarTheme: const TabBarThemeData(

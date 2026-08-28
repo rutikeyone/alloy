@@ -3,7 +3,10 @@
 - English, Russian and Chinese, chosen from the host app's locale. Installing
   `AlloyInspectorL10n.delegate` is the documented path; with no delegate the
   ambient locale still decides, and English is the floor. Lifetimes, levels and
-  the records themselves stay in Alloy's own words.
+  the records themselves stay in Alloy's own words. The typeface comes from the
+  host as well, which is worth knowing: a display face with no glyphs for the
+  language changes typeface mid-line rather than failing, and no test can see
+  it.
 - `AlloyInspectorThemeData` and `AlloyInspectorTheme`: the screens take their
   colours from the host application, and an app can name its own.
 - The log carries the time each record arrived, is searchable, filters by

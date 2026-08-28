@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:gallery/l10n/gallery_l10n.dart';
 
 /// The languages the gallery is written in, and the way to switch between them.
 ///
@@ -17,7 +18,12 @@ class GalleryLocaleScope extends InheritedWidget {
   });
 
   /// Every language the gallery is translated into, in menu order.
-  static const supported = [Locale('en'), Locale('ru'), Locale('zh')];
+  ///
+  /// Read from the generated list rather than written again beside it. The
+  /// translations are what decide the set, and a second copy could only ever
+  /// disagree with them — offering a language nobody translated, or hiding one
+  /// somebody did.
+  static List<Locale> get supported => GalleryL10n.supportedLocales;
 
   /// What each language calls itself.
   ///

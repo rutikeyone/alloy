@@ -119,6 +119,16 @@ MaterialApp(
 
 To add a language, drop an `.arb` beside `l10n/inspector_en.arb` and run `flutter gen-l10n`.
 
+**The typeface is the host's too, and that one can go wrong quietly.** The inspector sets its text
+in whatever the ambient `Theme` provides, which is right — it should look like the app it is inside.
+But a font is only obliged to have the glyphs it has: a display face chosen for a Latin product
+often has no Cyrillic and never has CJK, and Flutter then fills those in from the platform. The
+result is not a crash or a missing-glyph box, it is a change of typeface partway through a line —
+mid-word where a scope name sits inside a translated sentence. Nothing in a test suite can see it,
+because widget tests draw in a test font. If you localize an app into a script your display face
+does not cover, choose a face per language; the gallery in this repository does exactly that, and
+[its README](https://github.com/rutikeyone/alloy/blob/main/examples/gallery/README.md) says how.
+
 **What stays in English, deliberately.** Lifetimes (`lazySingleton`, `asyncSingleton`) and levels
 (`trace`, `warning`) are Alloy's own identifiers — translating them would break the one thing the
 screen is for, which is finding the line of code a row came from. Scope names and registration keys
