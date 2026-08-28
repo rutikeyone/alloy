@@ -77,7 +77,7 @@ dart format --output=none --set-exit-if-changed .
 ```
 
 `tool/coverage.sh` меряет построчное покрытие одиннадцати публикуемых пакетов с тестами, печатает
-их от худшего и падает ниже порога по **сумме** — 85% против 92.2% сегодня. Порог именно на сумме,
+их от худшего и падает ниже порога по **сумме** — 85% против 92.6% сегодня. Порог именно на сумме,
 а не на каждом пакете, и это осознанно: покрытие меряется по пакетам, а код общий, поэтому парсеры
 `alloy_analyzer` гоняются куда больше из тестов `alloy_generator` и из `compat/external_consumer`,
 чем из собственного набора. Порог на пакет требовал бы писать тесты не там, где им место.
@@ -559,12 +559,14 @@ cd examples/gallery && flutter run
 ## Плагин линтера
 
 `alloy_lint` — это `analysis_server_plugin`, а не плагин `custom_lint` (см. «Инструментарий»). Он
-поставляет девять warning-правил, все построены на том же слое разбора `alloy_analyzer`, что и
+поставляет одиннадцать warning-правил, все построены на том же слое разбора `alloy_analyzer`, что и
 генератор, поэтому ошибка всплывает в IDE, а не только на прогоне `build_runner`:
 
 | Правило | Что ловит |
 |---|---|
-| `alloy_missing_injection_mixin` | поля `@injected` без `with _$ClassName` |
+| `alloy_missing_injection_mixin` | поля `@injected` без `with _$ClassName` на классе, который контейнер регистрирует |
+| `alloy_injected_field_needs_an_injectable` | поля `@injected` на классе, который контейнер не регистрирует вовсе |
+| `alloy_param_needs_an_injectable` | `@AlloyParam` на классе, который контейнер не регистрирует вовсе |
 | `alloy_injected_field_must_be_late_final` | `@injected` на изменяемом, не-late или статическом поле |
 | `alloy_injectable_must_be_constructible` | `@AlloyInject` на абстрактном классе или на классе без публичного генеративного конструктора |
 | `alloy_init_requires_init_method` | `@AlloyInit` на классе без `init()` |

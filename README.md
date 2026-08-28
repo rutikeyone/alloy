@@ -73,7 +73,7 @@ dart format --output=none --set-exit-if-changed .
 ```
 
 `tool/coverage.sh` measures line coverage of the eleven publishable packages that have tests, prints
-them worst-first, and fails under a floor on the **total** — 85%, against 92.2% today. The floor is
+them worst-first, and fails under a floor on the **total** — 85%, against 92.6% today. The floor is
 on the total rather than per package deliberately: coverage is measured per package while the code
 is shared, so `alloy_analyzer`'s parsers are driven far more from `alloy_generator`'s tests and from
 `compat/external_consumer` than from their own suite. A per-package floor would demand tests written
@@ -555,12 +555,14 @@ examples in one package would have their graphs merged.
 ## Lint plugin
 
 `alloy_lint` is an `analysis_server_plugin`, not a `custom_lint` plugin (see Toolchain). It ships
-nine warning rules, all built on the same `alloy_analyzer` parsing layer the generator uses, so a
+eleven warning rules, all built on the same `alloy_analyzer` parsing layer the generator uses, so a
 mistake surfaces in the IDE instead of only when `build_runner` runs:
 
 | Rule | Catches |
 |---|---|
-| `alloy_missing_injection_mixin` | `@injected` fields without `with _$ClassName` |
+| `alloy_missing_injection_mixin` | `@injected` fields without `with _$ClassName`, on a class the container registers |
+| `alloy_injected_field_needs_an_injectable` | `@injected` fields on a class the container never registers |
+| `alloy_param_needs_an_injectable` | `@AlloyParam` on a class the container never registers |
 | `alloy_injected_field_must_be_late_final` | `@injected` on a mutable, non-late, or static field |
 | `alloy_injectable_must_be_constructible` | `@AlloyInject` on an abstract class or one with no public generative constructor |
 | `alloy_init_requires_init_method` | `@AlloyInit` on a class with no `init()` |

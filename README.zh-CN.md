@@ -71,7 +71,7 @@ dart format --output=none --set-exit-if-changed .
 ```
 
 `tool/coverage.sh` 测量十一个有测试的可发布包的行覆盖率，从最低者开始打印，并在**总计**低于下限时失败
-——下限 85%，当前 92.2%。下限放在总计而非每个包上是有意为之：覆盖率按包测量，而代码是共享的，
+——下限 85%，当前 92.6%。下限放在总计而非每个包上是有意为之：覆盖率按包测量，而代码是共享的，
 `alloy_analyzer` 的解析器主要由 `alloy_generator` 的测试和 `compat/external_consumer` 驱动，
 而非它自己的用例。按包设下限会迫使测试写在不属于它们的地方。可用
 `COVERAGE_FLOOR=90 ./tool/coverage.sh` 覆盖。
@@ -502,13 +502,15 @@ Gallery 提供英文、俄文和中文，可以在首页直接切换。目录中
 
 ## Lint 插件
 
-`alloy_lint` 是一个 `analysis_server_plugin`，而不是 `custom_lint` 插件（见"工具链"）。它提供九条 warning
+`alloy_lint` 是一个 `analysis_server_plugin`，而不是 `custom_lint` 插件（见"工具链"）。它提供十一条 warning
 级别的规则，全部构建在生成器所用的同一个 `alloy_analyzer` 解析层之上，因此错误会在 IDE 中浮现，而不是
 只在跑 `build_runner` 时才出现：
 
 | 规则 | 捕获什么 |
 |---|---|
-| `alloy_missing_injection_mixin` | 有 `@injected` 字段却没有 `with _$ClassName` |
+| `alloy_missing_injection_mixin` | 容器会注册的类上有 `@injected` 字段却没有 `with _$ClassName` |
+| `alloy_injected_field_needs_an_injectable` | 容器从不注册的类上出现了 `@injected` 字段 |
+| `alloy_param_needs_an_injectable` | 容器从不注册的类上出现了 `@AlloyParam` |
 | `alloy_injected_field_must_be_late_final` | `@injected` 用在可变、非 late 或静态字段上 |
 | `alloy_injectable_must_be_constructible` | `@AlloyInject` 用在抽象类上，或用在没有公开生成式构造函数的类上 |
 | `alloy_init_requires_init_method` | `@AlloyInit` 用在没有 `init()` 的类上 |

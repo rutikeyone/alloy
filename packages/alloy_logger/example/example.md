@@ -15,7 +15,7 @@ final scope = await AlloyApplication.start(
 Pass your own `Logger` if the defaults do not suit:
 
 ```dart
-AlloyLoggerSink(Logger(printer: PrettyPrinter()))
+AlloyLoggerSink(logger: Logger(printer: PrettyPrinter()))
 ```
 
 Do not confuse this package with `alloy_logging`, one letter apart, which

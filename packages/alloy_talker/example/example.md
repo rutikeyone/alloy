@@ -16,8 +16,11 @@ final scope = await AlloyApplication.start(
 );
 ```
 
-The log then carries `alloy-startup`, `alloy-scope`, `alloy-init` and
-`alloy-dispose` entries as separate, colour-coded types.
+The log then carries `alloy-scope`, `alloy-startup`, `alloy-instance` and
+`alloy-failure` entries as separate, colour-coded types. Those four titles are
+also the keys `talker_flutter` colours rows by, which is what lets
+[`alloy_talker_flutter`](https://pub.dev/packages/alloy_talker_flutter) dress
+its screen in the same palette as the inspector.
 
 Per-instance records are off by default — on a real graph they drown the signal
 the log was opened for. Turn them on deliberately:
