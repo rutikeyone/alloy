@@ -1,4 +1,6 @@
 import 'package:alloy_inspector/src/alloy_inspector_log.dart';
+import 'package:alloy_inspector/src/l10n/alloy_inspector_l10n.dart';
+import 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 import 'package:alloy_inspector/src/record_detail_sheet.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_family.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
@@ -29,6 +31,7 @@ class _EventLogViewState extends State<EventLogView> {
   @override
   Widget build(BuildContext context) {
     final theme = AlloyInspectorTheme.of(context);
+    final strings = inspectorStringsOf(context);
 
     return ListenableBuilder(
       listenable: widget.log,
@@ -44,7 +47,7 @@ class _EventLogViewState extends State<EventLogView> {
             children: [
               SearchField(
                 key: const Key('log-search'),
-                hint: 'filter by message, scope or key',
+                hint: strings.logSearchHint,
                 theme: theme,
                 onChanged: (value) =>
                     setState(() => _query = value.trim().toLowerCase()),
@@ -52,6 +55,7 @@ class _EventLogViewState extends State<EventLogView> {
               _FamilyFilter(
                 selected: _family,
                 theme: theme,
+                strings: strings,
                 counts: _counts(widget.log.entries),
                 onChanged: (family) => setState(() => _family = family),
               ),
@@ -61,8 +65,8 @@ class _EventLogViewState extends State<EventLogView> {
                     ? EmptyNote(
                         key: const Key('no-events'),
                         text: widget.log.entries.isEmpty
-                            ? 'Nothing reported yet'
-                            : 'Nothing matches that',
+                            ? strings.logEmpty
+                            : strings.logNoMatch,
                         theme: theme,
                       )
                     : ListView.separated(
@@ -119,12 +123,14 @@ class _FamilyFilter extends StatelessWidget {
   const _FamilyFilter({
     required this.selected,
     required this.theme,
+    required this.strings,
     required this.counts,
     required this.onChanged,
   });
 
   final AlloyInspectorFamily? selected;
   final AlloyInspectorThemeData theme;
+  final AlloyInspectorL10n strings;
   final Map<AlloyInspectorFamily, int> counts;
   final ValueChanged<AlloyInspectorFamily?> onChanged;
 
@@ -136,7 +142,8 @@ class _FamilyFilter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       children: [
         _Chip(
-          label: 'all',
+          name: 'all',
+          label: strings.filterAll,
           count: counts.values.fold(0, (sum, n) => sum + n),
           color: theme.accent,
           theme: theme,
@@ -145,7 +152,8 @@ class _FamilyFilter extends StatelessWidget {
         ),
         for (final family in AlloyInspectorFamily.values)
           _Chip(
-            label: family.name,
+            name: family.name,
+            label: family.label(strings),
             count: counts[family] ?? 0,
             color: theme.colorOfFamily(family),
             theme: theme,
@@ -159,6 +167,7 @@ class _FamilyFilter extends StatelessWidget {
 
 class _Chip extends StatelessWidget {
   const _Chip({
+    required this.name,
     required this.label,
     required this.count,
     required this.color,
@@ -167,6 +176,7 @@ class _Chip extends StatelessWidget {
     required this.onTap,
   });
 
+  final String name;
   final String label;
   final int count;
   final Color color;
@@ -178,7 +188,7 @@ class _Chip extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(right: 8),
     child: GestureDetector(
-      key: Key('filter-$label'),
+      key: Key('filter-$name'),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),

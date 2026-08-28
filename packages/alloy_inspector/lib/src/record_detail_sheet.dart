@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_inspector/src/alloy_inspector_log.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_family.dart';
+import 'package:alloy_inspector/src/l10n/alloy_inspector_l10n.dart';
+import 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
 import 'package:alloy_inspector/src/widgets/chrome.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,7 @@ class RecordDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AlloyInspectorTheme.of(context);
+    final strings = inspectorStringsOf(context);
     final record = entry.record;
     final family = AlloyInspectorFamily.of(record.kind);
     final mono = (theme.monospace ?? const TextStyle(fontSize: 12)).copyWith(
@@ -54,9 +57,9 @@ class RecordDetailSheet extends StatelessWidget {
                 ),
                 IconButton(
                   key: const Key('copy-record'),
-                  tooltip: 'copy this record',
+                  tooltip: strings.copyRecord,
                   icon: Icon(Icons.copy_all_outlined, color: theme.muted),
-                  onPressed: () => _copy(context, record),
+                  onPressed: () => _copy(context, record, strings),
                 ),
               ],
             ),
@@ -68,33 +71,39 @@ class RecordDetailSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _Field(label: 'level', value: record.level.name),
+                    _Field(label: strings.fieldLevel, value: record.level.name),
                     if (record.scope != null)
-                      _Field(label: 'scope', value: '${record.scope}'),
+                      _Field(
+                        label: strings.fieldScope,
+                        value: '${record.scope}',
+                      ),
                     if (record.key != null)
-                      _Field(label: 'key', value: '${record.key}'),
+                      _Field(label: strings.fieldKey, value: '${record.key}'),
                     if (record.registrationKind != null)
                       _Field(
-                        label: 'lifetime',
+                        label: strings.fieldLifetime,
                         value: record.registrationKind!.name,
                       ),
                     if (record.retained != null)
-                      _Field(label: 'retained', value: '${record.retained}'),
+                      _Field(
+                        label: strings.fieldRetained,
+                        value: '${record.retained}',
+                      ),
                     if (record.error != null)
                       _Field(
-                        label: 'error',
+                        label: strings.fieldError,
                         value: '${record.error}',
                         tint: theme.failure,
                       ),
                     if (record.stackTrace != null)
                       _Field(
                         key: const Key('record-stack'),
-                        label: 'stack',
+                        label: strings.fieldStack,
                         value: '${record.stackTrace}',
                       ),
                     _Field(
                       key: const Key('record-structured'),
-                      label: 'structured',
+                      label: strings.fieldStructured,
                       value: const JsonEncoder.withIndent('  ')
                           .convert(_stringify(record.toStructured())),
                     ),
@@ -108,7 +117,11 @@ class RecordDetailSheet extends StatelessWidget {
     );
   }
 
-  Future<void> _copy(BuildContext context, AlloyLogRecord record) async {
+  Future<void> _copy(
+    BuildContext context,
+    AlloyLogRecord record,
+    AlloyInspectorL10n strings,
+  ) async {
     final messenger = ScaffoldMessenger.maybeOf(context);
     await Clipboard.setData(
       ClipboardData(
@@ -117,9 +130,9 @@ class RecordDetailSheet extends StatelessWidget {
       ),
     );
     messenger?.showSnackBar(
-      const SnackBar(
+      SnackBar(
         behavior: SnackBarBehavior.floating,
-        content: Text('Record copied'),
+        content: Text(strings.recordCopied),
       ),
     );
   }

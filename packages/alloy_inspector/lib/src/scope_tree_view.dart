@@ -4,6 +4,7 @@ import 'package:alloy_inspector/src/registration_view.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme_data.dart';
 import 'package:alloy_inspector/src/widgets/chrome.dart';
+import 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 import 'package:flutter/material.dart';
 
 /// The live scope tree, with what each scope registers.
@@ -37,6 +38,7 @@ class _ScopeTreeViewState extends State<ScopeTreeView> {
   @override
   Widget build(BuildContext context) {
     final theme = AlloyInspectorTheme.of(context);
+    final strings = inspectorStringsOf(context);
     final nodes = _walk(widget.root).toList();
 
     return Container(
@@ -48,7 +50,7 @@ class _ScopeTreeViewState extends State<ScopeTreeView> {
               Expanded(
                 child: SearchField(
                   key: const Key('tree-search'),
-                  hint: 'filter registrations',
+                  hint: strings.treeSearchHint,
                   theme: theme,
                   onChanged: (value) =>
                       setState(() => _query = value.trim().toLowerCase()),
@@ -56,7 +58,9 @@ class _ScopeTreeViewState extends State<ScopeTreeView> {
               ),
               IconButton(
                 key: const Key('collapse-all'),
-                tooltip: _collapsed.isEmpty ? 'collapse all' : 'expand all',
+                tooltip: _collapsed.isEmpty
+                    ? strings.collapseAll
+                    : strings.expandAll,
                 icon: Icon(
                   _collapsed.isEmpty ? Icons.unfold_less : Icons.unfold_more,
                   color: theme.muted,
@@ -122,6 +126,7 @@ class _ScopeNode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = inspectorStringsOf(context);
     final registrations = RegistrationView.of(scope);
     final own = registrations.where((r) => !r.isInherited).length;
     final shown = query.isEmpty
@@ -168,7 +173,7 @@ class _ScopeNode extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    '$own reg · ${scope.children.length} child',
+                    strings.nodeCounts(own, scope.children.length),
                     style: TextStyle(color: theme.muted, fontSize: 11),
                   ),
                 ],
@@ -186,7 +191,9 @@ class _ScopeNode extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(38, 0, 12, 10),
               child: Text(
-                query.isEmpty ? 'nothing registered' : 'nothing matches',
+                query.isEmpty
+                    ? strings.treeNothingRegistered
+                    : strings.treeNoMatch,
                 style: TextStyle(color: theme.muted, fontSize: 12),
               ),
             ),

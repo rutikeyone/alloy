@@ -476,7 +476,7 @@ cd examples/gallery && flutter run
 ```
 
 这个 gallery 按**能力**组织，而不是按项目——读者是来搞清楚作用域怎么结束的，不是来看 `notes_app` 的。
-六个分区，十三个条目：
+六个分区，十四个条目：
 
 | 分区 | 条目 |
 |---|---|
@@ -484,12 +484,16 @@ cd examples/gallery && flutter run
 | Injection | 属性注入 · 具名与多重注入 |
 | Scopes & lifetime | 组件持有的作用域 · 会话作用域 · 作用域树 · 导航流程 · 拆卸 |
 | Code generation | 生成的容器 · 手写模式 |
-| Observability | 图的事件 |
+| Observability | 图的事件 · 应用内检查器 |
 | Testing | 测试写法 |
 
 每个有界面的条目都以**自己的**图打开：进入时构建，离开时释放。同时打开两个，它们的作用域树互不相干
 ——而这正是 gallery 真正要展示的东西。三个没有界面的条目（`拆卸`、`手写模式`、`测试写法`）显示的是
 控制台输出而不是按钮，因为一个提出要"打开"命令行程序的 gallery 是在撒谎。
+
+Gallery 提供英文、俄文和中文，可以在首页直接切换。目录中的文字会随之翻译；gallery 挂载的各个
+示例界面不会，框架自身写出的日志记录也不会。哪些内容有意保留 Alloy 自己的措辞、以及为什么，
+见 [`alloy_inspector` README](packages/alloy_inspector/README.md)。
 
 在它背后，这些示例仍是 `examples/` 下普通的包——`notes_app`、`flow_scopes`、`graph_events`、
 `codegen_basics` 是 gallery 挂载的库，而 `manual_mode`、`teardown`、`testing_patterns` 是纯 Dart

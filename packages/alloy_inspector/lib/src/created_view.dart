@@ -1,5 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_inspector/src/alloy_inspector_log.dart';
+import 'package:alloy_inspector/src/l10n/alloy_inspector_l10n.dart';
+import 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme_data.dart';
 import 'package:alloy_inspector/src/widgets/chrome.dart';
@@ -16,11 +18,11 @@ enum CreatedGrouping {
   /// Gathered by how long they live.
   byLifetime;
 
-  /// What the switch shows for this option.
-  String get label => switch (this) {
-    CreatedGrouping.flat => 'flat',
-    CreatedGrouping.byScope => 'by scope',
-    CreatedGrouping.byLifetime => 'by lifetime',
+  /// What the switch shows for this option, in [strings]' language.
+  String label(AlloyInspectorL10n strings) => switch (this) {
+    CreatedGrouping.flat => strings.groupingFlat,
+    CreatedGrouping.byScope => strings.groupingByScope,
+    CreatedGrouping.byLifetime => strings.groupingByLifetime,
   };
 }
 
@@ -52,6 +54,7 @@ class _CreatedViewState extends State<CreatedView> {
   @override
   Widget build(BuildContext context) {
     final theme = AlloyInspectorTheme.of(context);
+    final strings = inspectorStringsOf(context);
 
     return ListenableBuilder(
       listenable: widget.log,
@@ -68,6 +71,7 @@ class _CreatedViewState extends State<CreatedView> {
               _GroupingSwitch(
                 selected: _grouping,
                 theme: theme,
+                strings: strings,
                 onChanged: (grouping) => setState(() => _grouping = grouping),
               ),
               Divider(height: 1, color: theme.outline),
@@ -75,7 +79,7 @@ class _CreatedViewState extends State<CreatedView> {
                 child: created.isEmpty
                     ? EmptyNote(
                         key: const Key('nothing-built'),
-                        text: 'Nothing built yet',
+                        text: strings.builtEmpty,
                         theme: theme,
                       )
                     : ListView(
@@ -118,11 +122,13 @@ class _GroupingSwitch extends StatelessWidget {
   const _GroupingSwitch({
     required this.selected,
     required this.theme,
+    required this.strings,
     required this.onChanged,
   });
 
   final CreatedGrouping selected;
   final AlloyInspectorThemeData theme;
+  final AlloyInspectorL10n strings;
   final ValueChanged<CreatedGrouping> onChanged;
 
   @override
@@ -151,7 +157,7 @@ class _GroupingSwitch extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  grouping.label,
+                  grouping.label(strings),
                   style: TextStyle(
                     color: selected == grouping ? theme.accent : theme.muted,
                     fontSize: 12,
@@ -197,6 +203,7 @@ class _CreatedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = inspectorStringsOf(context);
     final record = entry.record;
     return Padding(
       key: Key('created-${record.key}'),
@@ -214,8 +221,12 @@ class _CreatedTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'in "${record.scope?.name ?? '?'}" · '
-                  '${record.retained ?? false ? 'torn down with the scope' : 'caller owns it'}',
+                  strings.builtWhere(
+                    record.scope?.name ?? '?',
+                    record.retained ?? false
+                        ? strings.ownedByScope
+                        : strings.ownedByCaller,
+                  ),
                   style: TextStyle(color: theme.muted, fontSize: 11),
                 ),
               ],

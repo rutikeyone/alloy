@@ -523,7 +523,7 @@ cd examples/gallery && flutter run
 ```
 
 The gallery is organised by **capability**, not by project — a reader arrives wanting to know how
-scopes end, not wanting to see `notes_app`. Thirteen entries in six sections:
+scopes end, not wanting to see `notes_app`. Fourteen entries in six sections:
 
 | Section | Entries |
 |---|---|
@@ -531,7 +531,7 @@ scopes end, not wanting to see `notes_app`. Thirteen entries in six sections:
 | Injection | Property injection · Named and multi-injection |
 | Scopes & lifetime | Widget-owned scope · Session scope · Scope tree · Navigation flows · Teardown |
 | Code generation | Generated container · Manual mode |
-| Observability | Graph events |
+| Observability | Graph events · In-app inspector |
 | Testing | Testing patterns |
 
 Each entry that has a UI opens with a graph **of its own**, built when you open it and disposed
@@ -539,6 +539,12 @@ when you leave. Open two and their scope trees are unrelated — which is the th
 really there to show. The three entries with no UI (`Teardown`, `Manual mode`, `Testing patterns`)
 show their console output instead of a button, because a gallery that offered to "open" a CLI would
 be lying.
+
+The gallery is written in English, Russian and Chinese, switchable from the hub. The catalog prose
+is translated with it; the example screens the gallery mounts are not, and neither are the log
+records the framework itself writes — see the
+[`alloy_inspector` README](packages/alloy_inspector/README.md) for what stays in Alloy's own words
+and why.
 
 Behind it, the examples stay ordinary packages under `examples/` — `notes_app`, `flow_scopes`,
 `graph_events`, `codegen_basics` are libraries the gallery mounts, and `manual_mode`, `teardown`,

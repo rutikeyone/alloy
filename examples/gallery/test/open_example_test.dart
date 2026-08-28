@@ -4,17 +4,20 @@ import 'package:gallery/catalog/catalog.dart';
 import 'package:gallery/catalog/example_host.dart';
 import 'package:gallery/design/gallery_theme.dart';
 
+import 'support.dart';
+
 void main() {
   testWidgets('every openable entry mounts with a graph of its own', (
     tester,
   ) async {
-    final openable = buildCatalog().where((e) => e.isOpenable).toList();
+    final openable = buildCatalog(englishStrings)
+        .where((e) => e.isOpenable)
+        .toList();
     expect(openable, isNotEmpty, reason: 'nothing is wired in yet');
 
     for (final entry in openable) {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: galleryTheme(),
+        galleryHarness(
           // Keyed per entry, so each iteration builds a fresh element rather
           // than updating the previous one. AlloyAppScope has no
           // didUpdateWidget — handed a new root in the same slot it keeps the

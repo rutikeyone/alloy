@@ -3,8 +3,10 @@ import 'package:gallery/catalog/catalog.dart';
 import 'package:gallery/catalog/example_entry.dart';
 import 'package:gallery/catalog/example_section.dart';
 
+import 'support.dart';
+
 void main() {
-  final catalog = buildCatalog();
+  final catalog = buildCatalog(englishStrings);
 
   test('a screen badge means there is a screen to open', () {
     final lying = catalog

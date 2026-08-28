@@ -1,6 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery/design/gallery_theme.dart';
+import 'package:gallery/l10n/gallery_l10n.dart';
 
 /// Mounts one example with its own root scope.
 ///
@@ -56,21 +57,25 @@ class _StartupFailed extends StatelessWidget {
   final VoidCallback retry;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('This example could not start', style: GalleryText.cardTitle),
-            const SizedBox(height: 12),
-            Text('$error', style: GalleryText.cardBody),
-            const SizedBox(height: 20),
-            FilledButton(onPressed: retry, child: const Text('Try again')),
-          ],
+  Widget build(BuildContext context) {
+    final l10n = GalleryL10n.of(context);
+
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.hostFailed, style: GalleryText.cardTitle),
+              const SizedBox(height: 12),
+              Text('$error', style: GalleryText.cardBody),
+              const SizedBox(height: 20),
+              FilledButton(onPressed: retry, child: Text(l10n.hostRetry)),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

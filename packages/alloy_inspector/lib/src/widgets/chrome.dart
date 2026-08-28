@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_family.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme_data.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +67,7 @@ class LifetimeBadge extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
-        kind?.name ?? 'gone',
+        kind?.name ?? inspectorStringsOf(context).lifetimeGone,
         style: (theme.monospace ?? const TextStyle(fontSize: 11)).copyWith(
           color: color,
           fontSize: 11,

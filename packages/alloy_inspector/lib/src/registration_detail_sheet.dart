@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 import 'package:alloy_inspector/src/registration_view.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
 import 'package:alloy_inspector/src/widgets/chrome.dart';
@@ -39,6 +40,7 @@ class _RegistrationDetailSheetState extends State<RegistrationDetailSheet> {
   Widget build(BuildContext context) {
     final registration = widget.registration;
     final theme = AlloyInspectorTheme.of(context);
+    final strings = inspectorStringsOf(context);
 
     return SafeArea(
       child: ListView(
@@ -62,49 +64,50 @@ class _RegistrationDetailSheetState extends State<RegistrationDetailSheet> {
             ),
           ),
           Divider(height: 1, color: theme.outline),
-          _Fact(label: 'Owned by', value: registration.owner.name),
+          _Fact(label: strings.factOwnedBy, value: registration.owner.name),
           _Fact(
-            label: 'Reached',
+            label: strings.factReached,
             value: registration.isInherited
-                ? 'inherited from an ancestor'
-                : 'registered in this scope',
+                ? strings.reachedInherited
+                : strings.reachedHere,
           ),
           _Fact(
-            label: 'Torn down with the scope',
+            label: strings.factTornDown,
             value: switch (registration.kind) {
               AlloyRegistrationKind.singleton ||
               AlloyRegistrationKind.lazySingleton ||
-              AlloyRegistrationKind.asyncSingleton => 'yes',
+              AlloyRegistrationKind.asyncSingleton => strings.tornDownYes,
               AlloyRegistrationKind.transient ||
-              AlloyRegistrationKind.parameterized => 'no, the caller owns it',
-              null => 'unknown',
+              AlloyRegistrationKind.parameterized => strings.tornDownNo,
+              null => strings.tornDownUnknown,
             },
           ),
           if (_built case final value?)
-            _Fact(key: const Key('built-value'), label: 'Built', value: value),
+            _Fact(
+              key: const Key('built-value'),
+              label: strings.factBuilt,
+              value: value,
+            ),
           if (_failed case final error?)
             _Fact(
               key: const Key('build-failed'),
-              label: 'Failed',
+              label: strings.factFailed,
               value: error,
             ),
           const Divider(height: 1),
           if (registration.isBuildable)
             ListTile(
               key: const Key('build-it'),
-              title: const Text('Build it now'),
-              subtitle: const Text(
-                'Creates the instance for real and logs it — this changes the '
-                'graph you are looking at',
-              ),
+              title: Text(strings.buildItTitle),
+              subtitle: Text(strings.buildItSubtitle),
               trailing: const Icon(Icons.play_arrow),
               onTap: _build,
             )
           else
-            const ListTile(
-              key: Key('not-buildable'),
+            ListTile(
+              key: const Key('not-buildable'),
               dense: true,
-              title: Text('Takes a parameter, so it cannot be built from here'),
+              title: Text(strings.notBuildable),
             ),
         ],
       ),

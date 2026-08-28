@@ -9,6 +9,8 @@ export 'package:alloy_inspector/src/alloy_inspector_log.dart';
 export 'package:alloy_inspector/src/alloy_inspector_screen.dart';
 export 'package:alloy_inspector/src/created_view.dart';
 export 'package:alloy_inspector/src/event_log_view.dart';
+export 'package:alloy_inspector/src/l10n/alloy_inspector_l10n.dart';
+export 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 export 'package:alloy_inspector/src/record_detail_sheet.dart';
 export 'package:alloy_inspector/src/registration_view.dart';
 export 'package:alloy_inspector/src/scope_tree_view.dart';

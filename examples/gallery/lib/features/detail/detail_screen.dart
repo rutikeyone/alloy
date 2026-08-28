@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:gallery/catalog/example_entry.dart';
 import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/features/hub/example_card.dart';
+import 'package:gallery/l10n/gallery_l10n.dart';
 
 class DetailScreen extends StatelessWidget {
   const DetailScreen({required this.entry, super.key});
@@ -12,13 +13,14 @@ class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = entry.kind.tint;
+    final l10n = GalleryL10n.of(context);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         title: Text(
-          'All examples',
+          l10n.allExamples,
           style: GalleryText.body.copyWith(color: GalleryColors.textMuted),
         ),
         titleSpacing: 0,
@@ -43,7 +45,7 @@ class DetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(entry.teaches, style: GalleryText.lede),
           const SizedBox(height: 24),
-          const _Label('What it shows'),
+          _Label(l10n.whatItShows),
           const SizedBox(height: 11),
           for (final point in entry.points) _Point(text: point, tint: tint),
           const SizedBox(height: 13),
@@ -124,6 +126,7 @@ class _Action extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = entry.kind.tint;
+    final l10n = GalleryL10n.of(context);
     final open = entry.open;
 
     return SizedBox(
@@ -140,22 +143,22 @@ class _Action extends StatelessWidget {
             ? () =>
                   Navigator.of(context)
                       .push(MaterialPageRoute<void>(builder: open))
-            : () => _copy(context),
+            : () => _copy(context, l10n),
         child: Text(
-          open != null ? 'Open example' : 'Copy command',
+          open != null ? l10n.openExample : l10n.copyCommand,
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
         ),
       ),
     );
   }
 
-  Future<void> _copy(BuildContext context) async {
+  Future<void> _copy(BuildContext context, GalleryL10n l10n) async {
     final messenger = ScaffoldMessenger.of(context);
     await Clipboard.setData(ClipboardData(text: entry.transcript));
     messenger.showSnackBar(
-      const SnackBar(
+      SnackBar(
         behavior: SnackBarBehavior.floating,
-        content: Text('Command copied'),
+        content: Text(l10n.commandCopied),
       ),
     );
   }

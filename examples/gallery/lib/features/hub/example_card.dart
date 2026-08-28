@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gallery/catalog/example_entry.dart';
 import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/design/node_glyph.dart';
+import 'package:gallery/l10n/gallery_l10n.dart';
 
 class ExampleCard extends StatelessWidget {
   const ExampleCard({required this.entry, required this.onTap, super.key});
@@ -110,7 +111,7 @@ class KindBadge extends StatelessWidget {
       border: Border.all(color: kind.tint.withValues(alpha: 0.32)),
     ),
     child: Text(
-      kind.label.toUpperCase(),
+      kind.label(GalleryL10n.of(context)).toUpperCase(),
       style: GalleryText.badge.copyWith(color: kind.tint),
     ),
   );

@@ -1,0 +1,7 @@
+arb-dir: l10n
+template-arb-file: gallery_en.arb
+output-dir: lib/l10n
+output-localization-file: gallery_l10n.dart
+output-class: GalleryL10n
+nullable-getter: false
+format: true

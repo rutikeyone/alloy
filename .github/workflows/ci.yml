@@ -54,6 +54,9 @@ jobs:
                          compat/external_consumer; do
             (cd "$package" && dart run build_runner build)
           done
+          for package in packages/alloy_inspector examples/gallery; do
+            (cd "$package" && flutter gen-l10n)
+          done
           git diff --exit-code
 
       - name: Test pure Dart packages

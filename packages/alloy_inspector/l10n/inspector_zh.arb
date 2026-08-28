@@ -1,0 +1,75 @@
+{
+  "@@locale": "zh",
+  "inspectorTitle": "Alloy · 检查器",
+  "pauseTooltip": "暂停刷新",
+  "resumeTooltip": "继续跟踪依赖图",
+  "clearTooltip": "清除已记录的内容",
+  "tabTree": "作用域树",
+  "tabBuilt": "已构建",
+  "tabLog": "日志",
+  "logSearchHint": "按消息、作用域或键过滤",
+  "logEmpty": "尚无任何上报",
+  "logNoMatch": "没有匹配项",
+  "filterAll": "全部",
+  "familyScope": "作用域",
+  "familyStartup": "启动",
+  "familyInstance": "实例",
+  "familyFailure": "失败",
+  "treeSearchHint": "过滤注册项",
+  "collapseAll": "全部折叠",
+  "expandAll": "全部展开",
+  "treeNothingRegistered": "没有注册项",
+  "treeNoMatch": "没有匹配项",
+  "groupingFlat": "平铺",
+  "groupingByScope": "按作用域",
+  "groupingByLifetime": "按生命周期",
+  "builtEmpty": "尚未构建任何实例",
+  "builtWhere": "在 “{scope}” · {ownership}",
+  "@builtWhere": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "ownership": {
+        "type": "String"
+      }
+    }
+  },
+  "ownedByScope": "随作用域一起释放",
+  "ownedByCaller": "由调用方持有",
+  "lifetimeGone": "已消失",
+  "copyRecord": "复制这条记录",
+  "recordCopied": "已复制记录",
+  "fieldLevel": "级别",
+  "fieldScope": "作用域",
+  "fieldKey": "键",
+  "fieldLifetime": "生命周期",
+  "fieldRetained": "是否保留",
+  "fieldError": "错误",
+  "fieldStack": "堆栈",
+  "fieldStructured": "结构化",
+  "factOwnedBy": "所属作用域",
+  "factReached": "可见方式",
+  "reachedInherited": "继承自上层作用域",
+  "reachedHere": "注册在此作用域",
+  "factTornDown": "随作用域一起释放",
+  "tornDownYes": "是",
+  "tornDownNo": "否，由调用方持有",
+  "tornDownUnknown": "未知",
+  "factBuilt": "已构建",
+  "factFailed": "失败",
+  "buildItTitle": "立即构建",
+  "buildItSubtitle": "会真正创建实例并写入日志 —— 这会改变你正在观察的依赖图",
+  "notBuildable": "需要参数，无法从这里构建",
+  "nodeCounts": "{registrations} 个注册 · {children, plural, other{{children} 个子作用域}}",
+  "@nodeCounts": {
+    "placeholders": {
+      "registrations": {
+        "type": "int"
+      },
+      "children": {
+        "type": "int"
+      }
+    }
+  }
+}

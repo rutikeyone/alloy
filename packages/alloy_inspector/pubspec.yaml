@@ -19,8 +19,14 @@ dependencies:
   alloy_flutter: ^0.1.0
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
 dev_dependencies:
   alloy_test: ^0.1.0
   flutter_test:
     sdk: flutter
+
+flutter:
+  generate: true

@@ -5,6 +5,7 @@ import 'package:alloy_inspector/src/event_log_view.dart';
 import 'package:alloy_inspector/src/scope_tree_view.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme.dart';
 import 'package:alloy_inspector/src/theme/alloy_inspector_theme_data.dart';
+import 'package:alloy_inspector/src/l10n/inspector_strings.dart';
 import 'package:flutter/material.dart';
 
 /// The inspector: the live tree, what was built, and everything reported.
@@ -55,6 +56,7 @@ class AlloyInspectorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = theme ?? AlloyInspectorTheme.of(context);
+    final strings = inspectorStringsOf(context);
     final root = scope.root;
 
     return AlloyInspectorTheme(
@@ -69,7 +71,7 @@ class AlloyInspectorScreen extends StatelessWidget {
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             title: Text(
-              'Alloy · inspector',
+              strings.inspectorTitle,
               style: TextStyle(color: palette.onSurface, fontSize: 16),
             ),
             actions: [
@@ -78,8 +80,8 @@ class AlloyInspectorScreen extends StatelessWidget {
                 builder: (context, _) => IconButton(
                   key: const Key('pause-log'),
                   tooltip: log.isPaused
-                      ? 'follow the graph again'
-                      : 'hold the view still',
+                      ? strings.resumeTooltip
+                      : strings.pauseTooltip,
                   icon: Icon(
                     log.isPaused ? Icons.play_arrow : Icons.pause,
                     color: log.isPaused ? palette.accent : palette.muted,
@@ -89,7 +91,7 @@ class AlloyInspectorScreen extends StatelessWidget {
               ),
               IconButton(
                 key: const Key('clear-log'),
-                tooltip: 'forget what has been recorded',
+                tooltip: strings.clearTooltip,
                 icon: Icon(Icons.delete_outline, color: palette.muted),
                 onPressed: log.clear,
               ),
@@ -100,16 +102,16 @@ class AlloyInspectorScreen extends StatelessWidget {
               indicatorColor: palette.accent,
               dividerColor: palette.outline,
               tabs: [
-                const Tab(key: Key('tab-tree'), text: 'Tree'),
+                Tab(key: const Key('tab-tree'), text: strings.tabTree),
                 _CountedTab(
                   key: const Key('tab-created'),
-                  label: 'Built',
+                  label: strings.tabBuilt,
                   count: () => log.created.length,
                   log: log,
                 ),
                 _CountedTab(
                   key: const Key('tab-log'),
-                  label: 'Log',
+                  label: strings.tabLog,
                   count: () => log.records.length,
                   log: log,
                 ),

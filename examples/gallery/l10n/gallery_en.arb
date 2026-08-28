@@ -1,0 +1,256 @@
+{
+  "@@locale": "en",
+  "appTitle": "Alloy examples",
+  "@appTitle": {
+    "description": "Title of the gallery application."
+  },
+  "tagline": "dependency injection · examples",
+  "@tagline": {
+    "description": "Subtitle under the Alloy wordmark."
+  },
+  "lede": "One example per capability. Most open right here; the ones that only print show you their output instead.",
+  "@lede": {
+    "description": "Introductory paragraph on the hub screen."
+  },
+  "languageTooltip": "language",
+  "@languageTooltip": {
+    "description": "Tooltip of the language switcher."
+  },
+  "allExamples": "All examples",
+  "@allExamples": {
+    "description": "Back-link title on a detail screen."
+  },
+  "whatItShows": "What it shows",
+  "@whatItShows": {
+    "description": "Heading above the bullet points of an example."
+  },
+  "openExample": "Open example",
+  "@openExample": {
+    "description": "Button that mounts an example."
+  },
+  "copyCommand": "Copy command",
+  "@copyCommand": {
+    "description": "Button for an example that only prints; copies how to run it."
+  },
+  "commandCopied": "Command copied",
+  "@commandCopied": {
+    "description": "Confirmation after copying a command."
+  },
+  "kindScreen": "screen",
+  "@kindScreen": {
+    "description": "Badge on an example you can open."
+  },
+  "kindTerminal": "terminal",
+  "@kindTerminal": {
+    "description": "Badge on an example that only prints."
+  },
+  "whereItLives": "Where it lives",
+  "@whereItLives": {
+    "description": "Label above the path to an example's source."
+  },
+  "consoleOutput": "Console output",
+  "@consoleOutput": {
+    "description": "Label above the command that runs an example that prints."
+  },
+  "testOutput": "Test output",
+  "@testOutput": {
+    "description": "Label above the command that runs an example's tests."
+  },
+  "sectionStartup": "Startup",
+  "sectionStartupBlurb": "Getting a graph up, and choosing which graph",
+  "sectionInjection": "Injection",
+  "sectionInjectionBlurb": "Getting dependencies into the things that need them",
+  "sectionScopes": "Scopes & lifetime",
+  "sectionScopesBlurb": "When a graph appears, and when it goes away",
+  "sectionCodegen": "Code generation",
+  "sectionCodegenBlurb": "What the generator writes, and the same by hand",
+  "sectionObservability": "Observability",
+  "sectionObservabilityBlurb": "Watching what the graph does",
+  "sectionTesting": "Testing",
+  "sectionTestingBlurb": "Swapping dependencies out, and the traps",
+  "startupTitle": "Two-phase startup",
+  "@startupTitle": {
+    "description": "Name of the \"Two-phase startup\" example."
+  },
+  "startupTeaches": "Bootstrap steps run before a container exists; async initializers run as a graph.",
+  "@startupTeaches": {
+    "description": "One line: what \"Two-phase startup\" exists to show."
+  },
+  "startupPoint1": "Phase 0 steps are adopted by the root scope and released with it",
+  "startupPoint2": "A step that opened something is closed last, after everything built on it",
+  "startupPoint3": "Phase 1 awaits @AlloyInit as a graph, so independent branches run together",
+  "startupPoint4": "dependsOn decides the order — you never write the sequence yourself",
+  "environmentsTitle": "Environments",
+  "@environmentsTitle": {
+    "description": "Name of the \"Environments\" example."
+  },
+  "environmentsTeaches": "One interface, a different implementation per build.",
+  "@environmentsTeaches": {
+    "description": "One line: what \"Environments\" exists to show."
+  },
+  "environmentsPoint1": "@AlloyEnvironment repeats rather than taking a list — a registration belongs to a set, a start picks one",
+  "environmentsPoint2": "Two registrations whose environments overlap fail the build, not the app",
+  "environmentsPoint3": "Choosing nothing leaves the split types unregistered, so the miss is loud",
+  "environmentsPoint4": "Manual Mode writes the same `if` the generator emits",
+  "propertyTitle": "Property injection",
+  "@propertyTitle": {
+    "description": "Name of the \"Property injection\" example."
+  },
+  "propertyTeaches": "A controller with an empty constructor and fields filled from the graph.",
+  "@propertyTeaches": {
+    "description": "One line: what \"Property injection\" exists to show."
+  },
+  "propertyPoint1": "The mixin is generated beside the class and fills the fields after construction",
+  "propertyPoint2": "Fields may be private — the part file is in the same library",
+  "propertyPoint3": "late final is enforced, so a second assignment throws instead of quietly swapping a dependency",
+  "propertyPoint4": "This is what removes five to fourteen constructor arguments",
+  "namedTitle": "Named and multi-injection",
+  "@namedTitle": {
+    "description": "Name of the \"Named and multi-injection\" example."
+  },
+  "namedTeaches": "Several implementations behind one interface, told apart by name.",
+  "@namedTeaches": {
+    "description": "One line: what \"Named and multi-injection\" exists to show."
+  },
+  "namedPoint1": "@Named picks one registration of a type that has several",
+  "namedPoint2": "getAll returns every registration of a type, in registration order",
+  "namedPoint3": "A duplicate of the same key in one scope is an error, not a silent last-one-wins",
+  "widgetScopeTitle": "Widget-owned scope",
+  "@widgetScopeTitle": {
+    "description": "Name of the \"Widget-owned scope\" example."
+  },
+  "widgetScopeTeaches": "A graph that lives exactly as long as one screen.",
+  "@widgetScopeTeaches": {
+    "description": "One line: what \"Widget-owned scope\" exists to show."
+  },
+  "widgetScopePoint1": "AlloyScopedStatefulWidget registers into a scope it owns",
+  "widgetScopePoint2": "Leaving the screen disposes everything the screen built",
+  "widgetScopePoint3": "registerParamFactory passes a value into construction",
+  "widgetScopePoint4": "The parent graph stays untouched — this is a child, not a mutation",
+  "sessionTitle": "Session scope",
+  "@sessionTitle": {
+    "description": "Name of the \"Session scope\" example."
+  },
+  "sessionTeaches": "Signing out is one dispose() and nothing else.",
+  "@sessionTeaches": {
+    "description": "One line: what \"Session scope\" exists to show."
+  },
+  "sessionPoint1": "Everything the session built goes with the session scope",
+  "sessionPoint2": "No repository implements reset(), and nothing listens to the session",
+  "sessionPoint3": "This is the argument for a tree of scopes rather than a flat stack",
+  "scopeTreeTitle": "Scope tree",
+  "@scopeTreeTitle": {
+    "description": "Name of the \"Scope tree\" example."
+  },
+  "scopeTreeTeaches": "The live hierarchy, rendered from the scopes themselves.",
+  "@scopeTreeTeaches": {
+    "description": "One line: what \"Scope tree\" exists to show."
+  },
+  "scopeTreePoint1": "AlloyScope.children is public, so the tree is inspectable at runtime",
+  "scopeTreePoint2": "Open two examples and their trees are unrelated — each has its own root",
+  "scopeTreePoint3": "Depth and parent are on the scope, which is what diagnostics read",
+  "flowTitle": "Navigation flows",
+  "@flowTitle": {
+    "description": "Name of the \"Navigation flows\" example."
+  },
+  "flowTeaches": "A scope that lives exactly as long as a navigation flow is open.",
+  "@flowTeaches": {
+    "description": "One line: what \"Navigation flows\" exists to show."
+  },
+  "flowPoint1": "AlloyShellRoute — enter the flow and the scope appears; leave and it is gone",
+  "flowPoint2": "identity rebuilds the scope when the flow’s subject changes",
+  "flowPoint3": "Tabs: a branch is kept alive, not visible, so switching disposes nothing",
+  "flowPoint4": "No router listener anywhere — ownership belongs to the widget tree",
+  "teardownTitle": "Teardown",
+  "@teardownTitle": {
+    "description": "Name of the \"Teardown\" example."
+  },
+  "teardownTeaches": "What disposal actually guarantees — order, failures, timeouts, adoption.",
+  "@teardownTeaches": {
+    "description": "One line: what \"Teardown\" exists to show."
+  },
+  "teardownPoint1": "LIFO by creation order, not by the order things were declared",
+  "teardownPoint2": "A dispose that throws is recorded; everything else still runs",
+  "teardownPoint3": "A dispose that hangs hits the deadline and is reported, not awaited forever",
+  "teardownPoint4": "adopt() ties a non-dependency’s life to the scope",
+  "codegenTitle": "Generated container",
+  "@codegenTitle": {
+    "description": "Name of the \"Generated container\" example."
+  },
+  "codegenTeaches": "The smallest generated setup there is, and what it writes.",
+  "@codegenTeaches": {
+    "description": "One line: what \"Generated container\" exists to show."
+  },
+  "codegenPoint1": "Put @alloyInject on a class and lib/alloy.g.dart appears",
+  "codegenPoint2": "Named const factory classes in the output — never closures",
+  "codegenPoint3": "Registrations ordered by a compile-time topological sort",
+  "codegenPoint4": "A dependency cycle fails the build naming the cycle",
+  "manualTitle": "Manual mode",
+  "@manualTitle": {
+    "description": "Name of the \"Manual mode\" example."
+  },
+  "manualTeaches": "The same graph with no generation and no Flutter.",
+  "@manualTeaches": {
+    "description": "One line: what \"Manual mode\" exists to show."
+  },
+  "manualPoint1": "The generator writes exactly this, using only the public API",
+  "manualPoint2": "Pure Dart — runs in a CLI, on a server, in a plain test",
+  "manualPoint3": "AlloyScopeBuilder composes; that is what replaces modules",
+  "manualPoint4": "If generation ever needs something this cannot express, they are two frameworks sharing a name",
+  "eventsTitle": "Graph events",
+  "@eventsTitle": {
+    "description": "Name of the \"Graph events\" example."
+  },
+  "eventsTeaches": "The graph reporting on itself, streamed into a logger you already use.",
+  "@eventsTeaches": {
+    "description": "One line: what \"Graph events\" exists to show."
+  },
+  "eventsPoint1": "AlloyObserver events — scopes pushed, instances built, teardown failing",
+  "eventsPoint2": "One line to adapt talker, logging, logger, or any logger at all",
+  "eventsPoint3": "AlloyMultiSink fans a record out; a failing sink does not silence the rest",
+  "eventsPoint4": "Resolution is deliberately not reported — a cache hit is the hot path",
+  "inspectorTitle": "In-app inspector",
+  "@inspectorTitle": {
+    "description": "Name of the \"In-app inspector\" example."
+  },
+  "inspectorTeaches": "The live tree, what was built and with what lifetime, on a screen in the app.",
+  "@inspectorTeaches": {
+    "description": "One line: what \"In-app inspector\" exists to show."
+  },
+  "inspectorPoint1": "The tree is walked from the live scopes, not rebuilt from events",
+  "inspectorPoint2": "Every registration carries its lifetime, read with debugKindOf",
+  "inspectorPoint3": "Tapping shows facts; building is a separate action that says its cost",
+  "inspectorPoint4": "An eager singleton shows in the tree and never in the built list",
+  "testingTitle": "Testing patterns",
+  "@testingTitle": {
+    "description": "Name of the \"Testing patterns\" example."
+  },
+  "testingTeaches": "Overriding dependencies in a test, and the traps.",
+  "@testingTeaches": {
+    "description": "One line: what \"Testing patterns\" exists to show."
+  },
+  "testingPoint1": "Override by pushing a child scope and registering again — shadowing, not mutation",
+  "testingPoint2": "Build the graph in setUp; testWidgets runs inside a fake-async zone",
+  "testingPoint3": "No global container, so one test cannot leak into the next",
+  "testingPoint4": "A duplicate in one scope is an error; shadowing from a child is the supported way",
+  "demoTitle": "Alloy · inspector",
+  "@demoTitle": {
+    "description": "App bar of the screen the inspector example gives you to poke at."
+  },
+  "demoInspect": "inspect the graph",
+  "demoOpenSession": "Open a session scope",
+  "demoOpenSessionHint": "a push, an async init, some instances",
+  "demoCloseSession": "Close the session",
+  "demoNothingOpen": "nothing open",
+  "demoTearsItDown": "tears it down",
+  "demoThenOpen": "Then open the inspector from the app bar",
+  "demoThenOpenHint": "the tree, what was built, and everything reported",
+  "hostFailed": "This example could not start",
+  "@hostFailed": {
+    "description": "Shown when an example fails to build its graph."
+  },
+  "hostRetry": "Try again",
+  "@hostRetry": {
+    "description": "Button that tries to build the example graph again."
+  }
+}

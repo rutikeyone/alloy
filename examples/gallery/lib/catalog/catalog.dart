@@ -10,6 +10,7 @@ import 'package:gallery/catalog/flow_scopes_host.dart';
 import 'package:gallery/catalog/glyphs.dart';
 import 'package:gallery/catalog/inspector_graph.dart';
 import 'package:gallery/design/gallery_theme.dart';
+import 'package:gallery/l10n/gallery_l10n.dart';
 import 'package:gallery/catalog/notes_graph.dart';
 import 'package:graph_events/app/app_scope.dart';
 import 'package:graph_events/app/audit_log.dart';
@@ -31,42 +32,39 @@ import 'package:talker/talker.dart';
 /// deliberately not grouped by which package a screen came from — that is an
 /// implementation detail of the repository, not something a reader is looking
 /// for.
-List<ExampleEntry> buildCatalog() => [
+List<ExampleEntry> buildCatalog(GalleryL10n l10n) => [
   // ── Startup ───────────────────────────────────────────────────────────
   ExampleEntry(
     id: 'startup',
-    title: 'Two-phase startup',
+    title: l10n.startupTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.startup,
-    teaches:
-        'Bootstrap steps run before a container exists; async initializers run '
-        'as a graph.',
+    teaches: l10n.startupTeaches,
     glyph: Glyphs.notes,
-    points: const [
-      'Phase 0 steps are adopted by the root scope and released with it',
-      'A step that opened something is closed last, after everything built on it',
-      'Phase 1 awaits @AlloyInit as a graph, so independent branches run together',
-      'dependsOn decides the order — you never write the sequence yourself',
+    points: [
+      l10n.startupPoint1,
+      l10n.startupPoint2,
+      l10n.startupPoint3,
+      l10n.startupPoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'examples/notes_app/lib/features/home/ui/home_screen.dart',
     open: (_) => notesGraph(const notes.HomeScreen()),
   ),
   ExampleEntry(
     id: 'environments',
-    title: 'Environments',
+    title: l10n.environmentsTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.startup,
-    teaches: 'One interface, a different implementation per build.',
+    teaches: l10n.environmentsTeaches,
     glyph: Glyphs.codegen,
-    points: const [
-      '@AlloyEnvironment repeats rather than taking a list — a registration '
-          'belongs to a set, a start picks one',
-      'Two registrations whose environments overlap fail the build, not the app',
-      'Choosing nothing leaves the split types unregistered, so the miss is loud',
-      'Manual Mode writes the same `if` the generator emits',
+    points: [
+      l10n.environmentsPoint1,
+      l10n.environmentsPoint2,
+      l10n.environmentsPoint3,
+      l10n.environmentsPoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'examples/notes_app/lib/features/environments/ui/environments_screen.dart',
     open: (_) => notesGraph(const EnvironmentsScreen()),
   ),
@@ -74,38 +72,30 @@ List<ExampleEntry> buildCatalog() => [
   // ── Injection ─────────────────────────────────────────────────────────
   ExampleEntry(
     id: 'property',
-    title: 'Property injection',
+    title: l10n.propertyTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.injection,
-    teaches: 'A controller with an empty constructor and fields filled from the graph.',
+    teaches: l10n.propertyTeaches,
     glyph: Glyphs.flow,
-    points: const [
-      'The mixin is generated beside the class and fills the fields after '
-          'construction',
-      'Fields may be private — the part file is in the same library',
-      'late final is enforced, so a second assignment throws instead of '
-          'quietly swapping a dependency',
-      'This is what removes five to fourteen constructor arguments',
+    points: [
+      l10n.propertyPoint1,
+      l10n.propertyPoint2,
+      l10n.propertyPoint3,
+      l10n.propertyPoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'examples/notes_app/lib/features/notes/ui/notes_screen.dart',
     open: (_) => notesGraph(const NotesScreen()),
   ),
   ExampleEntry(
     id: 'named',
-    title: 'Named and multi-injection',
+    title: l10n.namedTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.injection,
-    teaches:
-        'Several implementations behind one interface, told apart by name.',
+    teaches: l10n.namedTeaches,
     glyph: Glyphs.testing,
-    points: const [
-      '@Named picks one registration of a type that has several',
-      'getAll returns every registration of a type, in registration order',
-      'A duplicate of the same key in one scope is an error, not a silent '
-          'last-one-wins',
-    ],
-    transcriptLabel: 'Where it lives',
+    points: [l10n.namedPoint1, l10n.namedPoint2, l10n.namedPoint3],
+    transcriptLabel: l10n.whereItLives,
     transcript:
         'examples/notes_app/lib/features/formatting/ui/formatters_screen.dart',
     open: (_) => notesGraph(const FormattersScreen()),
@@ -114,104 +104,96 @@ List<ExampleEntry> buildCatalog() => [
   // ── Scopes & lifetime ─────────────────────────────────────────────────
   ExampleEntry(
     id: 'widget-scope',
-    title: 'Widget-owned scope',
+    title: l10n.widgetScopeTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.scopes,
-    teaches: 'A graph that lives exactly as long as one screen.',
+    teaches: l10n.widgetScopeTeaches,
     glyph: Glyphs.manual,
-    points: const [
-      'AlloyScopedStatefulWidget registers into a scope it owns',
-      'Leaving the screen disposes everything the screen built',
-      'registerParamFactory passes a value into construction',
-      'The parent graph stays untouched — this is a child, not a mutation',
+    points: [
+      l10n.widgetScopePoint1,
+      l10n.widgetScopePoint2,
+      l10n.widgetScopePoint3,
+      l10n.widgetScopePoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'examples/notes_app/lib/features/note_detail/ui/note_detail_screen.dart',
     open: (_) => notesGraph(const NoteDetailScreen()),
   ),
   ExampleEntry(
     id: 'session',
-    title: 'Session scope',
+    title: l10n.sessionTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.scopes,
-    teaches: 'Signing out is one dispose() and nothing else.',
+    teaches: l10n.sessionTeaches,
     glyph: Glyphs.events,
-    points: const [
-      'Everything the session built goes with the session scope',
-      'No repository implements reset(), and nothing listens to the session',
-      'This is the argument for a tree of scopes rather than a flat stack',
-    ],
-    transcriptLabel: 'Where it lives',
+    points: [l10n.sessionPoint1, l10n.sessionPoint2, l10n.sessionPoint3],
+    transcriptLabel: l10n.whereItLives,
     transcript:
         'examples/notes_app/lib/features/session/ui/session_screen.dart',
     open: (_) => notesGraph(const SessionScreen()),
   ),
   ExampleEntry(
     id: 'scope-tree',
-    title: 'Scope tree',
+    title: l10n.scopeTreeTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.scopes,
-    teaches: 'The live hierarchy, rendered from the scopes themselves.',
+    teaches: l10n.scopeTreeTeaches,
     glyph: Glyphs.notes,
-    points: const [
-      'AlloyScope.children is public, so the tree is inspectable at runtime',
-      'Open two examples and their trees are unrelated — each has its own root',
-      'Depth and parent are on the scope, which is what diagnostics read',
-    ],
-    transcriptLabel: 'Where it lives',
+    points: [l10n.scopeTreePoint1, l10n.scopeTreePoint2, l10n.scopeTreePoint3],
+    transcriptLabel: l10n.whereItLives,
     transcript:
         'examples/notes_app/lib/features/diagnostics/ui/scope_tree_screen.dart',
     open: (_) => notesGraph(const ScopeTreeScreen()),
   ),
   ExampleEntry(
     id: 'flow',
-    title: 'Navigation flows',
+    title: l10n.flowTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.scopes,
-    teaches: 'A scope that lives exactly as long as a navigation flow is open.',
+    teaches: l10n.flowTeaches,
     glyph: Glyphs.flow,
-    points: const [
-      'AlloyShellRoute — enter the flow and the scope appears; leave and it is gone',
-      'identity rebuilds the scope when the flow’s subject changes',
-      'Tabs: a branch is kept alive, not visible, so switching disposes nothing',
-      'No router listener anywhere — ownership belongs to the widget tree',
+    points: [
+      l10n.flowPoint1,
+      l10n.flowPoint2,
+      l10n.flowPoint3,
+      l10n.flowPoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'examples/flow_scopes/lib/app/app_router.dart',
     open: (_) => const FlowScopesHost(),
   ),
   ExampleEntry(
     id: 'teardown',
-    title: 'Teardown',
+    title: l10n.teardownTitle,
     kind: ExampleKind.terminal,
     section: ExampleSection.scopes,
-    teaches: 'What disposal actually guarantees — order, failures, timeouts, adoption.',
+    teaches: l10n.teardownTeaches,
     glyph: Glyphs.teardown,
-    points: const [
-      'LIFO by creation order, not by the order things were declared',
-      'A dispose that throws is recorded; everything else still runs',
-      'A dispose that hangs hits the deadline and is reported, not awaited forever',
-      'adopt() ties a non-dependency’s life to the scope',
+    points: [
+      l10n.teardownPoint1,
+      l10n.teardownPoint2,
+      l10n.teardownPoint3,
+      l10n.teardownPoint4,
     ],
-    transcriptLabel: 'Console output',
+    transcriptLabel: l10n.consoleOutput,
     transcript: 'cd examples/teardown\ndart run bin/main.dart',
   ),
 
   // ── Code generation ───────────────────────────────────────────────────
   ExampleEntry(
     id: 'codegen',
-    title: 'Generated container',
+    title: l10n.codegenTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.codegen,
-    teaches: 'The smallest generated setup there is, and what it writes.',
+    teaches: l10n.codegenTeaches,
     glyph: Glyphs.codegen,
-    points: const [
-      'Put @alloyInject on a class and lib/alloy.g.dart appears',
-      'Named const factory classes in the output — never closures',
-      'Registrations ordered by a compile-time topological sort',
-      'A dependency cycle fails the build naming the cycle',
+    points: [
+      l10n.codegenPoint1,
+      l10n.codegenPoint2,
+      l10n.codegenPoint3,
+      l10n.codegenPoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'examples/codegen_basics/lib/counter_screen.dart',
     open: (_) => const ExampleHost(
       root: codegen.$AlloyRootScope(),
@@ -221,56 +203,53 @@ List<ExampleEntry> buildCatalog() => [
   ),
   ExampleEntry(
     id: 'manual',
-    title: 'Manual mode',
+    title: l10n.manualTitle,
     kind: ExampleKind.terminal,
     section: ExampleSection.codegen,
-    teaches: 'The same graph with no generation and no Flutter.',
+    teaches: l10n.manualTeaches,
     glyph: Glyphs.manual,
-    points: const [
-      'The generator writes exactly this, using only the public API',
-      'Pure Dart — runs in a CLI, on a server, in a plain test',
-      'AlloyScopeBuilder composes; that is what replaces modules',
-      'If generation ever needs something this cannot express, they are two '
-          'frameworks sharing a name',
+    points: [
+      l10n.manualPoint1,
+      l10n.manualPoint2,
+      l10n.manualPoint3,
+      l10n.manualPoint4,
     ],
-    transcriptLabel: 'Console output',
+    transcriptLabel: l10n.consoleOutput,
     transcript: 'cd examples/manual_mode\ndart run bin/main.dart',
   ),
 
   // ── Observability ─────────────────────────────────────────────────────
   ExampleEntry(
     id: 'events',
-    title: 'Graph events',
+    title: l10n.eventsTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.observability,
-    teaches: 'The graph reporting on itself, streamed into a logger you already use.',
+    teaches: l10n.eventsTeaches,
     glyph: Glyphs.events,
-    points: const [
-      'AlloyObserver events — scopes pushed, instances built, teardown failing',
-      'One line to adapt talker, logging, logger, or any logger at all',
-      'AlloyMultiSink fans a record out; a failing sink does not silence the rest',
-      'Resolution is deliberately not reported — a cache hit is the hot path',
+    points: [
+      l10n.eventsPoint1,
+      l10n.eventsPoint2,
+      l10n.eventsPoint3,
+      l10n.eventsPoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'examples/graph_events/lib/app/graph_events_app.dart',
     open: (_) => const _GraphEventsHost(),
   ),
   ExampleEntry(
     id: 'inspector',
-    title: 'In-app inspector',
+    title: l10n.inspectorTitle,
     kind: ExampleKind.screen,
     section: ExampleSection.observability,
-    teaches:
-        'The live tree, what was built and with what lifetime, on a screen in '
-        'the app.',
+    teaches: l10n.inspectorTeaches,
     glyph: Glyphs.notes,
-    points: const [
-      'The tree is walked from the live scopes, not rebuilt from events',
-      'Every registration carries its lifetime, read with debugKindOf',
-      'Tapping shows facts; building is a separate action that says its cost',
-      'An eager singleton shows in the tree and never in the built list',
+    points: [
+      l10n.inspectorPoint1,
+      l10n.inspectorPoint2,
+      l10n.inspectorPoint3,
+      l10n.inspectorPoint4,
     ],
-    transcriptLabel: 'Where it lives',
+    transcriptLabel: l10n.whereItLives,
     transcript: 'packages/alloy_inspector/lib/src/alloy_inspector_screen.dart',
     open: (_) => const _InspectorHost(),
   ),
@@ -278,27 +257,25 @@ List<ExampleEntry> buildCatalog() => [
   // ── Testing ───────────────────────────────────────────────────────────
   ExampleEntry(
     id: 'testing',
-    title: 'Testing patterns',
+    title: l10n.testingTitle,
     kind: ExampleKind.terminal,
     section: ExampleSection.testing,
-    teaches: 'Overriding dependencies in a test, and the traps.',
+    teaches: l10n.testingTeaches,
     glyph: Glyphs.testing,
-    points: const [
-      'Override by pushing a child scope and registering again — shadowing, '
-          'not mutation',
-      'Build the graph in setUp; testWidgets runs inside a fake-async zone',
-      'No global container, so one test cannot leak into the next',
-      'A duplicate in one scope is an error; shadowing from a child is the '
-          'supported way',
+    points: [
+      l10n.testingPoint1,
+      l10n.testingPoint2,
+      l10n.testingPoint3,
+      l10n.testingPoint4,
     ],
-    transcriptLabel: 'Test output',
+    transcriptLabel: l10n.testOutput,
     transcript: 'cd examples/testing_patterns\nflutter test',
   ),
 ];
 
 /// The catalog grouped for display, in section order.
-List<SectionedEntries<ExampleEntry>> buildSections() {
-  final all = buildCatalog();
+List<SectionedEntries<ExampleEntry>> buildSections(GalleryL10n l10n) {
+  final all = buildCatalog(l10n);
   return [
     for (final section in ExampleSection.values)
       if (all.where((e) => e.section == section).toList() case final entries
@@ -369,57 +346,63 @@ class _InspectorDemoState extends State<_InspectorDemo> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Alloy · inspector'),
-      actions: [
-        IconButton(
-          key: const Key('open-inspector'),
-          tooltip: 'inspect the graph',
-          icon: const Icon(Icons.account_tree_outlined),
-          // The scope is read here, below the provider — a pushed route is
-          // built by the navigator, which sits above it.
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => AlloyInspectorScreen(
-                log: widget.log,
-                scope: context.alloyScope,
-                // The gallery's own palette, so the inspector reads as part
-                // of this app rather than as a panel bolted onto it.
-                theme: galleryInspectorTheme(),
+  Widget build(BuildContext context) {
+    final l10n = GalleryL10n.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.demoTitle),
+        actions: [
+          IconButton(
+            key: const Key('open-inspector'),
+            tooltip: l10n.demoInspect,
+            icon: const Icon(Icons.account_tree_outlined),
+            // The scope is read here, below the provider — a pushed route is
+            // built by the navigator, which sits above it.
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => AlloyInspectorScreen(
+                  log: widget.log,
+                  scope: context.alloyScope,
+                  // The gallery's own palette, so the inspector reads as part
+                  // of this app rather than as a panel bolted onto it.
+                  theme: galleryInspectorTheme(),
+                ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-    body: ListView(
-      children: [
-        ListTile(
-          key: const Key('open-session'),
-          enabled: _session == null,
-          title: const Text('Open a session scope'),
-          subtitle: const Text('a push, an async init, some instances'),
-          trailing: const Icon(Icons.login),
-          onTap: _openSession,
-        ),
-        ListTile(
-          key: const Key('close-session'),
-          enabled: _session != null,
-          title: const Text('Close the session'),
-          subtitle: Text(_session == null ? 'nothing open' : 'tears it down'),
-          trailing: const Icon(Icons.logout),
-          onTap: _closeSession,
-        ),
-        const Divider(),
-        const ListTile(
-          dense: true,
-          title: Text('Then open the inspector from the app bar'),
-          subtitle: Text('the tree, what was built, and everything reported'),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+      body: ListView(
+        children: [
+          ListTile(
+            key: const Key('open-session'),
+            enabled: _session == null,
+            title: Text(l10n.demoOpenSession),
+            subtitle: Text(l10n.demoOpenSessionHint),
+            trailing: const Icon(Icons.login),
+            onTap: _openSession,
+          ),
+          ListTile(
+            key: const Key('close-session'),
+            enabled: _session != null,
+            title: Text(l10n.demoCloseSession),
+            subtitle: Text(
+              _session == null ? l10n.demoNothingOpen : l10n.demoTearsItDown,
+            ),
+            trailing: const Icon(Icons.logout),
+            onTap: _closeSession,
+          ),
+          const Divider(),
+          ListTile(
+            dense: true,
+            title: Text(l10n.demoThenOpen),
+            subtitle: Text(l10n.demoThenOpenHint),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// The observability entry, with everything it watches with built per open.

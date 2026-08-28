@@ -29,8 +29,13 @@ class DebugMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => IconButton(
     icon: const Icon(Icons.account_tree_outlined),
+    // Read the scope here, at the button: a pushed route is built by the
+    // navigator, which sits above the provider.
     onPressed: () => Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => AlloyInspectorScreen(log: log)),
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            AlloyInspectorScreen(log: log, scope: context.alloyScope),
+      ),
     ),
   );
 }
@@ -38,3 +43,8 @@ class DebugMenuButton extends StatelessWidget {
 
 The log cannot be attached later: a scope fixes its observers when it is constructed and passes them
 to every child it pushes.
+
+The screens take their colours from the host's `Theme` and their language from the host's locale,
+so nothing above is required for either. To choose them, pass `theme:` or put an
+`AlloyInspectorTheme` above the debug menu, and add `AlloyInspectorL10n.delegate` to the app's
+`localizationsDelegates`.

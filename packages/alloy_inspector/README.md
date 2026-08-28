@@ -95,6 +95,38 @@ are the same division `alloy_talker` files its logs under, which is what lets
 [`alloy_talker_flutter`](https://pub.dev/packages/alloy_talker_flutter) dress talker's screen in the
 same palette.
 
+## Speaking your users' language
+
+The chrome is translated into English, Russian and Chinese, and picks the language the host app is
+already in. Nothing is required for that — with no delegate installed, the inspector reads the
+ambient `Localizations.localeOf` and falls back to English for a language it has no translation
+for. It is a screen you drop in to look at a graph, and asking for a `localizationsDelegates` edit
+before it renders at all would be the wrong trade.
+
+Installing the delegate is still the documented path, and the one to take when the app's language
+is chosen rather than inherited:
+
+```dart
+MaterialApp(
+  localizationsDelegates: const [
+    AlloyInspectorL10n.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ],
+  supportedLocales: AlloyInspectorL10n.supportedLocales,
+)
+```
+
+To add a language, drop an `.arb` beside `l10n/inspector_en.arb` and run `flutter gen-l10n`.
+
+**What stays in English, deliberately.** Lifetimes (`lazySingleton`, `asyncSingleton`) and levels
+(`trace`, `warning`) are Alloy's own identifiers — translating them would break the one thing the
+screen is for, which is finding the line of code a row came from. Scope names and registration keys
+are your code's, and the framework does not rename it. And the **records themselves** are written
+by `alloy`, which is pure Dart with no localization in it at all: `scope "app/session" pushed` is
+the same sentence in every language. The inspector translates its own chrome and nothing that
+belongs to somebody else.
+
 ## What the screens do
 
 **Tree** walks the live scopes, with a search over registrations and one control that folds every

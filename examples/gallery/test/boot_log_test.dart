@@ -5,16 +5,18 @@ import 'package:gallery/design/gallery_theme.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/bootstrap/load_remote_config.dart';
 
+import 'support.dart';
+
 void main() {
   testWidgets('a second visit does not stack onto the first one’s boot log', (
     tester,
   ) async {
-    final entry = buildCatalog().firstWhere((e) => e.id == 'startup');
+    final entry = buildCatalog(englishStrings)
+        .firstWhere((e) => e.id == 'startup');
 
     Future<void> visit(String key) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: galleryTheme(),
+        galleryHarness(
           home: Builder(key: ValueKey(key), builder: entry.open!),
         ),
       );
@@ -46,7 +48,8 @@ void main() {
   testWidgets('a visit does not read the last one’s remote config', (
     tester,
   ) async {
-    final entry = buildCatalog().firstWhere((e) => e.id == 'startup');
+    final entry = buildCatalog(englishStrings)
+        .firstWhere((e) => e.id == 'startup');
 
     // The value the step writes is a static too. Poisoning it stands in for
     // "some earlier visit left this behind": a visit must not surface it.

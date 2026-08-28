@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:gallery/catalog/example_section.dart';
 import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/design/node_glyph.dart';
+import 'package:gallery/l10n/gallery_l10n.dart';
 
 /// Whether an example is something you open or something that prints.
 ///
@@ -9,13 +10,16 @@ import 'package:gallery/design/node_glyph.dart';
 /// a gallery that offered to "open" them would be lying. Each kind gets its
 /// own accent and its own kind of detail screen.
 enum ExampleKind {
-  screen('screen', GalleryColors.screen),
-  terminal('terminal', GalleryColors.terminal);
+  screen(GalleryColors.screen),
+  terminal(GalleryColors.terminal);
 
-  const ExampleKind(this.label, this.tint);
+  const ExampleKind(this.tint);
 
-  final String label;
   final Color tint;
+
+  /// The badge text, in the reader's language.
+  String label(GalleryL10n l10n) =>
+      this == screen ? l10n.kindScreen : l10n.kindTerminal;
 }
 
 @immutable
