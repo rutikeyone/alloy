@@ -1,7 +1,9 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_test/alloy_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:notes_app/alloy.g.dart';
+import 'package:notes_app/l10n/notes_app_l10n.dart';
 import 'package:notes_app/app/app_startup.dart';
 
 /// Builds the graph without mounting the app.
@@ -24,6 +26,15 @@ Widget notesScreenUnderTest(
   Widget screen, {
   AlloyEnvironment environment = notesEnvironment,
 }) => MaterialApp(
+  // The gallery registers this delegate beside its own; a test mounting one
+  // screen on its own has to supply it here.
+  localizationsDelegates: const [
+    NotesL10n.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  supportedLocales: NotesL10n.supportedLocales,
   home: AlloyAppScope(
     root: NotesScope(environment),
     bootstrap: () => $alloyBootstrap(environment),

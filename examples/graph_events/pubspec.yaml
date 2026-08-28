@@ -14,6 +14,9 @@ dependencies:
   alloy_talker: ^0.1.0
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
   talker: ^5.1.0
   alloy_talker_flutter: ^0.1.0
   talker_flutter: ^5.1.0
@@ -24,4 +27,5 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  generate: true
   uses-material-design: true

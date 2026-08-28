@@ -1,7 +1,9 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flow_scopes/app/app_router.dart';
 import 'package:flow_scopes/app/app_scope.dart';
+import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class FlowScopesApp extends StatefulWidget {
@@ -25,8 +27,17 @@ class _FlowScopesAppState extends State<FlowScopesApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
-    title: 'Alloy flow scopes',
+    onGenerateTitle: (context) => FlowScopesL10n.of(context).appTitle,
     theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal)),
+    // The gallery registers this delegate too, beside its own. Here it is
+    // declared for the sake of running the example on its own.
+    localizationsDelegates: const [
+      FlowScopesL10n.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: FlowScopesL10n.supportedLocales,
     builder: AlloyAppScope.builder(
       root: const AppScope(),
       rootName: 'app',

@@ -1,0 +1,7 @@
+arb-dir: l10n
+template-arb-file: codegen_basics_en.arb
+output-dir: lib/l10n
+output-localization-file: codegen_basics_l10n.dart
+output-class: CodegenBasicsL10n
+nullable-getter: false
+format: true

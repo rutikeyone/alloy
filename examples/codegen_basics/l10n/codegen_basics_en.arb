@@ -1,0 +1,24 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Alloy codegen basics",
+  "@appTitle": { "description": "Title of the generated-container example." },
+
+  "environment": "environment: {name}",
+  "@environment": {
+    "description": "Which build the graph was started for.",
+    "placeholders": { "name": { "type": "String", "example": "dev" } }
+  },
+
+  "greeting": "hello {name} from {environment}",
+  "@greeting": {
+    "description": "The line a parameterized registration produces: the name comes from the call site, the environment from the graph.",
+    "placeholders": {
+      "name": { "type": "String", "example": "Alloy" },
+      "environment": { "type": "String", "example": "dev" }
+    }
+  },
+
+  "increment": "increment",
+  "@increment": { "description": "Button that adds one to the counter." }
+}

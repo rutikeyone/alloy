@@ -1,6 +1,7 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flow_scopes/app/app_routes.dart';
 import 'package:flow_scopes/features/orders/domain/order_draft.dart';
+import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,6 +12,7 @@ class OrderPaymentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = FlowScopesL10n.of(context);
     final draft = context.alloy<OrderDraft>();
     final other = orderId == '1' ? '2' : '1';
 
@@ -20,22 +22,21 @@ class OrderPaymentScreen extends StatelessWidget {
           key: const Key('payment-draft'),
           title: const Text('get<OrderDraft>()'),
           subtitle: Text(
-            'order ${draft.orderId} · instance '
-            '${identityHashCode(draft)}',
+            l10n.draftLine(draft.orderId, '${identityHashCode(draft)}'),
           ),
         ),
         const Divider(),
         ListTile(
           key: const Key('switch-order'),
-          title: Text('Switch to order $other'),
-          subtitle: const Text('identity changes — a new scope is built'),
+          title: Text(l10n.switchToOrder(other)),
+          subtitle: Text(l10n.switchToOrderDetail),
           trailing: const Icon(Icons.swap_horiz),
           onTap: () => context.go(AppRoutes.summary(other)),
         ),
         ListTile(
           key: const Key('leave-flow'),
-          title: const Text('Leave the flow'),
-          subtitle: const Text('the scope and the draft go with it'),
+          title: Text(l10n.leaveFlow),
+          subtitle: Text(l10n.leaveFlowDetail),
           trailing: const Icon(Icons.logout),
           onTap: () => context.go(AppRoutes.home),
         ),

@@ -8,7 +8,10 @@ class FakeApiClient implements ApiClient {
   FakeApiClient();
 
   @override
-  String get describe => 'FakeApiClient → no network';
+  String get implementation => 'FakeApiClient';
+
+  @override
+  String? get endpoint => null;
 
   @override
   Future<List<String>> fetchHeadlines() async => const [

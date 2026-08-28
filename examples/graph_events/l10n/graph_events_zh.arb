@@ -1,0 +1,30 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "Alloy · 可观测性",
+  "liveLog": "实时日志",
+
+  "everyEvent": "下面每一条事件都是依赖图在报告自己",
+  "everyEventDetail": "AlloyTalkerObserver 把每一类事件归到各自的标题下，因此日志界面可以把它们分开筛选。",
+
+  "openSession": "打开一个会话作用域",
+  "openSessionDetail": "一次入栈、一次异步初始化、若干实例",
+  "openBrokenSession": "打开一个关不掉的",
+  "openBrokenSessionDetail": "它的释放会抛出异常，这是故意的",
+  "closeSession": "关闭会话",
+  "nothingOpen": "没有打开任何东西",
+  "scopeNamed": "作用域 “{name}”",
+  "@scopeNamed": { "placeholders": { "name": { "type": "String" } } },
+
+  "eventsRecorded": "已记录的事件",
+
+  "noFailures": "尚未报告任何失败",
+  "noFailuresDetail": "去关闭那个关不掉的会话",
+  "reportSummary": "{kind} · {count, plural, other{{count} 条痕迹}}",
+  "@reportSummary": {
+    "placeholders": {
+      "kind": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  }
+}

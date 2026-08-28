@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:notes_app/features/session/data/session_activity_log.dart';
 import 'package:notes_app/features/session/domain/session_user.dart';
 import 'package:notes_app/features/session/session_manager.dart';
+import 'package:notes_app/l10n/notes_app_l10n.dart';
 
 class SessionScreen extends StatefulWidget {
   const SessionScreen({super.key});
@@ -34,11 +35,12 @@ class _SessionScreenState extends State<SessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = NotesL10n.of(context);
     final session = _session;
     final scope = session?.scope;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Session scope')),
+      appBar: AppBar(title: Text(l10n.sessionScope)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -46,13 +48,13 @@ class _SessionScreenState extends State<SessionScreen> {
           children: [
             Text(
               session != null && session.isSignedIn
-                  ? 'signed in as ${session.user!.displayName}'
-                  : 'signed out',
+                  ? l10n.signedInAs(session.user!.displayName)
+                  : l10n.signedOut,
               key: const Key('session-status'),
             ),
             const SizedBox(height: 8),
             Text(
-              'scope: ${scope?.name ?? 'none'}',
+              l10n.scopeLine(scope?.name ?? l10n.noScope),
               key: const Key('session-scope'),
             ),
             const SizedBox(height: 16),
@@ -64,7 +66,7 @@ class _SessionScreenState extends State<SessionScreen> {
                 onPressed: () => session.signIn(
                   const SessionUser(id: 'u-1', displayName: 'Ada'),
                 ),
-                child: const Text('sign in'),
+                child: Text(l10n.signIn),
               )
             else ...[
               FilledButton(
@@ -72,26 +74,24 @@ class _SessionScreenState extends State<SessionScreen> {
                 onPressed: () => setState(
                   () => scope.get<SessionActivityLog>().record('opened notes'),
                 ),
-                child: const Text('record activity'),
+                child: Text(l10n.recordActivity),
               ),
               const SizedBox(height: 8),
               Text(
-                'activity: ${scope.get<SessionActivityLog>().entries.length}',
+                l10n.activityCount(
+                  scope.get<SessionActivityLog>().entries.length,
+                ),
                 key: const Key('activity-count'),
               ),
               const SizedBox(height: 8),
               OutlinedButton(
                 key: const Key('sign-out'),
                 onPressed: session.signOut,
-                child: const Text('sign out'),
+                child: Text(l10n.signOut),
               ),
             ],
             const Spacer(),
-            const Text(
-              'Signing out disposes the session scope. Everything built inside '
-              'it goes with it — no reset() on any repository, no session '
-              'listener anywhere.',
-            ),
+            Text(l10n.sessionExplained),
           ],
         ),
       ),

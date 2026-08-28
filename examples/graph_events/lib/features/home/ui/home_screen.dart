@@ -1,6 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:graph_events/app/report_log.dart';
+import 'package:graph_events/l10n/graph_events_l10n.dart';
 import 'package:graph_events/features/home/ui/last_report_tile.dart';
 import 'package:graph_events/features/session/session_scope.dart';
 import 'package:alloy_talker_flutter/alloy_talker_flutter.dart';
@@ -55,67 +56,70 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Alloy · observability'),
-      actions: [
-        IconButton(
-          key: const Key('open-log'),
-          tooltip: 'the live log',
-          icon: const Icon(Icons.receipt_long),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => AlloyTalkerScreen(talker: widget.talker),
+  Widget build(BuildContext context) {
+    final l10n = GraphEventsL10n.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.appTitle),
+        actions: [
+          IconButton(
+            key: const Key('open-log'),
+            tooltip: l10n.liveLog,
+            icon: const Icon(Icons.receipt_long),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => AlloyTalkerScreen(talker: widget.talker),
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-    body: ListView(
-      children: [
-        const ListTile(
-          title: Text('Every event below is the graph reporting itself'),
-          subtitle: Text(
-            'AlloyTalkerObserver files each kind under its own title, so the '
-            'log screen can filter them apart.',
+        ],
+      ),
+      body: ListView(
+        children: [
+          ListTile(
+            title: Text(l10n.everyEvent),
+            subtitle: Text(l10n.everyEventDetail),
           ),
-        ),
-        const Divider(),
-        ListTile(
-          key: const Key('open-session'),
-          enabled: _session == null && !_busy,
-          title: const Text('Open a session scope'),
-          subtitle: const Text('a push, an async init, some instances'),
-          trailing: const Icon(Icons.login),
-          onTap: () => _openSession(breaks: false),
-        ),
-        ListTile(
-          key: const Key('open-broken-session'),
-          enabled: _session == null && !_busy,
-          title: const Text('Open one that will not close'),
-          subtitle: const Text('its teardown throws, on purpose'),
-          trailing: const Icon(Icons.report),
-          onTap: () => _openSession(breaks: true),
-        ),
-        ListTile(
-          key: const Key('close-session'),
-          enabled: _session != null && !_busy,
-          title: const Text('Close the session'),
-          subtitle: Text(
-            _session == null ? 'nothing open' : 'scope "${_session!.name}"',
+          const Divider(),
+          ListTile(
+            key: const Key('open-session'),
+            enabled: _session == null && !_busy,
+            title: Text(l10n.openSession),
+            subtitle: Text(l10n.openSessionDetail),
+            trailing: const Icon(Icons.login),
+            onTap: () => _openSession(breaks: false),
           ),
-          trailing: const Icon(Icons.logout),
-          onTap: _closeSession,
-        ),
-        const Divider(),
-        LastReportTile(log: widget.reports),
-        const Divider(),
-        ListTile(
-          key: const Key('event-count'),
-          title: const Text('Events recorded'),
-          subtitle: Text('${widget.talker.history.length}'),
-        ),
-      ],
-    ),
-  );
+          ListTile(
+            key: const Key('open-broken-session'),
+            enabled: _session == null && !_busy,
+            title: Text(l10n.openBrokenSession),
+            subtitle: Text(l10n.openBrokenSessionDetail),
+            trailing: const Icon(Icons.report),
+            onTap: () => _openSession(breaks: true),
+          ),
+          ListTile(
+            key: const Key('close-session'),
+            enabled: _session != null && !_busy,
+            title: Text(l10n.closeSession),
+            subtitle: Text(
+              _session == null
+                  ? l10n.nothingOpen
+                  : l10n.scopeNamed(_session!.name),
+            ),
+            trailing: const Icon(Icons.logout),
+            onTap: _closeSession,
+          ),
+          const Divider(),
+          LastReportTile(log: widget.reports),
+          const Divider(),
+          ListTile(
+            key: const Key('event-count'),
+            title: Text(l10n.eventsRecorded),
+            subtitle: Text('${widget.talker.history.length}'),
+          ),
+        ],
+      ),
+    );
+  }
 }

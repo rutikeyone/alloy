@@ -1,0 +1,30 @@
+{
+  "@@locale": "ru",
+
+  "appTitle": "Alloy · наблюдаемость",
+  "liveLog": "живой журнал",
+
+  "everyEvent": "Каждое событие ниже — это граф, рассказывающий о себе",
+  "everyEventDetail": "AlloyTalkerObserver кладёт каждый вид под свой заголовок, поэтому экран журнала умеет их разделять.",
+
+  "openSession": "Открыть сессионный скоуп",
+  "openSessionDetail": "пуш, async-инициализация, несколько объектов",
+  "openBrokenSession": "Открыть тот, который не закроется",
+  "openBrokenSessionDetail": "его разбор бросает исключение, намеренно",
+  "closeSession": "Закрыть сессию",
+  "nothingOpen": "ничего не открыто",
+  "scopeNamed": "скоуп «{name}»",
+  "@scopeNamed": { "placeholders": { "name": { "type": "String" } } },
+
+  "eventsRecorded": "Событий записано",
+
+  "noFailures": "Сбоев не зарегистрировано",
+  "noFailuresDetail": "закройте сессию, которая не закроется",
+  "reportSummary": "{kind} · {count, plural, one{{count} крошка} few{{count} крошки} many{{count} крошек} other{{count} крошки}}",
+  "@reportSummary": {
+    "placeholders": {
+      "kind": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  }
+}

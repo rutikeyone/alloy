@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:flow_scopes/core/flow_event.dart';
 import 'package:flutter/foundation.dart';
 
 /// Records what the graph did, so the example can show it on screen.
@@ -10,10 +11,10 @@ import 'package:flutter/foundation.dart';
 class EventLog extends ChangeNotifier {
   EventLog();
 
-  final _entries = <String>[];
+  final _entries = <FlowEvent>[];
 
   /// Everything recorded so far, oldest first.
-  List<String> get entries => List.unmodifiable(_entries);
+  List<FlowEvent> get entries => List.unmodifiable(_entries);
 
   /// Appends [entry] and tells listeners on the next microtask.
   ///
@@ -21,7 +22,7 @@ class EventLog extends ChangeNotifier {
   /// `didChangeDependencies`, which runs during the build phase, so a
   /// dependency that logs from its constructor would call `notifyListeners`
   /// mid-build and Flutter would throw `setState() called during build`.
-  void record(String entry) {
+  void record(FlowEvent entry) {
     _entries.add(entry);
     scheduleMicrotask(notifyListeners);
   }

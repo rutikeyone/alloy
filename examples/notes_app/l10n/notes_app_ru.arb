@@ -1,0 +1,127 @@
+{
+  "@@locale": "ru",
+  "twoPhaseStartup": "Двухфазный старт",
+  "restartGraph": "разобрать скоуп приложения и поднять новый",
+  "phaseZero": "Фаза 0 — @AlloyBootstrap",
+  "phaseZeroNote": "усыновлены скоупом «{scope}», освобождаются вместе с ним",
+  "@phaseZeroNote": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      }
+    }
+  },
+  "phaseOne": "Фаза 1 — @AlloyInit",
+  "databaseOpen": "база данных открыта",
+  "searchIndexBuilt": "поисковый индекс построен",
+  "telemetryStarted": "телеметрия запущена",
+  "statusLine": "{label}: {value}",
+  "@statusLine": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "apiLine": "api: {url}",
+  "@apiLine": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionScope": "Сессионный скоуп",
+  "signedInAs": "вошли как {name}",
+  "@signedInAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "signedOut": "не выполнен вход",
+  "scopeLine": "скоуп: {name}",
+  "@scopeLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noScope": "нет",
+  "signIn": "войти",
+  "signOut": "выйти",
+  "recordActivity": "записать действие",
+  "activityCount": "действий: {count}",
+  "@activityCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionExplained": "Выход разбирает сессионный скоуп. Всё, что построено внутри, уходит вместе с ним — никакого reset() ни в одном репозитории и ни одной подписки на сессию.",
+  "propertyInjection": "Инъекция в поля",
+  "search": "поиск",
+  "noteCount": "всего: {count}",
+  "@noteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "newNote": "заметка {number}",
+  "@newNote": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetOwnedScope": "Скоуп, которым владеет виджет",
+  "draft": "черновик",
+  "untitled": "без названия",
+  "widgetScopeExplained": "Этот экран объявляет собственный скоуп. Уход с экрана его разбирает — больше об этом никому помнить не нужно.",
+  "scopeTree": "Дерево скоупов",
+  "namedAndMulti": "Именованные и множественная инъекция",
+  "registrationCount": "{count, plural, one{{count} регистрация} few{{count} регистрации} many{{count} регистраций} other{{count} регистрации}}",
+  "@registrationCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sampleNote": "список покупок",
+  "environments": "Окружения",
+  "activeEnvironment": "активное окружение",
+  "apiClientLine": "{implementation} → {detail}",
+  "@apiClientLine": {
+    "placeholders": {
+      "implementation": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "noNetwork": "без сети",
+  "nothingRegistered": "ничего не зарегистрировано — ни одна реализация не заявляет «{environment}»",
+  "@nothingRegistered": {
+    "placeholders": {
+      "environment": {
+        "type": "String"
+      }
+    }
+  },
+  "crashReportingStep": "bootstrap-шаг report-crashes",
+  "stepRan": "выполнен",
+  "stepSkipped": "пропущен в этом окружении",
+  "environmentsExplained": "Обе реализации помечены одним и тем же exposeAs. Зарегистрирована только та, что называет это окружение, поэтому ниже по графу никто не знает, какая ему досталась. Выберите окружение, которого не заявляет никто, — и типа просто не будет: get<ApiClient>() бросит, а не вернёт не тот класс."
+}

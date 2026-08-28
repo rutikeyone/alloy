@@ -1,0 +1,112 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Alloy · flow scopes",
+  "@appTitle": { "description": "Title of the navigation-flow example." },
+  "whatIsAlive": "what is alive right now",
+  "@whatIsAlive": { "description": "Action that opens the live scope tree." },
+
+  "openAFlow": "Open a flow",
+  "@openAFlow": { "description": "Heading above the list of flows." },
+  "openAFlowDetail": "the scope is created on entry and disposed on exit",
+  "@openAFlowDetail": { "description": "What entering a flow does to the graph." },
+  "order": "Order {id}",
+  "@order": {
+    "description": "One order flow to enter.",
+    "placeholders": { "id": { "type": "String", "example": "1" } }
+  },
+  "workspaceTabs": "Workspace (tabs)",
+  "@workspaceTabs": { "description": "The tabbed flow." },
+  "workspaceTabsDetail": "a shell scope plus a scope per tab",
+  "@workspaceTabsDetail": { "description": "How the tabbed flow is built." },
+
+  "eventLog": "Event log",
+  "@eventLog": { "description": "Heading above what the graph has done." },
+  "logEmpty": "nothing yet",
+  "@logEmpty": { "description": "Shown while the graph has done nothing." },
+
+  "scopeBuilt": "{subject} scope built",
+  "@scopeBuilt": {
+    "description": "A scope appeared. The subject is a scope name, not prose.",
+    "placeholders": { "subject": { "type": "String", "example": "feed" } }
+  },
+  "scopeDisposed": "{subject} scope disposed",
+  "@scopeDisposed": {
+    "description": "A scope went away.",
+    "placeholders": { "subject": { "type": "String", "example": "feed" } }
+  },
+  "draftCreated": "draft {order} created",
+  "@draftCreated": {
+    "description": "A flow built its draft.",
+    "placeholders": { "order": { "type": "String", "example": "1" } }
+  },
+  "draftDisposed": "draft {order} disposed",
+  "@draftDisposed": {
+    "description": "A flow's draft went with it.",
+    "placeholders": { "order": { "type": "String", "example": "1" } }
+  },
+
+  "scopeTree": "Scope tree",
+  "@scopeTree": { "description": "Title of the live scope tree screen." },
+  "scopeNode": "{state} · {count, plural, =0{no children} =1{1 child} other{{count} children}}",
+  "@scopeNode": {
+    "description": "One node of the tree: its state, which is an Alloy identifier, and how many scopes hang from it.",
+    "placeholders": {
+      "state": { "type": "String", "example": "active" },
+      "count": { "type": "int" }
+    }
+  },
+
+  "checkoutFlow": "Checkout flow",
+  "@checkoutFlow": { "description": "Title above the two order screens." },
+  "scopeLine": "scope: {name}",
+  "@scopeLine": {
+    "description": "Which scope the screen is inside.",
+    "placeholders": { "name": { "type": "String", "example": "order:1" } }
+  },
+  "draftLine": "order {order} · instance {instance}",
+  "@draftLine": {
+    "description": "Which draft was resolved, and which object it is, so a rebuild is visible.",
+    "placeholders": {
+      "order": { "type": "String", "example": "1" },
+      "instance": { "type": "String", "example": "268479144" }
+    }
+  },
+  "continueToPayment": "Continue to payment",
+  "@continueToPayment": { "description": "Moves to the next screen of the same flow." },
+  "continueToPaymentDetail": "same flow — the draft must survive",
+  "@continueToPaymentDetail": { "description": "What that move proves." },
+  "switchToOrder": "Switch to order {other}",
+  "@switchToOrder": {
+    "description": "Changes what the flow is about.",
+    "placeholders": { "other": { "type": "String", "example": "2" } }
+  },
+  "switchToOrderDetail": "identity changes — a new scope is built",
+  "@switchToOrderDetail": { "description": "Why that rebuilds the scope." },
+  "leaveFlow": "Leave the flow",
+  "@leaveFlow": { "description": "Goes back out of the flow." },
+  "leaveFlowDetail": "the scope and the draft go with it",
+  "@leaveFlowDetail": { "description": "What leaving disposes." },
+
+  "workspace": "Workspace",
+  "@workspace": { "description": "Title of the tabbed flow." },
+  "shellScope": "shell scope: {name}",
+  "@shellScope": {
+    "description": "The scope shared by every tab.",
+    "placeholders": { "name": { "type": "String", "example": "workspace" } }
+  },
+  "markerLine": "{label} · scope {name}",
+  "@markerLine": {
+    "description": "Which tab's marker was resolved, and out of which scope.",
+    "placeholders": {
+      "label": { "type": "String", "example": "feed" },
+      "name": { "type": "String", "example": "tab:feed" }
+    }
+  },
+  "tabsExplained": "Switch tabs and come back: nothing is rebuilt. A branch is kept alive, not kept visible, so its scope lives until the whole workspace closes.",
+  "@tabsExplained": { "description": "Why switching tabs disposes nothing." },
+  "tabFeed": "Feed",
+  "@tabFeed": { "description": "First tab." },
+  "tabProfile": "Profile",
+  "@tabProfile": { "description": "Second tab." }
+}

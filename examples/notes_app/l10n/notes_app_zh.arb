@@ -1,0 +1,72 @@
+{
+  "@@locale": "zh",
+
+  "twoPhaseStartup": "两阶段启动",
+  "restartGraph": "释放应用作用域并重新启动一个",
+  "phaseZero": "阶段 0 —— @AlloyBootstrap",
+  "phaseZeroNote": "由作用域 “{scope}” 收养，随它一起释放",
+  "@phaseZeroNote": { "placeholders": { "scope": { "type": "String" } } },
+  "phaseOne": "阶段 1 —— @AlloyInit",
+  "databaseOpen": "数据库已打开",
+  "searchIndexBuilt": "搜索索引已构建",
+  "telemetryStarted": "遥测已启动",
+  "statusLine": "{label}：{value}",
+  "@statusLine": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "value": { "type": "String" }
+    }
+  },
+  "apiLine": "api：{url}",
+  "@apiLine": { "placeholders": { "url": { "type": "String" } } },
+
+  "sessionScope": "会话作用域",
+  "signedInAs": "已登录：{name}",
+  "@signedInAs": { "placeholders": { "name": { "type": "String" } } },
+  "signedOut": "未登录",
+  "scopeLine": "作用域：{name}",
+  "@scopeLine": { "placeholders": { "name": { "type": "String" } } },
+  "noScope": "无",
+  "signIn": "登录",
+  "signOut": "退出登录",
+  "recordActivity": "记录一次活动",
+  "activityCount": "活动：{count}",
+  "@activityCount": { "placeholders": { "count": { "type": "int" } } },
+  "sessionExplained": "退出登录会释放会话作用域。在它内部构建的一切都随之消失 —— 任何仓储都不需要 reset()，也不需要任何一处监听会话。",
+
+  "propertyInjection": "属性注入",
+  "search": "搜索",
+  "noteCount": "数量：{count}",
+  "@noteCount": { "placeholders": { "count": { "type": "int" } } },
+  "newNote": "笔记 {number}",
+  "@newNote": { "placeholders": { "number": { "type": "int" } } },
+
+  "widgetOwnedScope": "由控件持有的作用域",
+  "draft": "草稿",
+  "untitled": "未命名",
+  "widgetScopeExplained": "这个界面声明了自己的作用域。离开它就会释放该作用域 —— 别处再不用记着这件事。",
+
+  "scopeTree": "作用域树",
+
+  "namedAndMulti": "命名注入与多重注入",
+  "registrationCount": "{count, plural, other{{count} 个注册}}",
+  "@registrationCount": { "placeholders": { "count": { "type": "int" } } },
+  "sampleNote": "购物清单",
+
+  "environments": "运行环境",
+  "activeEnvironment": "当前环境",
+  "apiClientLine": "{implementation} → {detail}",
+  "@apiClientLine": {
+    "placeholders": {
+      "implementation": { "type": "String" },
+      "detail": { "type": "String" }
+    }
+  },
+  "noNetwork": "无网络",
+  "nothingRegistered": "没有任何注册 —— 没有实现声明属于 “{environment}”",
+  "@nothingRegistered": { "placeholders": { "environment": { "type": "String" } } },
+  "crashReportingStep": "report-crashes 启动步骤",
+  "stepRan": "已执行",
+  "stepSkipped": "在此环境下被跳过",
+  "environmentsExplained": "两个实现都标注了同一个 exposeAs。只有声明了当前环境的那一个会被注册，因此下游谁也不知道自己拿到的是哪一个。选一个没人声明的环境，这个类型就干脆不存在 —— get<ApiClient>() 会抛异常，而不是把错误的类交给你。"
+}

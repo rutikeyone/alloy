@@ -2,12 +2,14 @@ import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/features/environments/domain/api_client.dart';
+import 'package:notes_app/l10n/notes_app_l10n.dart';
 
 class EnvironmentsScreen extends StatelessWidget {
   const EnvironmentsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = NotesL10n.of(context);
     final environment = context.alloy<AlloyEnvironment>();
     final scope = context.alloyScope;
     final api = scope.isRegistered<ApiClient>()
@@ -16,12 +18,12 @@ class EnvironmentsScreen extends StatelessWidget {
     final armed = BootLog.steps.contains('report-crashes');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Environments')),
+      appBar: AppBar(title: Text(l10n.environments)),
       body: ListView(
         children: [
           ListTile(
             key: const Key('active-environment'),
-            title: const Text('active environment'),
+            title: Text(l10n.activeEnvironment),
             subtitle: Text(environment.name),
           ),
           const Divider(),
@@ -29,26 +31,23 @@ class EnvironmentsScreen extends StatelessWidget {
             key: const Key('api-client'),
             title: const Text('get<ApiClient>()'),
             subtitle: Text(
-              api?.describe ??
-                  'nothing registered — no implementation claims '
-                      '"${environment.name}"',
+              api == null
+                  ? l10n.nothingRegistered(environment.name)
+                  : l10n.apiClientLine(
+                      api.implementation,
+                      api.endpoint ?? l10n.noNetwork,
+                    ),
             ),
           ),
           ListTile(
             key: const Key('crash-reporting'),
-            title: const Text('report-crashes bootstrap step'),
-            subtitle: Text(armed ? 'ran' : 'skipped in this environment'),
+            title: Text(l10n.crashReportingStep),
+            subtitle: Text(armed ? l10n.stepRan : l10n.stepSkipped),
           ),
           const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'Both implementations are annotated with the same exposeAs. '
-              'Only the one naming this environment is registered, so nothing '
-              'downstream knows which it got. Pick an environment nobody '
-              'claims and the type is simply absent — get<ApiClient>() would '
-              'throw rather than hand back the wrong class.',
-            ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(l10n.environmentsExplained),
           ),
         ],
       ),

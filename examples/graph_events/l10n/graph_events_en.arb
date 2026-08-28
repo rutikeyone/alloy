@@ -1,0 +1,47 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Alloy · observability",
+  "@appTitle": { "description": "Title of the graph-events example." },
+  "liveLog": "the live log",
+  "@liveLog": { "description": "Action that opens talker's screen." },
+
+  "everyEvent": "Every event below is the graph reporting itself",
+  "@everyEvent": { "description": "What the list underneath is." },
+  "everyEventDetail": "AlloyTalkerObserver files each kind under its own title, so the log screen can filter them apart.",
+  "@everyEventDetail": { "description": "Why the entries are colour-coded and filterable." },
+
+  "openSession": "Open a session scope",
+  "@openSession": { "description": "Action that pushes a child scope." },
+  "openSessionDetail": "a push, an async init, some instances",
+  "@openSessionDetail": { "description": "What that action makes the graph report." },
+  "openBrokenSession": "Open one that will not close",
+  "@openBrokenSession": { "description": "Action that pushes a scope whose teardown fails." },
+  "openBrokenSessionDetail": "its teardown throws, on purpose",
+  "@openBrokenSessionDetail": { "description": "Why that scope is different." },
+  "closeSession": "Close the session",
+  "@closeSession": { "description": "Action that disposes the pushed scope." },
+  "nothingOpen": "nothing open",
+  "@nothingOpen": { "description": "Shown when there is no session scope to close." },
+  "scopeNamed": "scope \"{name}\"",
+  "@scopeNamed": {
+    "description": "Which scope would be closed.",
+    "placeholders": { "name": { "type": "String", "example": "session" } }
+  },
+
+  "eventsRecorded": "Events recorded",
+  "@eventsRecorded": { "description": "How many events the log holds." },
+
+  "noFailures": "No failures reported",
+  "@noFailures": { "description": "Shown while nothing has gone wrong yet." },
+  "noFailuresDetail": "close the session that will not close",
+  "@noFailuresDetail": { "description": "How to make a failure happen." },
+  "reportSummary": "{kind} · {count, plural, =1{1 breadcrumb} other{{count} breadcrumbs}}",
+  "@reportSummary": {
+    "description": "A failure report: the kind of event, and how many events preceded it.",
+    "placeholders": {
+      "kind": { "type": "String", "example": "scopeDisposeFailed" },
+      "count": { "type": "int" }
+    }
+  }
+}

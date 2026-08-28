@@ -540,11 +540,16 @@ really there to show. The three entries with no UI (`Teardown`, `Manual mode`, `
 show their console output instead of a button, because a gallery that offered to "open" a CLI would
 be lying.
 
-The gallery is written in English, Russian and Chinese, switchable from the hub. The catalog prose
-is translated with it; the example screens the gallery mounts are not, and neither are the log
-records the framework itself writes — see the
+The gallery is written in English, Russian and Chinese, switchable from the hub — and so is every
+screen it mounts. Each example package carries its own `l10n/*.arb` and generates its own delegate,
+which the gallery collects beside its own and the inspector's; that is what a multi-package Flutter
+app looks like. Two places had prose below the widgets, where there is no `BuildContext` to ask
+about the language, and both now report facts the screen names instead.
+
+The framework's own log records are still English, as are the identifiers on screen — step names,
+scope names, registration keys, lifetimes. See the
 [`alloy_inspector` README](packages/alloy_inspector/README.md) for what stays in Alloy's own words
-and why.
+and why, and the [gallery's](examples/gallery/README.md) for how the examples are wired.
 
 Behind it, the examples stay ordinary packages under `examples/` — `notes_app`, `flow_scopes`,
 `graph_events`, `codegen_basics` are libraries the gallery mounts, and `manual_mode`, `teardown`,

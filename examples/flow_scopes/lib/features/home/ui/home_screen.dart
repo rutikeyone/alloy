@@ -1,6 +1,8 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flow_scopes/app/app_routes.dart';
 import 'package:flow_scopes/core/event_log.dart';
+import 'package:flow_scopes/core/flow_event.dart';
+import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,15 +11,16 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = FlowScopesL10n.of(context);
     final log = context.alloy<EventLog>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alloy · flow scopes'),
+        title: Text(l10n.appTitle),
         actions: [
           IconButton(
             key: const Key('open-scope-tree'),
-            tooltip: 'what is alive right now',
+            tooltip: l10n.whatIsAlive,
             icon: const Icon(Icons.account_tree),
             onPressed: () => context.go(AppRoutes.scopeTree),
           ),
@@ -27,38 +30,50 @@ class HomeScreen extends StatelessWidget {
         listenable: log,
         builder: (context, _) => ListView(
           children: [
-            const ListTile(
-              title: Text('Open a flow'),
-              subtitle: Text(
-                'the scope is created on entry and disposed on exit',
-              ),
+            ListTile(
+              title: Text(l10n.openAFlow),
+              subtitle: Text(l10n.openAFlowDetail),
             ),
             for (final orderId in const ['1', '2'])
               ListTile(
                 key: Key('open-order-$orderId'),
-                title: Text('Order $orderId'),
+                title: Text(l10n.order(orderId)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go(AppRoutes.summary(orderId)),
               ),
             ListTile(
               key: const Key('open-workspace'),
-              title: const Text('Workspace (tabs)'),
-              subtitle: const Text('a shell scope plus a scope per tab'),
+              title: Text(l10n.workspaceTabs),
+              subtitle: Text(l10n.workspaceTabsDetail),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.go(AppRoutes.workspaceFeed),
             ),
             const Divider(),
-            const ListTile(title: Text('Event log')),
+            ListTile(title: Text(l10n.eventLog)),
             if (log.entries.isEmpty)
-              const ListTile(
+              ListTile(
                 dense: true,
-                title: Text('nothing yet', key: Key('log-empty')),
+                title: Text(l10n.logEmpty, key: const Key('log-empty')),
               ),
             for (final entry in log.entries)
-              ListTile(dense: true, title: Text(entry, key: Key('log-$entry'))),
+              ListTile(
+                dense: true,
+                title: Text(_say(l10n, entry), key: Key('log-$entry')),
+              ),
           ],
         ),
       ),
     );
   }
+
+  /// Names one recorded event.
+  ///
+  /// The switch lives here rather than on [FlowEvent] for the reason the type
+  /// exists: the domain knows what happened, the screen knows the language.
+  String _say(FlowScopesL10n l10n, FlowEvent event) => switch (event.kind) {
+    FlowEventKind.scopeBuilt => l10n.scopeBuilt(event.subject),
+    FlowEventKind.scopeDisposed => l10n.scopeDisposed(event.subject),
+    FlowEventKind.draftCreated => l10n.draftCreated(event.subject),
+    FlowEventKind.draftDisposed => l10n.draftDisposed(event.subject),
+  };
 }

@@ -1,5 +1,6 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flow_scopes/core/event_log.dart';
+import 'package:flow_scopes/core/flow_event.dart';
 
 /// The thing a checkout flow is holding on to.
 ///
@@ -7,7 +8,7 @@ import 'package:flow_scopes/core/event_log.dart';
 /// and disposed when the flow closes — no screen has to remember to clear it.
 class OrderDraft implements Disposable {
   OrderDraft(this.orderId, this._log) {
-    _log.record('draft $orderId created');
+    _log.record(FlowEvent(FlowEventKind.draftCreated, orderId));
   }
 
   final String orderId;
@@ -20,7 +21,8 @@ class OrderDraft implements Disposable {
   void write(String value) => _note = value;
 
   @override
-  void dispose() => _log.record('draft $orderId disposed');
+  void dispose() =>
+      _log.record(FlowEvent(FlowEventKind.draftDisposed, orderId));
 }
 
 final class OrderDraftFactory implements AlloyFactory<OrderDraft> {

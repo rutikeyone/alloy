@@ -1,4 +1,5 @@
 import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
 
 /// Shared chrome around the flow.
@@ -11,20 +12,24 @@ class OrderFlowChrome extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Checkout flow'),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(28),
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            'scope: ${context.alloyScope.name}',
-            key: const Key('flow-scope-name'),
+  Widget build(BuildContext context) {
+    final l10n = FlowScopesL10n.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.checkoutFlow),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(28),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              l10n.scopeLine(context.alloyScope.name),
+              key: const Key('flow-scope-name'),
+            ),
           ),
         ),
       ),
-    ),
-    body: child,
-  );
+      body: child,
+    );
+  }
 }

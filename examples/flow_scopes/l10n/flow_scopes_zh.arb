@@ -1,0 +1,66 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "Alloy · 流程作用域",
+  "whatIsAlive": "此刻还活着什么",
+
+  "openAFlow": "打开一个流程",
+  "openAFlowDetail": "进入时创建作用域，离开时释放",
+  "order": "订单 {id}",
+  "@order": { "placeholders": { "id": { "type": "String" } } },
+  "workspaceTabs": "工作区（标签页）",
+  "workspaceTabsDetail": "一个外壳作用域，外加每个标签页一个",
+
+  "eventLog": "事件日志",
+  "logEmpty": "还没有任何内容",
+
+  "scopeBuilt": "作用域 {subject} 已构建",
+  "@scopeBuilt": { "placeholders": { "subject": { "type": "String" } } },
+  "scopeDisposed": "作用域 {subject} 已释放",
+  "@scopeDisposed": { "placeholders": { "subject": { "type": "String" } } },
+  "draftCreated": "草稿 {order} 已创建",
+  "@draftCreated": { "placeholders": { "order": { "type": "String" } } },
+  "draftDisposed": "草稿 {order} 已释放",
+  "@draftDisposed": { "placeholders": { "order": { "type": "String" } } },
+
+  "scopeTree": "作用域树",
+  "scopeNode": "{state} · {count, plural, =0{没有子作用域} other{{count} 个子作用域}}",
+  "@scopeNode": {
+    "placeholders": {
+      "state": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+
+  "checkoutFlow": "结算流程",
+  "scopeLine": "作用域：{name}",
+  "@scopeLine": { "placeholders": { "name": { "type": "String" } } },
+  "draftLine": "订单 {order} · 实例 {instance}",
+  "@draftLine": {
+    "placeholders": {
+      "order": { "type": "String" },
+      "instance": { "type": "String" }
+    }
+  },
+  "continueToPayment": "继续去付款",
+  "continueToPaymentDetail": "同一个流程 —— 草稿必须活下来",
+  "switchToOrder": "切换到订单 {other}",
+  "@switchToOrder": { "placeholders": { "other": { "type": "String" } } },
+  "switchToOrderDetail": "identity 变了 —— 会构建一个新的作用域",
+  "leaveFlow": "离开这个流程",
+  "leaveFlowDetail": "作用域和草稿都随它一起消失",
+
+  "workspace": "工作区",
+  "shellScope": "外壳作用域：{name}",
+  "@shellScope": { "placeholders": { "name": { "type": "String" } } },
+  "markerLine": "{label} · 作用域 {name}",
+  "@markerLine": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "tabsExplained": "切走再切回来：什么都不会重建。分支保持存活而非保持可见，所以它的作用域会一直活到整个工作区关闭。",
+  "tabFeed": "动态",
+  "tabProfile": "个人资料"
+}

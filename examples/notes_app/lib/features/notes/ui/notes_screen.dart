@@ -1,6 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/features/notes/ui/notes_controller.dart';
+import 'package:notes_app/l10n/notes_app_l10n.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -15,16 +16,17 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = NotesL10n.of(context);
     final notes = _query.isEmpty
         ? _controller.notes
         : _controller.search(_query);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Property injection')),
+      appBar: AppBar(title: Text(l10n.propertyInjection)),
       floatingActionButton: FloatingActionButton(
         key: const Key('add-note'),
         onPressed: () => setState(
-          () => _controller.add('note ${_controller.notes.length + 1}'),
+          () => _controller.add(l10n.newNote(_controller.notes.length + 1)),
         ),
         child: const Icon(Icons.add),
       ),
@@ -34,11 +36,11 @@ class _NotesScreenState extends State<NotesScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               key: const Key('search'),
-              decoration: const InputDecoration(labelText: 'search'),
+              decoration: InputDecoration(labelText: l10n.search),
               onChanged: (value) => setState(() => _query = value),
             ),
           ),
-          Text('count: ${notes.length}', key: const Key('note-count')),
+          Text(l10n.noteCount(notes.length), key: const Key('note-count')),
           Expanded(
             child: ListView(
               children: [

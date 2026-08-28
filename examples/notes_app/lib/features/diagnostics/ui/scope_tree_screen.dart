@@ -1,5 +1,6 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:notes_app/l10n/notes_app_l10n.dart';
 import 'package:notes_app/features/session/session_manager.dart';
 
 class ScopeTreeScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _ScopeTreeScreenState extends State<ScopeTreeScreen> {
     final root = context.alloyScope;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Scope tree')),
+      appBar: AppBar(title: Text(NotesL10n.of(context).scopeTree)),
       body: ListView(
         key: const Key('scope-tree'),
         children: [

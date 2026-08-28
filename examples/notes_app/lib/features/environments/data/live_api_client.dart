@@ -11,7 +11,10 @@ class LiveApiClient implements ApiClient {
   final AppConfig _config;
 
   @override
-  String get describe => 'LiveApiClient → ${_config.apiBaseUrl}';
+  String get implementation => 'LiveApiClient';
+
+  @override
+  String? get endpoint => _config.apiBaseUrl;
 
   @override
   Future<List<String>> fetchHeadlines() async {

@@ -2,8 +2,22 @@ import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:codegen_basics/alloy.g.dart';
 import 'package:codegen_basics/counter_screen.dart';
 import 'package:codegen_basics/greeting.dart';
+import 'package:codegen_basics/l10n/codegen_basics_l10n.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// The delegates the screen needs, in the order an app installs them.
+///
+/// The example is a library the gallery mounts, so in the running app these
+/// are registered there; a test mounting the screen on its own has to supply
+/// them itself.
+const _delegates = [
+  CodegenBasicsL10n.delegate,
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+];
 
 void main() {
   /// The screen is where the generated container meets widgets, and where a
@@ -12,6 +26,8 @@ void main() {
   Future<void> pumpScreen(WidgetTester tester) async {
     await tester.pumpWidget(
       const MaterialApp(
+        localizationsDelegates: _delegates,
+        supportedLocales: CodegenBasicsL10n.supportedLocales,
         home: AlloyAppScope(
           root: $AlloyRootScope(),
           rootName: $alloyRootScopeName,
@@ -56,6 +72,8 @@ void main() {
     late Greeting loud;
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: _delegates,
+        supportedLocales: CodegenBasicsL10n.supportedLocales,
         home: AlloyAppScope(
           root: const $AlloyRootScope(),
           rootName: $alloyRootScopeName,
@@ -73,6 +91,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(loud.render(), 'HELLO WORLD FROM TEST');
+    expect(loud.name, 'World', reason: 'the call site supplied this half');
+    expect(loud.environment, 'test', reason: 'and the graph supplied this one');
+    expect(
+      loud.render('hello ${loud.name} from ${loud.environment}'),
+      'HELLO WORLD FROM TEST',
+      reason: 'loud is what render still decides; the words are the screen\'s',
+    );
   });
 }

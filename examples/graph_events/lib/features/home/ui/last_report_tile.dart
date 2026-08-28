@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graph_events/app/report_log.dart';
+import 'package:graph_events/l10n/graph_events_l10n.dart';
 
 /// Shows the most recent failure Alloy reported, with the trail behind it.
 ///
@@ -15,12 +16,13 @@ class LastReportTile extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: log,
     builder: (context, _) {
+      final l10n = GraphEventsL10n.of(context);
       final report = log.reports.firstOrNull;
       if (report == null) {
-        return const ListTile(
-          key: Key('no-report'),
-          title: Text('No failures reported'),
-          subtitle: Text('close the session that will not close'),
+        return ListTile(
+          key: const Key('no-report'),
+          title: Text(l10n.noFailures),
+          subtitle: Text(l10n.noFailuresDetail),
         );
       }
 
@@ -28,8 +30,10 @@ class LastReportTile extends StatelessWidget {
         key: const Key('last-report'),
         title: Text(report.failure.message),
         subtitle: Text(
-          '${report.failure.kind.name} · '
-          '${report.breadcrumbs.length} breadcrumb(s)',
+          l10n.reportSummary(
+            report.failure.kind.name,
+            report.breadcrumbs.length,
+          ),
         ),
         children: [
           for (final crumb in report.breadcrumbs.reversed)

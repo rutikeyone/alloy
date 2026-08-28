@@ -1,0 +1,131 @@
+{
+  "@@locale": "en",
+
+  "twoPhaseStartup": "Two-phase startup",
+  "@twoPhaseStartup": { "description": "Title of the startup screen." },
+  "restartGraph": "dispose the app scope and start a new one",
+  "@restartGraph": { "description": "Action that rebuilds the whole graph." },
+  "phaseZero": "Phase 0 — @AlloyBootstrap",
+  "@phaseZero": { "description": "Heading above the bootstrap steps." },
+  "phaseZeroNote": "adopted by scope \"{scope}\", released when it is disposed",
+  "@phaseZeroNote": {
+    "description": "Who owns the bootstrap steps.",
+    "placeholders": { "scope": { "type": "String", "example": "app" } }
+  },
+  "phaseOne": "Phase 1 — @AlloyInit",
+  "@phaseOne": { "description": "Heading above the async initializers." },
+  "databaseOpen": "database open",
+  "@databaseOpen": { "description": "Whether the database finished opening." },
+  "searchIndexBuilt": "search index built",
+  "@searchIndexBuilt": { "description": "Whether the index finished building." },
+  "telemetryStarted": "telemetry started",
+  "@telemetryStarted": { "description": "Whether telemetry finished starting." },
+  "statusLine": "{label}: {value}",
+  "@statusLine": {
+    "description": "One initializer and whether it is done. The value is a boolean literal, so it reads the same in every language.",
+    "placeholders": {
+      "label": { "type": "String", "example": "database open" },
+      "value": { "type": "String", "example": "true" }
+    }
+  },
+  "apiLine": "api: {url}",
+  "@apiLine": {
+    "description": "The endpoint a bootstrap step loaded.",
+    "placeholders": { "url": { "type": "String", "example": "https://notes.example/v1" } }
+  },
+
+  "sessionScope": "Session scope",
+  "@sessionScope": { "description": "Title of the session screen." },
+  "signedInAs": "signed in as {name}",
+  "@signedInAs": {
+    "description": "Who is signed in.",
+    "placeholders": { "name": { "type": "String", "example": "Ada" } }
+  },
+  "signedOut": "signed out",
+  "@signedOut": { "description": "Shown when there is no session." },
+  "scopeLine": "scope: {name}",
+  "@scopeLine": {
+    "description": "Which scope the screen is looking at.",
+    "placeholders": { "name": { "type": "String", "example": "session:u-1" } }
+  },
+  "noScope": "none",
+  "@noScope": { "description": "Stands in for a scope that does not exist yet." },
+  "signIn": "sign in",
+  "@signIn": { "description": "Action that pushes the session scope." },
+  "signOut": "sign out",
+  "@signOut": { "description": "Action that disposes it." },
+  "recordActivity": "record activity",
+  "@recordActivity": { "description": "Action that writes to the session's log." },
+  "activityCount": "activity: {count}",
+  "@activityCount": {
+    "description": "How much the session has recorded.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "sessionExplained": "Signing out disposes the session scope. Everything built inside it goes with it — no reset() on any repository, no session listener anywhere.",
+  "@sessionExplained": { "description": "Why a session scope replaces manual clean-up." },
+
+  "propertyInjection": "Property injection",
+  "@propertyInjection": { "description": "Title of the notes screen." },
+  "search": "search",
+  "@search": { "description": "Label of the search field." },
+  "noteCount": "count: {count}",
+  "@noteCount": {
+    "description": "How many notes are listed.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "newNote": "note {number}",
+  "@newNote": {
+    "description": "Title given to a note the button creates.",
+    "placeholders": { "number": { "type": "int" } }
+  },
+
+  "widgetOwnedScope": "Widget-owned scope",
+  "@widgetOwnedScope": { "description": "Title of the note detail screen." },
+  "draft": "draft",
+  "@draft": { "description": "Label of the draft field." },
+  "untitled": "untitled",
+  "@untitled": { "description": "Stands in for a draft with nothing typed in it." },
+  "widgetScopeExplained": "This screen declares its own scope. Leaving it disposes the scope — nothing else has to remember to.",
+  "@widgetScopeExplained": { "description": "What owning a scope buys the screen." },
+
+  "scopeTree": "Scope tree",
+  "@scopeTree": { "description": "Title of the diagnostics screen." },
+
+  "namedAndMulti": "Named and multi-injection",
+  "@namedAndMulti": { "description": "Title of the formatters screen." },
+  "registrationCount": "{count, plural, =1{1 registration} other{{count} registrations}}",
+  "@registrationCount": {
+    "description": "How many implementations getAll found.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "sampleNote": "shopping list",
+  "@sampleNote": { "description": "The note title every formatter is shown formatting." },
+
+  "environments": "Environments",
+  "@environments": { "description": "Title of the environments screen." },
+  "activeEnvironment": "active environment",
+  "@activeEnvironment": { "description": "Which build the graph was started for." },
+  "apiClientLine": "{implementation} → {detail}",
+  "@apiClientLine": {
+    "description": "Which implementation answered, and where it goes. The implementation is a type name and does not translate.",
+    "placeholders": {
+      "implementation": { "type": "String", "example": "FakeApiClient" },
+      "detail": { "type": "String", "example": "no network" }
+    }
+  },
+  "noNetwork": "no network",
+  "@noNetwork": { "description": "Where a fake implementation goes, which is nowhere." },
+  "nothingRegistered": "nothing registered — no implementation claims \"{environment}\"",
+  "@nothingRegistered": {
+    "description": "Shown when the chosen environment leaves the type absent.",
+    "placeholders": { "environment": { "type": "String", "example": "default" } }
+  },
+  "crashReportingStep": "report-crashes bootstrap step",
+  "@crashReportingStep": { "description": "A bootstrap step restricted to some environments." },
+  "stepRan": "ran",
+  "@stepRan": { "description": "The step was part of this build." },
+  "stepSkipped": "skipped in this environment",
+  "@stepSkipped": { "description": "The step was not." },
+  "environmentsExplained": "Both implementations are annotated with the same exposeAs. Only the one naming this environment is registered, so nothing downstream knows which it got. Pick an environment nobody claims and the type is simply absent — get<ApiClient>() would throw rather than hand back the wrong class.",
+  "@environmentsExplained": { "description": "Why a missing environment fails loudly." }
+}

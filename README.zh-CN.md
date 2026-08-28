@@ -491,9 +491,15 @@ cd examples/gallery && flutter run
 ——而这正是 gallery 真正要展示的东西。三个没有界面的条目（`拆卸`、`手写模式`、`测试写法`）显示的是
 控制台输出而不是按钮，因为一个提出要"打开"命令行程序的 gallery 是在撒谎。
 
-Gallery 提供英文、俄文和中文，可以在首页直接切换。目录中的文字会随之翻译；gallery 挂载的各个
-示例界面不会，框架自身写出的日志记录也不会。哪些内容有意保留 Alloy 自己的措辞、以及为什么，
-见 [`alloy_inspector` README](packages/alloy_inspector/README.md)。
+Gallery 提供英文、俄文和中文，可以在首页直接切换 —— 它挂载的每一个界面也一样。每个示例包都带有
+自己的 `l10n/*.arb` 并生成自己的 delegate，gallery 把它们和自己的、检查器的一起注册：这正是一个
+多包 Flutter 应用的样子。有两处文案原本位于控件层之下，那里没有 `BuildContext` 可以询问语言 ——
+现在它们只报告事实，由界面来措辞。
+
+框架自身写出的日志记录仍是英文，界面上的标识符也一样：步骤名、作用域名、注册键、生命周期。哪些
+内容有意保留 Alloy 自己的措辞、以及为什么，见
+[`alloy_inspector` README](packages/alloy_inspector/README.md)；示例是怎么接线的，见
+[gallery 的 README](examples/gallery/README.md)。
 
 在它背后，这些示例仍是 `examples/` 下普通的包——`notes_app`、`flow_scopes`、`graph_events`、
 `codegen_basics` 是 gallery 挂载的库，而 `manual_mode`、`teardown`、`testing_patterns` 是纯 Dart

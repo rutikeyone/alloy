@@ -2,8 +2,10 @@ import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_test/alloy_test.dart';
 import 'package:alloy_talker/alloy_talker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graph_events/app/app_scope.dart';
+import 'package:graph_events/l10n/graph_events_l10n.dart';
 import 'package:graph_events/app/audit_log.dart';
 import 'package:graph_events/app/observers.dart';
 import 'package:graph_events/app/report_log.dart';
@@ -32,6 +34,16 @@ void main() {
     // the same graph and screen the gallery does.
     await tester.pumpWidget(
       MaterialApp(
+        // The example is a library the gallery mounts, so in the running app
+        // the delegates are registered there; a test mounting the screen on
+        // its own has to supply them itself.
+        localizationsDelegates: const [
+          GraphEventsL10n.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: GraphEventsL10n.supportedLocales,
         home: AlloyAppScope(
           root: const AppScope(),
           bootstrap: () => [WarmUp()],

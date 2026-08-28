@@ -23,9 +23,28 @@ chrome — comes from `l10n/gallery_*.arb`; `buildCatalog` takes a `GalleryL10n`
 of its own, which is what a test checks by building the catalog twice and insisting the two
 disagree.
 
-`AlloyInspectorL10n.delegate` is registered here beside the gallery's own, so the inspector entry
-follows the switch too. It would follow it without the delegate — that is the fallback the package
-ships — but the gallery shows the documented path rather than the one you get for free.
+The screens come from four other packages, and each of those owns its own strings: `notes_app`,
+`flow_scopes`, `graph_events` and `codegen_basics` each carry `l10n/*.arb` and generate their own
+`NotesL10n`, `FlowScopesL10n`, `GraphEventsL10n` and `CodegenBasicsL10n`. The gallery collects
+their delegates beside its own and the inspector's, which is what a multi-package Flutter app looks
+like: the strings belong to the package that shows them, and the app registers the delegates. A
+test reads `GalleryApp` — not the test harness — and fails if one is missing.
+
+`AlloyInspectorL10n.delegate` would work without being registered, since that package falls back to
+the ambient locale; it is listed anyway, so the gallery shows the documented path rather than the
+one you get for free.
+
+### The domain reports facts, the screen names them
+
+Two places had prose below the widgets, where there is no `BuildContext` and so no way to know the
+reader's language: `flow_scopes` recorded `'draft 1 created'` into a log the home screen renders,
+and `notes_app`'s `ApiClient` described itself as `'FakeApiClient → no network'`. Both now report
+what happened — a `FlowEvent(kind, subject)`, an `implementation` and an `endpoint` — and the screen
+turns it into a sentence. That is the only shape that localizes a layer resolved from a graph, and
+it made both tests better: they compare values now instead of prose.
+
+`codegen_basics` has the same split in miniature. `Greeting.render(phrase)` still decides whether to
+shout, which is what `loud` was for; the words come from the screen.
 
 ### The face follows the language
 
@@ -47,9 +66,15 @@ A test mounts the hub in both languages and fails if any style still names Space
 Russian, because a missed call site shows up as a typeface change mid-sentence rather than as a
 crash.
 
-What is **not** translated: the screens mounted from `notes_app`, `flow_scopes`, `graph_events` and
-`codegen_basics`. They belong to those packages, and dragging four more `l10n` setups behind a
-language switcher would be a poor trade for a demo.
+A second test opens every entry under Russian and fails if any `Text` still renders a string that
+appears verbatim in an English `.arb`. A call site that never learned about the language shows up
+as a sentence in the wrong one, not as a crash, so it needs looking for.
+
+What is **not** translated: `manual_mode` and `teardown`. They have no screens — their whole point
+is that the runtime works without Flutter — and localizing console output would drag `intl` into
+two pure-Dart packages for nobody's benefit. Neither are the identifiers on screen: bootstrap step
+names, scope names, registration keys, lifetimes and formatter labels are how you find the code
+that produced a line, and translating them would break the one thing they are for.
 
 ## Where the screens come from
 

@@ -5,12 +5,14 @@ import 'package:notes_app/core/app_config.dart';
 import 'package:notes_app/features/diagnostics/data/telemetry.dart';
 import 'package:notes_app/features/notes/data/note_database.dart';
 import 'package:notes_app/features/notes/data/search_index.dart';
+import 'package:notes_app/l10n/notes_app_l10n.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = NotesL10n.of(context);
     final config = context.alloy<AppConfig>();
     final database = context.alloy<NoteDatabase>();
     final index = context.alloy<SearchIndex>();
@@ -18,11 +20,11 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Two-phase startup'),
+        title: Text(l10n.twoPhaseStartup),
         actions: [
           IconButton(
             key: const Key('restart-graph'),
-            tooltip: 'dispose the app scope and start a new one',
+            tooltip: l10n.restartGraph,
             icon: const Icon(Icons.restart_alt),
             onPressed: () => AlloyAppScope.of(context).restart(),
           ),
@@ -31,18 +33,18 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         children: [
           _SectionTitle(
-            'Phase 0 — @AlloyBootstrap',
-            note:
-                'adopted by scope "${context.alloyScope.name}", '
-                'released when it is disposed',
+            l10n.phaseZero,
+            note: l10n.phaseZeroNote(context.alloyScope.name),
           ),
+          // The step names are identifiers — they are how you find the code
+          // that ran — so they read the same in every language.
           for (final step in BootLog.steps)
             ListTile(dense: true, title: Text(step, key: Key('boot-$step'))),
-          const _SectionTitle('Phase 1 — @AlloyInit'),
-          _StatusTile('database open', database.isOpen),
-          _StatusTile('search index built', index.isBuilt),
-          _StatusTile('telemetry started', telemetry.isStarted),
-          ListTile(dense: true, title: Text('api: ${config.apiBaseUrl}')),
+          _SectionTitle(l10n.phaseOne),
+          _StatusTile(l10n.databaseOpen, database.isOpen),
+          _StatusTile(l10n.searchIndexBuilt, index.isBuilt),
+          _StatusTile(l10n.telemetryStarted, telemetry.isStarted),
+          ListTile(dense: true, title: Text(l10n.apiLine(config.apiBaseUrl))),
         ],
       ),
     );
@@ -83,6 +85,6 @@ class _StatusTile extends StatelessWidget {
   Widget build(BuildContext context) => ListTile(
     dense: true,
     leading: Icon(isReady ? Icons.check_circle : Icons.error_outline),
-    title: Text('$label: $isReady'),
+    title: Text(NotesL10n.of(context).statusLine(label, '$isReady')),
   );
 }

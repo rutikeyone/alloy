@@ -2,6 +2,7 @@ import 'package:alloy_go_router/alloy_go_router.dart';
 import 'package:flow_scopes/app/app_router.dart';
 import 'package:flow_scopes/app/flow_scopes_app.dart';
 import 'package:flow_scopes/core/event_log.dart';
+import 'package:flow_scopes/core/flow_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -51,7 +52,9 @@ void main() {
       await settle(tester);
 
       expect(find.byKey(const Key('payment-draft')), findsOneWidget);
-      expect(app.get<EventLog>().entries, ['draft 1 created']);
+      expect(app.get<EventLog>().entries, [
+        const FlowEvent(FlowEventKind.draftCreated, '1'),
+      ]);
     });
 
     testWidgets('leaving the flow disposes the draft', (tester) async {
@@ -60,8 +63,8 @@ void main() {
       await go(tester, '/');
 
       expect(app.get<EventLog>().entries, [
-        'draft 1 created',
-        'draft 1 disposed',
+        const FlowEvent(FlowEventKind.draftCreated, '1'),
+        const FlowEvent(FlowEventKind.draftDisposed, '1'),
       ]);
       expect(app.children, isEmpty);
     });
@@ -72,9 +75,9 @@ void main() {
       await go(tester, '/orders/2/summary');
 
       expect(app.get<EventLog>().entries, [
-        'draft 1 created',
-        'draft 1 disposed',
-        'draft 2 created',
+        const FlowEvent(FlowEventKind.draftCreated, '1'),
+        const FlowEvent(FlowEventKind.draftDisposed, '1'),
+        const FlowEvent(FlowEventKind.draftCreated, '2'),
       ]);
       expect(app.children.single.name, 'order:2');
     });
@@ -90,8 +93,8 @@ void main() {
 
       expect(find.text('shell scope: workspace'), findsOneWidget);
       expect(app.get<EventLog>().entries, [
-        'workspace scope built',
-        'feed scope built',
+        const FlowEvent(FlowEventKind.scopeBuilt, 'workspace'),
+        const FlowEvent(FlowEventKind.scopeBuilt, 'feed'),
       ]);
       expect(app.children.single.name, 'workspace');
       expect(app.children.single.children.single.name, 'feed');
@@ -109,9 +112,9 @@ void main() {
       await settle(tester);
 
       expect(app.get<EventLog>().entries, [
-        'workspace scope built',
-        'feed scope built',
-        'profile scope built',
+        const FlowEvent(FlowEventKind.scopeBuilt, 'workspace'),
+        const FlowEvent(FlowEventKind.scopeBuilt, 'feed'),
+        const FlowEvent(FlowEventKind.scopeBuilt, 'profile'),
       ]);
       expect(app.children.single.children.map((s) => s.name), [
         'feed',
@@ -129,9 +132,9 @@ void main() {
 
       expect(
         app.get<EventLog>().entries,
-        containsAll(<String>[
-          'feed scope disposed',
-          'workspace scope disposed',
+        containsAll(<FlowEvent>[
+          const FlowEvent(FlowEventKind.scopeDisposed, 'feed'),
+          const FlowEvent(FlowEventKind.scopeDisposed, 'workspace'),
         ]),
       );
       expect(app.children, isEmpty);

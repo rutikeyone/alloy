@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:alloy_inspector/alloy_inspector.dart';
+import 'package:codegen_basics/l10n/codegen_basics_l10n.dart';
+import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gallery/app/gallery_app.dart';
@@ -10,6 +12,8 @@ import 'package:gallery/catalog/catalog.dart';
 import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/features/hub/hub_screen.dart';
 import 'package:gallery/l10n/gallery_l10n.dart';
+import 'package:graph_events/l10n/graph_events_l10n.dart';
+import 'package:notes_app/l10n/notes_app_l10n.dart';
 
 import 'support.dart';
 
@@ -69,6 +73,22 @@ void main() {
           'the screens would look right either way — only this says which of '
           'the two the gallery is actually demonstrating',
     );
+    for (final delegate in const [
+      NotesL10n.delegate,
+      FlowScopesL10n.delegate,
+      GraphEventsL10n.delegate,
+      CodegenBasicsL10n.delegate,
+    ]) {
+      expect(
+        app.localizationsDelegates,
+        contains(delegate),
+        reason:
+            'the strings belong to the package that shows them, and this is '
+            'where the app collects them — checked against GalleryApp rather '
+            'than the test harness, because the harness is wiring this test '
+            'wrote itself',
+      );
+    }
   });
 
   testWidgets('the inspector inside the gallery follows the switch too', (
@@ -223,6 +243,79 @@ void main() {
         reason:
             '${locale.languageCode} is written in Cyrillic, which Space '
             'Grotesk has no glyphs for',
+      );
+    }
+  });
+
+  test('every package the gallery mounts speaks the same languages', () {
+    const delegates = {
+      'notes_app': NotesL10n.supportedLocales,
+      'flow_scopes': FlowScopesL10n.supportedLocales,
+      'graph_events': GraphEventsL10n.supportedLocales,
+      'codegen_basics': CodegenBasicsL10n.supportedLocales,
+      'alloy_inspector': AlloyInspectorL10n.supportedLocales,
+    };
+
+    delegates.forEach((package, supported) {
+      expect(
+        supported,
+        GalleryL10n.supportedLocales,
+        reason:
+            "$package knows a different set of languages than the app it is "
+            'mounted in, so on the odd one out its screens quietly come back '
+            'in English while everything around them changes',
+      );
+    });
+  });
+
+  testWidgets('no screen keeps an English line under Russian', (tester) async {
+    // Every plain English message, from every package the gallery mounts.
+    // Messages with placeholders are skipped: they never render literally, so
+    // an equality check on them would prove nothing either way.
+    final english = <String>{};
+    for (final path in [
+      '../notes_app/l10n/notes_app_en.arb',
+      '../flow_scopes/l10n/flow_scopes_en.arb',
+      '../graph_events/l10n/graph_events_en.arb',
+      '../codegen_basics/l10n/codegen_basics_en.arb',
+      'l10n/gallery_en.arb',
+    ]) {
+      final decoded =
+          jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
+      for (final entry in decoded.entries) {
+        if (entry.key.startsWith('@') || entry.value is! String) continue;
+        final value = entry.value as String;
+        if (!value.contains('{')) english.add(value);
+      }
+    }
+    expect(english, isNotEmpty);
+
+    for (final entry in buildCatalog(
+      lookupGalleryL10n(const Locale('ru')),
+    ).where((e) => e.isOpenable)) {
+      await tester.pumpWidget(
+        galleryHarness(
+          home: Builder(key: ValueKey(entry.id), builder: entry.open!),
+          locale: const Locale('ru'),
+        ),
+      );
+      // Two settles: the host shows its loading frame before the scope is
+      // published, exactly as AlloyAppScope does anywhere else.
+      await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
+
+      final left = {
+        for (final text in tester.widgetList<Text>(find.byType(Text)))
+          ?text.data,
+      }.intersection(english);
+
+      expect(
+        left,
+        isEmpty,
+        reason:
+            '${entry.id} still renders these in English under a Russian app — '
+            'a call site that never learned about the language shows up as a '
+            'sentence in the wrong one, not as a crash',
       );
     }
   });
