@@ -36,15 +36,27 @@ for package in $FLUTTER_PACKAGES; do
 done
 
 python3 - "$OUT" "$FLOOR" <<'PY'
-import glob, os, sys
+import glob, os, re, sys
+
+# gen-l10n output: `<name>_l10n.dart` plus one `<name>_l10n_<locale>.dart` per
+# language. Not measured, because nobody writes it and nobody can test it: it
+# is a thousand lines of getters that would report as poorly covered however
+# well the screens reading them are tested, and would then push the floor down
+# for everyone else. Hand-written neighbours in the same folder still count —
+# `inspector_strings.dart` is the fallback logic, and it is the part a test
+# has to reach.
+GENERATED = re.compile(r'.*_l10n(_[A-Za-z0-9_]+)?\.dart$')
 
 out, floor = sys.argv[1], float(sys.argv[2])
 total_hit = total = 0
 rows = []
 for path in sorted(glob.glob(os.path.join(out, '*.lcov'))):
     hit = count = 0
+    measured = True
     for line in open(path):
-        if line.startswith('DA:'):
+        if line.startswith('SF:'):
+            measured = not GENERATED.match(line.strip()[3:])
+        elif measured and line.startswith('DA:'):
             count += 1
             if int(line.strip().split(',')[1]) > 0:
                 hit += 1

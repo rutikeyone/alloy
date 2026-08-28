@@ -43,6 +43,14 @@ wait for the previous group to appear on pub.dev — the index is not instant.
       `MIGRATION.zh-CN.md` track the English originals; nothing checks that they
       still say the same thing, so this box is the only thing that does. English
       is authoritative — if a translation is stale, fix it or say so in it.
+- [ ] **Shipped strings** translated too, which is a different job from the
+      documents above: `packages/alloy_inspector/l10n/*.arb` and
+      `examples/gallery/l10n/*.arb`. A test in each package fails when a key is
+      missing from a translation, so a *gap* cannot slip through — but a key
+      whose English changed while the translations kept the old wording passes
+      every check there is. Re-read the diff of `*_en.arb`, then
+      `flutter gen-l10n` and commit the output; CI regenerates and fails on any
+      difference.
 
 ## Versioning
 

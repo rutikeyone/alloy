@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:alloy_inspector/alloy_inspector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gallery/app/gallery_app.dart';
@@ -50,6 +51,55 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('两阶段启动'), findsOneWidget);
+  });
+
+  testWidgets('the gallery installs the inspector delegate rather than '
+      'leaning on its fallback', (tester) async {
+    await tester.pumpWidget(const GalleryApp());
+    await tester.pumpAndSettle();
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(
+      app.localizationsDelegates,
+      contains(AlloyInspectorL10n.delegate),
+      reason:
+          'the inspector reads the ambient locale with no delegate at all, so '
+          'the screens would look right either way — only this says which of '
+          'the two the gallery is actually demonstrating',
+    );
+  });
+
+  testWidgets('the inspector inside the gallery follows the switch too', (
+    tester,
+  ) async {
+    final entry = buildCatalog(lookupGalleryL10n(const Locale('ru')))
+        .firstWhere((e) => e.id == 'inspector');
+
+    await tester.pumpWidget(
+      galleryHarness(
+        home: Builder(builder: entry.open!),
+        locale: const Locale('ru'),
+      ),
+    );
+    // Two settles: the host shows its loading frame before the scope is
+    // published, exactly as AlloyAppScope does anywhere else.
+    await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Открыть сессионный скоуп'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('open-inspector')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Alloy · инспектор'),
+      findsOneWidget,
+      reason:
+          'what a reader sees, by whichever of the two routes got them there '
+          '— the delegate is checked separately, because this cannot tell '
+          'them apart',
+    );
+    expect(find.text('Дерево'), findsOneWidget);
   });
 
   test('the catalog carries no prose of its own', () {
