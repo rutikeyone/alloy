@@ -192,6 +192,39 @@ mixin 会生成在类的旁边，并在构造完成后立即填充这些字段�
 **真正的释放。** 作用域拥有它创建的东西，并按创建的相反顺序拆解它们。登出变成
 `await sessionScope.dispose()`——不需要在任何地方监听会话，也不需要把 `reset()` 硬塞进领域接口。
 
+## flutter_bloc 与 provider → Alloy
+
+两者都不是要整体替换的竞品，而且方向不同。
+
+**`provider` 正是 `AlloyScopeProvider` 已经在做的事。** 如果你只用它把容器往控件树下传递 —— 手写
+DI 做的就是这件事 —— 这种用法会消失：`AlloyAppScope` 发布根作用域，`context.alloy<T>()` 读取它。
+如果你用 `ChangeNotifierProvider` 给某个子树一个有生命周期的对象，那就是 `AlloyScopeWidget`，
+生命周期归作用域管，而不再是控件的手工记账。
+
+**`flutter_bloc` 完全不会被替换。** bloc 由 Alloy 构建，仍然由 `BlocBuilder` 渲染。在原本创建它
+的地方改为解析：
+
+```dart
+BlocProvider.value(
+  value: context.alloy<CounterCubit>(),
+  child: const CounterView(),
+)
+```
+
+需要明说的是释放。作用域释放的是实现了 `Disposable` 或 `AsyncDisposable` 的对象，而 `Cubit` 通过
+`Future<void> close()` 关闭 —— 两者都不是。每个类桥接一次即可：
+
+```dart
+class CounterCubit extends Cubit<int> implements AsyncDisposable {
+  @override
+  Future<void> dispose() => close();
+}
+```
+
+`ChangeNotifier` 需要的更少：它的 `dispose` 签名本来就匹配，所以 `implements Disposable` 就是全部
+改动。漏掉其中任何一个，对象都会被构建、被使用，然后永远不会关闭，而且悄无声息。完整对照表见
+[`alloy_flutter` README](packages/alloy_flutter/README.md)。
+
 ## 一份可照做的顺序
 
 1. 添加 `alloy` 和 `alloy_annotations`；原有容器原地不动。

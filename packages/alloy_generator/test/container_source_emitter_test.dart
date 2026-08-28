@@ -109,4 +109,32 @@ void main() {
 
     expect(generate(descriptors), generate(descriptors.reversed.toList()));
   });
+
+  group('a class that names its own dispose function', () {
+    test('passes it to the registration', () {
+      final source = generate([
+        declare(
+          'Ticker',
+          dispose: const AlloyFunctionRef(
+            name: 'closeTicker',
+            import: appImport,
+          ),
+        ),
+      ]);
+
+      expect(
+        source,
+        contains('dispose: _i'),
+        reason:
+            'the annotation was read only for module members before, so a '
+            'class naming one registered without it and the instance was '
+            'never closed',
+      );
+      expect(source, contains('.closeTicker,'));
+    });
+
+    test('a class that names none registers without one', () {
+      expect(generate([declare('Ticker')]), isNot(contains('dispose:')));
+    });
+  });
 }

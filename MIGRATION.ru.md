@@ -214,6 +214,42 @@ class NotesCubit extends Cubit<NotesState> with _$NotesCubit {
 Выход из аккаунта становится `await sessionScope.dispose()` — ни одного слушателя сессии и ни одного
 `reset()`, прибитого к доменным интерфейсам.
 
+## flutter_bloc и provider → Alloy
+
+Ни то ни другое не заменяется целиком, и пути у них разные.
+
+**`provider` — это то, чем `AlloyScopeProvider` уже является.** Если он у вас только для того, чтобы
+пробросить контейнер вниз по дереву — а рукописный DI делает именно это, — такое применение
+исчезает: `AlloyAppScope` публикует корень, а `context.alloy<T>()` его читает. Если
+`ChangeNotifierProvider` даёт поддереву объект со временем жизни — это `AlloyScopeWidget`, и время
+жизни становится скоуповым, а не ручной бухгалтерией виджета.
+
+**`flutter_bloc` не заменяется вовсе.** Блок строит Alloy, рисует его по-прежнему `BlocBuilder`.
+Резолвите там, где раньше создавали:
+
+```dart
+BlocProvider.value(
+  value: context.alloy<CounterCubit>(),
+  child: const CounterView(),
+)
+```
+
+Вслух стоит сказать про разбор. Скоуп освобождает то, что реализует `Disposable` или
+`AsyncDisposable`, а `Cubit` закрывается через `Future<void> close()` — это не то и не другое.
+Мостик пишется один раз на класс:
+
+```dart
+class CounterCubit extends Cubit<int> implements AsyncDisposable {
+  @override
+  Future<void> dispose() => close();
+}
+```
+
+`ChangeNotifier` требует ещё меньше: его `dispose` уже совпадает по сигнатуре, так что
+`implements Disposable` — вся правка. Пропустите любое из двух — и объект построится, поработает и
+не закроется никогда, молча. Полная таблица — в
+[README `alloy_flutter`](packages/alloy_flutter/README.md).
+
 ## Разобранный порядок действий
 
 1. Добавьте `alloy` и `alloy_annotations`; старый контейнер оставьте на месте.

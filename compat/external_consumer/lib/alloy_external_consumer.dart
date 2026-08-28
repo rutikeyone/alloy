@@ -13,5 +13,6 @@ export 'package:alloy_external_consumer/src/report.dart';
 export 'package:alloy_external_consumer/src/reporter.dart';
 export 'package:alloy_external_consumer/src/repository.dart';
 export 'package:alloy_external_consumer/src/search_index.dart';
+export 'package:alloy_external_consumer/src/session_cache.dart';
 export 'package:alloy_external_consumer/src/system_clock.dart';
 export 'package:alloy_external_consumer/src/telemetry.dart';

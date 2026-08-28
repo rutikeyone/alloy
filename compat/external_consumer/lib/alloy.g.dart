@@ -15,6 +15,7 @@ import 'package:alloy_external_consumer/src/report.dart' as _i552;
 import 'package:alloy_external_consumer/src/reporter.dart' as _i578;
 import 'package:alloy_external_consumer/src/repository.dart' as _i309;
 import 'package:alloy_external_consumer/src/search_index.dart' as _i115;
+import 'package:alloy_external_consumer/src/session_cache.dart' as _i688;
 import 'package:alloy_external_consumer/src/system_clock.dart' as _i358;
 import 'package:alloy_external_consumer/src/telemetry.dart' as _i954;
 
@@ -141,6 +142,15 @@ final class _SearchIndexFactory
   }
 }
 
+final class _SessionCacheFactory
+    implements _i178.AlloyFactory<_i688.SessionCache> {
+  const _SessionCacheFactory();
+
+  @override
+  _i688.SessionCache create(_i178.AlloyResolver resolver) =>
+      _i688.SessionCache();
+}
+
 final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
   const $AlloyRootScope();
 
@@ -157,6 +167,10 @@ final class $AlloyRootScope implements _i178.AlloyScopeBuilder {
     );
     scope.registerLazySingleton<_i309.Repository<_i309.User>>(
       const _UserRepositoryFactory(),
+    );
+    scope.registerLazySingleton<_i688.SessionCache>(
+      const _SessionCacheFactory(),
+      dispose: _i688.closeSessionCache,
     );
     scope.registerLazySingleton<_i628.Diagnostics>(const _DiagnosticsFactory());
     scope.registerParamFactory<_i662.NoteEditor, $NoteEditorArgs>(

@@ -226,6 +226,41 @@ replacing a dependency.
 order of creation. Sign-out becomes `await sessionScope.dispose()`, with no
 session listener anywhere and no `reset()` bolted onto domain interfaces.
 
+## flutter_bloc and provider → Alloy
+
+Neither is a competitor to replace wholesale, and the two go different ways.
+
+**`provider` is what Alloy's `AlloyScopeProvider` already is.** If you use it only to push a
+container down the tree — which is what a hand-rolled DI does — that use is gone: `AlloyAppScope`
+publishes the root and `context.alloy<T>()` reads it. If you use `ChangeNotifierProvider` to give
+one widget subtree an object with a lifetime, that is `AlloyScopeWidget`, and the lifetime becomes
+the scope's rather than the widget's bookkeeping.
+
+**`flutter_bloc` is not replaced at all.** Alloy builds the bloc; `BlocBuilder` still renders it.
+Resolve it where you would have created it:
+
+```dart
+BlocProvider.value(
+  value: context.alloy<CounterCubit>(),
+  child: const CounterView(),
+)
+```
+
+The part that needs saying out loud is teardown. A scope releases what implements `Disposable` or
+`AsyncDisposable`, and a `Cubit` closes with `Future<void> close()`, which is neither. Bridge it
+once per class:
+
+```dart
+class CounterCubit extends Cubit<int> implements AsyncDisposable {
+  @override
+  Future<void> dispose() => close();
+}
+```
+
+A `ChangeNotifier` needs even less — its `dispose` already matches, so `implements Disposable` is
+the whole change. Skip either and the object is built, used and never closed, quietly. See the
+[`alloy_flutter` README](packages/alloy_flutter/README.md) for the full table.
+
 ## A worked order
 
 1. Add `alloy` and `alloy_annotations`; leave the old container in place.

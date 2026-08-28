@@ -37,6 +37,25 @@ void main() {
     },
   );
 
+  test('a class that names its own dispose function is closed', () async {
+    final cache = scope.get<SessionCache>();
+    expect(cache.isClosed, isFalse);
+
+    await scope.dispose();
+
+    expect(
+      cache.isClosed,
+      isTrue,
+      reason:
+          'SessionCache implements neither Disposable nor AsyncDisposable and '
+          'its closing method is not called dispose — every Bloc, Cubit and '
+          'ChangeNotifier is this shape. The annotation is the only thing that '
+          'can say how to close it, and the class parser used to accept the '
+          'argument and drop it',
+    );
+    expect(BootLog.entries, contains('session-cache closed'));
+  });
+
   test('exposeAs publishes the interface, not the implementation', () {
     expect(scope.get<Clock>(), isA<SystemClock>());
     expect(scope.isRegistered<SystemClock>(), isFalse);

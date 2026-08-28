@@ -182,6 +182,37 @@ One sharp edge if you do enable it: Flutter asks *every* observer before quittin
 at the first refusal. If another observer cancels the exit after this one has already disposed, the
 app keeps running with no graph and shows `loading` until something calls `restart()`.
 
+## Objects that cannot say how to close themselves
+
+A scope releases what it built, in reverse creation order. It recognises exactly two things —
+`Disposable` and `AsyncDisposable` — plus whatever a registration named a `dispose:` function for.
+Dart has no structural typing, so **a matching method signature is not enough**, and almost every
+object a Flutter app registers has one without the declaration:
+
+| Type | What it has | What it needs |
+|---|---|---|
+| `ChangeNotifier`, `ValueNotifier` | `void dispose()` | `implements Disposable` — nothing else, the signature already matches |
+| `Bloc`, `Cubit` | `Future<void> close()` | `implements AsyncDisposable` and `Future<void> dispose() => close();` |
+| `StreamController` | `Future close()` | `dispose:` at the registration — it is not yours to change |
+
+```dart
+class NotesController extends ChangeNotifier implements Disposable {}
+
+class SessionCubit extends Cubit<Session> implements AsyncDisposable {
+  @override
+  Future<void> dispose() => close();
+}
+
+scope.registerSingleton(StreamController<Event>(), dispose: (it) => it.close());
+```
+
+In Code-Gen Mode the third route is `@AlloyInject(dispose: closeIt)`, pointing at a top-level or
+static function that takes the registered type.
+
+Forgetting the declaration is quiet: the object is built, used, and never closed. This is the single
+most common way to leak with Alloy, and `packages/alloy_flutter/test/flutter_teardown_test.dart`
+pins all four cases so the behaviour cannot drift into something the documentation does not say.
+
 ## The two errors you will actually meet
 
 `AlloyNoScopeError` — nothing publishes a scope above the widget that asked. Usually a missing

@@ -72,13 +72,20 @@ emits the `dependsOn` a hand-written registration would have stated.
 `@AlloyInject` on the class already means, and publishing it under an interface
 is what `exposeAs` means.
 
-**`dispose` is how a foreign type gets closed.** The scope owns what it builds,
-but a type from another package implements neither `Disposable` nor
-`AsyncDisposable`, so it cannot say how to close itself. Point `dispose` at a
-top-level or static function taking the registered type and the scope calls it
-at teardown, in the same reverse-creation order as everything else. Pairing it
-with a transient is a build error: the scope does not retain a transient, so it
-could never call it.
+**`dispose` is how a type that cannot close itself gets closed.** The scope owns what it builds,
+but it only recognises `Disposable` and `AsyncDisposable` — Dart has no structural typing, so a
+class with a matching `dispose` or a `close()` is invisible to it. Point `dispose` at a top-level or
+static function taking the registered type and the scope calls it at teardown, in the same
+reverse-creation order as everything else.
+
+It works on a **class** as well as on a module member. That is worth stating because it used not
+to: the annotation declared the argument, the class parser never read it, and a class naming one
+registered without it and was never closed — silently, since nothing about the code looked wrong.
+Prefer implementing the interface where the class is yours to change; reach for `dispose` when it
+is not, which is every `Bloc`, `Cubit` and `StreamController`.
+
+Pairing it with a transient or a parameterized registration is a build error: the scope retains
+neither, so it could never call it.
 
 ## A missing registration is a build failure
 

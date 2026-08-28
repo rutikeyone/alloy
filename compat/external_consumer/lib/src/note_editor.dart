@@ -13,7 +13,7 @@ class NoteEditor {
     this.clock, {
     @alloyParam required this.id,
     @alloyParam required this.title,
-    @alloyParam this.draft = false,
+    @alloyParam required this.draft,
   });
 
   final Clock clock;

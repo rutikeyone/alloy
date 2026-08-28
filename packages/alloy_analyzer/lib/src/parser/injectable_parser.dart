@@ -3,6 +3,7 @@ import 'package:alloy_analyzer/src/model/injected_property.dart';
 import 'package:alloy_analyzer/src/model/type_ref.dart';
 import 'package:alloy_analyzer/src/parser/alloy_matchers.dart';
 import 'package:alloy_analyzer/src/parser/dart_object_reader.dart';
+import 'package:alloy_analyzer/src/parser/dispose_reader.dart';
 import 'package:alloy_analyzer/src/parser/environment_reader.dart';
 import 'package:alloy_analyzer/src/parser/parse_error.dart';
 import 'package:alloy_analyzer/src/parser/type_ref_resolver.dart';
@@ -69,6 +70,20 @@ class AlloyInjectableParser {
       );
     }
 
+    final lifetime = _lifetimeOf(annotation, isAsyncInit: isAsyncInit);
+    final dispose = disposeOf(annotation, clazz.displayName, clazz);
+
+    if (dispose != null &&
+        (takesParams || lifetime == AlloyLifetime.transient)) {
+      throw AlloyParseError(
+        '${clazz.displayName} names a dispose function, but the scope never '
+        'retains ${takesParams ? 'a parameterized registration' : 'a transient'} '
+        'and so could never call it. Give it a lifetime the scope keeps, or '
+        'let the caller close what it built.',
+        clazz,
+      );
+    }
+
     if (isAsyncInit && !_hasInitMethod(clazz)) {
       throw AlloyParseError(
         '${clazz.displayName} is annotated with @AlloyInit but declares no '
@@ -79,12 +94,13 @@ class AlloyInjectableParser {
 
     return AlloyInjectableClass(
       type: typeRefOfElement(clazz),
-      lifetime: _lifetimeOf(annotation, isAsyncInit: isAsyncInit),
+      lifetime: lifetime,
       name: annotation.readString('name'),
       exposeAs: _exposeAsOf(annotation),
       isAsyncInit: isAsyncInit,
       dependsOn: _dependsOnOf(initAnnotation),
       environments: environmentsOf(clazz),
+      dispose: dispose,
       constructorParameters: [
         for (final parameter in constructor.formalParameters)
           AlloyInjectedProperty(

@@ -49,4 +49,88 @@ class Catalog {
     expect(dependency.typeArguments.single.name, 'User');
     expect(dependency.toString(), 'Repository<User>');
   });
+
+  group('dispose', () {
+    test('a class names the function that closes it', () async {
+      final clazz = await classNamed('Ticker', '''
+Future<void> closeTicker(Ticker ticker) async {}
+
+@AlloyInject(dispose: closeTicker)
+class Ticker {
+  Ticker();
+}
+''');
+
+      final dispose = parser.parseClass(clazz).dispose!;
+
+      expect(dispose.name, 'closeTicker');
+      expect(dispose.owner, isNull);
+    });
+
+    test('a static method is named with the class that owns it', () async {
+      final clazz = await classNamed('Ticker', '''
+class Tickers {
+  static Future<void> close(Ticker ticker) async {}
+}
+
+@AlloyInject(dispose: Tickers.close)
+class Ticker {
+  Ticker();
+}
+''');
+
+      final dispose = parser.parseClass(clazz).dispose!;
+
+      expect(dispose.name, 'close');
+      expect(dispose.owner, 'Tickers');
+    });
+
+    test('a transient is refused, since the scope never holds one', () async {
+      final clazz = await classNamed('Ticker', '''
+Future<void> closeTicker(Ticker ticker) async {}
+
+@AlloyInject(lifetime: AlloyLifetime.transient, dispose: closeTicker)
+class Ticker {
+  Ticker();
+}
+''');
+
+      expect(
+        () => parser.parseClass(clazz),
+        throwsA(
+          isA<AlloyParseError>().having(
+            (error) => error.message,
+            'message',
+            allOf(contains('never retains a transient'), contains('lifetime')),
+          ),
+        ),
+      );
+    });
+
+    test(
+      'a parameterized registration is refused for the same reason',
+      () async {
+        final clazz = await classNamed('Ticket', '''
+Future<void> closeTicket(Ticket ticket) async {}
+
+@AlloyInject(dispose: closeTicket)
+class Ticket {
+  Ticket({@alloyParam required this.id});
+  final int id;
+}
+''');
+
+        expect(
+          () => parser.parseClass(clazz),
+          throwsA(
+            isA<AlloyParseError>().having(
+              (error) => error.message,
+              'message',
+              contains('never retains a parameterized registration'),
+            ),
+          ),
+        );
+      },
+    );
+  });
 }

@@ -41,13 +41,17 @@ class AlloyInject {
   /// Closes the instance at teardown, for a type that cannot say how itself.
   ///
   /// Point it at a top-level or static function taking the registered type:
-  /// `@AlloyInject(dispose: closeClient)`. Reach for it on a
-  /// [AlloyModule] member, where the type belongs to somebody else; a class
-  /// you own should implement `Disposable` or `AsyncDisposable` instead, which
-  /// keeps the knowledge on the object rather than at the registration.
+  /// `@AlloyInject(dispose: closeClient)`. It works on a class and on an
+  /// [AlloyModule] member alike — it used to be read only for members, and a
+  /// class naming one registered without it and was never closed.
   ///
-  /// A transient is never retained by the scope, so it cannot be closed by it
-  /// — pairing this with [AlloyLifetime.transient] is a build error.
+  /// Prefer implementing `Disposable` or `AsyncDisposable` where you can: that
+  /// keeps the knowledge on the object rather than at every registration of
+  /// it. Reach for this when you cannot — a type from another package, or one
+  /// whose closing method belongs to a base class you do not control.
+  ///
+  /// A transient and a parameterized registration are never retained by the
+  /// scope, so it could never call this — pairing them is a build error.
   final Function? dispose;
 }
 

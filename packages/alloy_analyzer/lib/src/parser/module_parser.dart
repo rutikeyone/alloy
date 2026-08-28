@@ -1,10 +1,10 @@
-import 'package:alloy_analyzer/src/model/function_ref.dart';
 import 'package:alloy_analyzer/src/model/injectable_class.dart';
 import 'package:alloy_analyzer/src/model/injected_property.dart';
 import 'package:alloy_analyzer/src/model/provider_ref.dart';
 import 'package:alloy_analyzer/src/model/type_ref.dart';
 import 'package:alloy_analyzer/src/parser/alloy_matchers.dart';
 import 'package:alloy_analyzer/src/parser/dart_object_reader.dart';
+import 'package:alloy_analyzer/src/parser/dispose_reader.dart';
 import 'package:alloy_analyzer/src/parser/environment_reader.dart';
 import 'package:alloy_analyzer/src/parser/parse_error.dart';
 import 'package:alloy_analyzer/src/parser/type_ref_resolver.dart';
@@ -113,7 +113,7 @@ class AlloyModuleParser {
     final produced = _producedType(member, where);
     final isAsync = member.returnType.isDartAsyncFuture;
     final lifetime = _lifetimeOf(annotation, isAsync: isAsync);
-    final dispose = _disposeOf(annotation, where, member);
+    final dispose = disposeOf(annotation, where, member);
 
     if (dispose != null && lifetime == AlloyLifetime.transient && !isAsync) {
       throw AlloyParseError(
@@ -232,36 +232,5 @@ class AlloyModuleParser {
   AlloyTypeRef? _exposeAsOf(DartObject annotation) {
     final type = annotation.getField('exposeAs')?.toTypeValue();
     return type == null ? null : typeRefOf(type);
-  }
-
-  AlloyFunctionRef? _disposeOf(
-    DartObject annotation,
-    String where,
-    ExecutableElement member,
-  ) {
-    final function = annotation.getField('dispose')?.toFunctionValue();
-    if (function == null) return null;
-
-    final owner = function.enclosingElement;
-    if (owner is ClassElement) {
-      if (!function.isStatic) {
-        throw AlloyParseError(
-          '$where names ${function.displayName} as its dispose function, but '
-          'that is an instance method. Point at a top-level or static '
-          'function.',
-          member,
-        );
-      }
-      return AlloyFunctionRef(
-        name: function.displayName,
-        import: owner.library.uri.toString(),
-        owner: owner.displayName,
-      );
-    }
-
-    return AlloyFunctionRef(
-      name: function.displayName,
-      import: function.library.uri.toString(),
-    );
   }
 }

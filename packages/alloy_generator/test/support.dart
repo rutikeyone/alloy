@@ -47,6 +47,7 @@ AlloyInjectableClass declare(
   bool isAsyncInit = false,
   List<AlloyTypeRef> dependsOn = const [],
   Set<String> environments = const {},
+  AlloyFunctionRef? dispose,
 }) => AlloyInjectableClass(
   type: ref(type),
   lifetime: lifetime,
@@ -57,6 +58,7 @@ AlloyInjectableClass declare(
   isAsyncInit: isAsyncInit,
   dependsOn: dependsOn,
   environments: environments,
+  dispose: dispose,
 );
 
 AlloyBootstrapStepClass step(
