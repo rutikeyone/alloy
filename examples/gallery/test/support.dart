@@ -20,7 +20,11 @@ Widget galleryHarness({
 }) => GalleryLocaleScope(
   select: onSelect ?? (_) {},
   child: MaterialApp(
-    theme: galleryTheme(),
+    theme: galleryTheme(GalleryFace.spaceGrotesk),
+    builder: (context, child) => Theme(
+      data: galleryTheme(GalleryFace.of(Localizations.localeOf(context))),
+      child: child!,
+    ),
     locale: locale,
     localizationsDelegates: const [
       GalleryL10n.delegate,

@@ -14,6 +14,7 @@ class DetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final tint = entry.kind.tint;
     final l10n = GalleryL10n.of(context);
+    final text = GalleryText.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -21,7 +22,7 @@ class DetailScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         title: Text(
           l10n.allExamples,
-          style: GalleryText.body.copyWith(color: GalleryColors.textMuted),
+          style: text.body.copyWith(color: GalleryColors.textMuted),
         ),
         titleSpacing: 0,
       ),
@@ -37,13 +38,13 @@ class DetailScreen extends StatelessWidget {
           const SizedBox(height: 15),
           Row(
             children: [
-              Flexible(child: Text(entry.title, style: GalleryText.title)),
+              Flexible(child: Text(entry.title, style: text.title)),
               const SizedBox(width: 9),
               KindBadge(kind: entry.kind),
             ],
           ),
           const SizedBox(height: 8),
-          Text(entry.teaches, style: GalleryText.lede),
+          Text(entry.teaches, style: text.lede),
           const SizedBox(height: 24),
           _Label(l10n.whatItShows),
           const SizedBox(height: 11),
@@ -67,7 +68,7 @@ class _Label extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Text(text.toUpperCase(), style: GalleryText.monoCaps);
+      Text(text.toUpperCase(), style: GalleryText.of(context).monoCaps);
 }
 
 class _Point extends StatelessWidget {
@@ -89,7 +90,7 @@ class _Point extends StatelessWidget {
           decoration: BoxDecoration(color: tint, shape: BoxShape.circle),
         ),
         const SizedBox(width: 11),
-        Expanded(child: Text(text, style: GalleryText.body)),
+        Expanded(child: Text(text, style: GalleryText.of(context).body)),
       ],
     ),
   );
@@ -111,7 +112,7 @@ class _Transcript extends StatelessWidget {
     ),
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Text(text, style: GalleryText.mono),
+      child: Text(text, style: GalleryText.of(context).mono),
     ),
   );
 }

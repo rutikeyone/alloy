@@ -59,6 +59,7 @@ class _StartupFailed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = GalleryL10n.of(context);
+    final text = GalleryText.of(context);
 
     return Scaffold(
       body: Center(
@@ -67,9 +68,9 @@ class _StartupFailed extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(l10n.hostFailed, style: GalleryText.cardTitle),
+              Text(l10n.hostFailed, style: text.cardTitle),
               const SizedBox(height: 12),
-              Text('$error', style: GalleryText.cardBody),
+              Text('$error', style: text.cardBody),
               const SizedBox(height: 20),
               FilledButton(onPressed: retry, child: Text(l10n.hostRetry)),
             ],

@@ -34,7 +34,15 @@ class _GalleryAppState extends State<GalleryApp> {
     select: _select,
     child: MaterialApp(
       onGenerateTitle: (context) => GalleryL10n.of(context).appTitle,
-      theme: galleryTheme(),
+      // Built again below `Localizations`, where there is a language to ask
+      // about: the face the interface is set in depends on it, and a
+      // `ThemeData` handed to `MaterialApp` is assembled above that. What
+      // arrives here as `child` is the navigator, so every screen is inside.
+      theme: galleryTheme(GalleryFace.spaceGrotesk),
+      builder: (context, child) => Theme(
+        data: galleryTheme(GalleryFace.of(Localizations.localeOf(context))),
+        child: child!,
+      ),
       locale: _locale,
       localizationsDelegates: const [
         GalleryL10n.delegate,

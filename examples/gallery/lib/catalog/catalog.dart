@@ -366,7 +366,7 @@ class _InspectorDemoState extends State<_InspectorDemo> {
                   scope: context.alloyScope,
                   // The gallery's own palette, so the inspector reads as part
                   // of this app rather than as a panel bolted onto it.
-                  theme: galleryInspectorTheme(),
+                  theme: galleryInspectorTheme(context),
                 ),
               ),
             ),

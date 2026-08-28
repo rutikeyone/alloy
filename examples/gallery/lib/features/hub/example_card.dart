@@ -13,6 +13,7 @@ class ExampleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = entry.kind.tint;
+    final text = GalleryText.of(context);
 
     return Material(
       color: GalleryColors.card,
@@ -39,17 +40,14 @@ class ExampleCard extends StatelessWidget {
                       Row(
                         children: [
                           Flexible(
-                            child: Text(
-                              entry.title,
-                              style: GalleryText.cardTitle,
-                            ),
+                            child: Text(entry.title, style: text.cardTitle),
                           ),
                           const SizedBox(width: 8),
                           KindBadge(kind: entry.kind),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(entry.teaches, style: GalleryText.cardBody),
+                      Text(entry.teaches, style: text.cardBody),
                     ],
                   ),
                 ),
@@ -112,7 +110,7 @@ class KindBadge extends StatelessWidget {
     ),
     child: Text(
       kind.label(GalleryL10n.of(context)).toUpperCase(),
-      style: GalleryText.badge.copyWith(color: kind.tint),
+      style: GalleryText.of(context).badge.copyWith(color: kind.tint),
     ),
   );
 }

@@ -102,6 +102,47 @@ void main() {
     expect(find.text('Дерево'), findsOneWidget);
   });
 
+  testWidgets('a language Space Grotesk cannot write is set in one that can', (
+    tester,
+  ) async {
+    Set<String> familiesOn(Finder finder) => {
+      for (final text in tester.widgetList<Text>(finder))
+        ?text.style?.fontFamily,
+    };
+
+    await tester.pumpWidget(
+      galleryHarness(home: const HubScreen(), locale: const Locale('en')),
+    );
+    await tester.pump();
+
+    expect(
+      familiesOn(find.byType(Text)),
+      contains('SpaceGrotesk_regular'),
+      reason: 'English is what the gallery was drawn in',
+    );
+
+    await tester.pumpWidget(
+      galleryHarness(home: const HubScreen(), locale: const Locale('ru')),
+    );
+    await tester.pump();
+
+    final russian = familiesOn(find.byType(Text));
+    expect(russian, contains('Manrope_regular'));
+    expect(
+      russian,
+      isNot(contains('SpaceGrotesk_regular')),
+      reason:
+          'Space Grotesk has no Cyrillic, so a style still naming it is a call '
+          'site that never learned about the language — and the symptom is a '
+          'change of typeface in the middle of a word, not a crash',
+    );
+    expect(
+      russian,
+      contains('JetBrainsMono_regular'),
+      reason: 'the mono face does cover Cyrillic and must not have moved',
+    );
+  });
+
   test('the catalog carries no prose of its own', () {
     final english = buildCatalog(englishStrings);
     final russian = buildCatalog(lookupGalleryL10n(const Locale('ru')));

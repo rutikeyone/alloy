@@ -27,6 +27,26 @@ disagree.
 follows the switch too. It would follow it without the delegate — that is the fallback the package
 ships — but the gallery shows the documented path rather than the one you get for free.
 
+### The face follows the language
+
+Space Grotesk, which the gallery is drawn in, has no Cyrillic — Google Fonts ships it as latin,
+latin-ext and vietnamese. Set a Russian screen in it and only the Latin words are Space Grotesk
+while everything around them falls back to whatever the platform has, so «Bootstrap-шаги» changes
+typeface in the middle of the word and does it differently on iOS than on Android. A face that
+cannot write the language is the wrong face for that language, so Russian is set in Manrope: the
+same modern semi-geometric grotesque, with Cyrillic that was designed rather than substituted.
+
+`GalleryFace.of(locale)` decides, `GalleryText.of(context)` hands out the scale, and the theme is
+rebuilt in `MaterialApp.builder` — below `Localizations`, which is the first place there is a
+language to ask about. Chinese needs no entry: no webfont worth downloading carries CJK, the
+platform's own face is what every Chinese interface is set in, and Latin beside it is the ordinary
+mixed-script pairing rather than an accident. The mono styles never move — JetBrains Mono covers
+Cyrillic, and what they set is code.
+
+A test mounts the hub in both languages and fails if any style still names Space Grotesk under
+Russian, because a missed call site shows up as a typeface change mid-sentence rather than as a
+crash.
+
 What is **not** translated: the screens mounted from `notes_app`, `flow_scopes`, `graph_events` and
 `codegen_basics`. They belong to those packages, and dragging four more `l10n` setups behind a
 language switcher would be a poor trade for a demo.

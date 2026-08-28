@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gallery/catalog/catalog.dart';
-import 'package:gallery/design/gallery_theme.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/bootstrap/load_remote_config.dart';
 
@@ -56,10 +55,7 @@ void main() {
     LoadRemoteConfig.apiBaseUrl = 'https://stale.example/v0';
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: galleryTheme(),
-        home: Builder(builder: entry.open!),
-      ),
+      galleryHarness(home: Builder(builder: entry.open!)),
     );
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();

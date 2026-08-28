@@ -22,10 +22,83 @@ abstract final class GalleryColors {
   static const terminal = Color(0xFFE0A85F);
 }
 
+/// The face the interface is set in, chosen by what the language needs.
+///
+/// Space Grotesk has no Cyrillic — Google Fonts ships it as latin, latin-ext
+/// and vietnamese and nothing else. Set a Russian screen in it and the Latin
+/// words render in Space Grotesk while everything around them falls back to
+/// whatever the platform happens to have, which is a change of typeface in the
+/// middle of «Bootstrap-шаги» and a different one on iOS than on Android. A
+/// face that cannot write the language is the wrong face for that language.
+///
+/// Manrope is the substitute rather than a neutral UI face because switching
+/// language should not switch the app's personality: it is the same modern
+/// semi-geometric grotesque, and it covers Cyrillic properly.
+///
+/// Chinese needs no entry. No webfont here can carry CJK at a size worth
+/// downloading, the platform's own face is what every Chinese interface is set
+/// in anyway, and Latin beside it is the ordinary mixed-script pairing rather
+/// than an accident.
+enum GalleryFace {
+  /// Space Grotesk: the gallery's own face, for the scripts it can write.
+  spaceGrotesk,
+
+  /// Manrope: for Cyrillic, which Space Grotesk has no glyphs for.
+  manrope;
+
+  /// The face [locale] needs.
+  static GalleryFace of(Locale locale) =>
+      locale.languageCode == 'ru' ? manrope : spaceGrotesk;
+
+  TextStyle _display({
+    required double fontSize,
+    FontWeight? fontWeight,
+    double? letterSpacing,
+    double? height,
+    Color? color,
+  }) => switch (this) {
+    GalleryFace.spaceGrotesk => GoogleFonts.spaceGrotesk(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      letterSpacing: letterSpacing,
+      height: height,
+      color: color,
+    ),
+    GalleryFace.manrope => GoogleFonts.manrope(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      letterSpacing: letterSpacing,
+      height: height,
+      color: color,
+    ),
+  };
+
+  TextTheme _textTheme(TextTheme base) => switch (this) {
+    GalleryFace.spaceGrotesk => GoogleFonts.spaceGroteskTextTheme(base),
+    GalleryFace.manrope => GoogleFonts.manropeTextTheme(base),
+  };
+}
+
 /// Type scale from the canvas. Grotesk for the interface, mono for anything
 /// the machine said.
-abstract final class GalleryText {
-  static TextStyle get wordmark => GoogleFonts.spaceGrotesk(
+///
+/// Read through [of], because the display face depends on the language. The
+/// mono styles do not: JetBrains Mono covers Cyrillic, so the one place the
+/// gallery quotes the machine reads the same in every language — which is the
+/// point, since what it quotes is code.
+@immutable
+class GalleryText {
+  /// Sets the display styles in [face].
+  const GalleryText(this.face);
+
+  /// The scale for the language in force above [context].
+  factory GalleryText.of(BuildContext context) =>
+      GalleryText(GalleryFace.of(Localizations.localeOf(context)));
+
+  /// The face the display styles are set in.
+  final GalleryFace face;
+
+  TextStyle get wordmark => face._display(
     fontSize: 25,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.4,
@@ -33,67 +106,63 @@ abstract final class GalleryText {
     color: GalleryColors.text,
   );
 
-  static TextStyle get title => GoogleFonts.spaceGrotesk(
+  TextStyle get title => face._display(
     fontSize: 27,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     color: GalleryColors.text,
   );
 
-  static TextStyle get cardTitle => GoogleFonts.spaceGrotesk(
+  TextStyle get cardTitle => face._display(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     letterSpacing: -0.1,
     color: GalleryColors.text,
   );
 
-  static TextStyle get body => GoogleFonts.spaceGrotesk(
-    fontSize: 14,
-    height: 1.5,
-    color: const Color(0xFFD2D6DC),
-  );
+  TextStyle get body =>
+      face._display(fontSize: 14, height: 1.5, color: const Color(0xFFD2D6DC));
 
-  static TextStyle get cardBody => GoogleFonts.spaceGrotesk(
-    fontSize: 13,
-    height: 1.45,
-    color: GalleryColors.textMuted,
-  );
+  TextStyle get cardBody =>
+      face._display(fontSize: 13, height: 1.45, color: GalleryColors.textMuted);
 
-  static TextStyle get lede => GoogleFonts.spaceGrotesk(
-    fontSize: 15,
-    height: 1.5,
-    color: GalleryColors.textMuted,
-  );
+  TextStyle get lede =>
+      face._display(fontSize: 15, height: 1.5, color: GalleryColors.textMuted);
 
-  static TextStyle get mono => GoogleFonts.jetBrainsMono(
+  TextStyle get mono => GoogleFonts.jetBrainsMono(
     fontSize: 11.5,
     height: 1.7,
     color: const Color(0xFFC8CCD3),
   );
 
-  static TextStyle get monoCaps => GoogleFonts.jetBrainsMono(
+  TextStyle get monoCaps => GoogleFonts.jetBrainsMono(
     fontSize: 10.5,
     fontWeight: FontWeight.w500,
     letterSpacing: 1.1,
     color: GalleryColors.textFaint,
   );
 
-  static TextStyle get badge =>
+  TextStyle get badge =>
       GoogleFonts.jetBrainsMono(fontSize: 9.5, letterSpacing: 0.7, height: 1.4);
 
-  static TextStyle get subtitle => GoogleFonts.jetBrainsMono(
+  TextStyle get subtitle => GoogleFonts.jetBrainsMono(
     fontSize: 11,
     letterSpacing: 0.2,
     color: GalleryColors.textFaint,
   );
 }
 
-/// One theme for the whole app, examples included.
+/// One theme for the whole app, examples included, set in [face].
 ///
 /// Every example renders under this and nothing else. An example that brought
 /// its own palette would be showing you two designs at once — and the seam
 /// between them reads as a bug long before it reads as a distinction.
-ThemeData galleryTheme() {
+///
+/// [face] is a parameter rather than a lookup because a `ThemeData` is built
+/// above `Localizations`, where there is no language yet to ask about. The app
+/// resolves it in `MaterialApp.builder`, which is below both.
+ThemeData galleryTheme(GalleryFace face) {
+  final text = GalleryText(face);
   final scheme =
       ColorScheme.fromSeed(
         seedColor: GalleryColors.screen,
@@ -124,7 +193,7 @@ ThemeData galleryTheme() {
   return base.copyWith(
     scaffoldBackgroundColor: GalleryColors.canvas,
     canvasColor: GalleryColors.canvas,
-    textTheme: GoogleFonts.spaceGroteskTextTheme(base.textTheme),
+    textTheme: face._textTheme(base.textTheme),
     // Flat and untinted, so an example's app bar is the same colour scrolled
     // as it is at rest. Material 3 tints it on scroll by default, which on a
     // dark canvas looks like the background changed underneath you.
@@ -135,7 +204,7 @@ ThemeData galleryTheme() {
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: true,
-      titleTextStyle: GalleryText.cardTitle.copyWith(fontSize: 17),
+      titleTextStyle: text.cardTitle.copyWith(fontSize: 17),
     ),
     cardTheme: CardThemeData(
       color: GalleryColors.card,
@@ -194,7 +263,7 @@ ThemeData galleryTheme() {
       backgroundColor: GalleryColors.card,
       selectedColor: GalleryColors.screen.withValues(alpha: 0.18),
       side: const BorderSide(color: GalleryColors.hairline),
-      labelStyle: GalleryText.cardBody,
+      labelStyle: text.cardBody,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
   );
@@ -205,16 +274,17 @@ ThemeData galleryTheme() {
 /// Written out rather than derived from [galleryTheme] to show what the knob
 /// is for: an app with its own colours names them, and the inspector uses
 /// those instead of the ones it would infer.
-AlloyInspectorThemeData galleryInspectorTheme() => AlloyInspectorThemeData(
-  background: GalleryColors.canvas,
-  surface: GalleryColors.card,
-  onSurface: GalleryColors.text,
-  muted: GalleryColors.textMuted,
-  outline: GalleryColors.hairline,
-  accent: GalleryColors.screen,
-  scope: GalleryColors.screen,
-  startup: const Color(0xFF8FD98F),
-  instance: GalleryColors.textFaint,
-  failure: const Color(0xFFE0705F),
-  monospace: GalleryText.mono,
-);
+AlloyInspectorThemeData galleryInspectorTheme(BuildContext context) =>
+    AlloyInspectorThemeData(
+      background: GalleryColors.canvas,
+      surface: GalleryColors.card,
+      onSurface: GalleryColors.text,
+      muted: GalleryColors.textMuted,
+      outline: GalleryColors.hairline,
+      accent: GalleryColors.screen,
+      scope: GalleryColors.screen,
+      startup: const Color(0xFF8FD98F),
+      instance: GalleryColors.textFaint,
+      failure: const Color(0xFFE0705F),
+      monospace: GalleryText.of(context).mono,
+    );

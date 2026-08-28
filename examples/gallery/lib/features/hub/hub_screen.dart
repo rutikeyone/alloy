@@ -72,13 +72,14 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = GalleryL10n.of(context);
+    final text = GalleryText.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(section.title(l10n).toUpperCase(), style: GalleryText.monoCaps),
+        Text(section.title(l10n).toUpperCase(), style: text.monoCaps),
         const SizedBox(height: 4),
-        Text(section.blurb(l10n), style: GalleryText.cardBody),
+        Text(section.blurb(l10n), style: text.cardBody),
       ],
     );
   }
@@ -90,6 +91,7 @@ class _Masthead extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = GalleryL10n.of(context);
+    final text = GalleryText.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,8 +108,8 @@ class _Masthead extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Alloy', style: GalleryText.wordmark),
-                  Text(l10n.tagline, style: GalleryText.subtitle),
+                  Text('Alloy', style: text.wordmark),
+                  Text(l10n.tagline, style: text.subtitle),
                 ],
               ),
             ),
@@ -116,7 +118,7 @@ class _Masthead extends StatelessWidget {
         const SizedBox(height: 16),
         const _LanguageSwitch(),
         const SizedBox(height: 18),
-        Text(l10n.lede, style: GalleryText.lede),
+        Text(l10n.lede, style: text.lede),
       ],
     );
   }
@@ -187,7 +189,7 @@ class _LanguageChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           child: Text(
             GalleryLocaleScope.endonyms[code] ?? code,
-            style: GalleryText.cardBody.copyWith(
+            style: GalleryText.of(context).cardBody.copyWith(
               color: isActive ? GalleryColors.screen : GalleryColors.textMuted,
             ),
           ),
