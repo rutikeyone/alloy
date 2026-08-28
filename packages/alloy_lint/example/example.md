@@ -31,7 +31,7 @@ class Telemetry {}
 //          'Future<void> init()' method. — alloy_init_requires_init_method
 ```
 
-Eleven rules ship; all read annotations through `alloy_analyzer`, the same
+Twelve rules ship; all read annotations through `alloy_analyzer`, the same
 layer the generator uses.
 
 Note that `plugins` only works at the root of a package or workspace, and that

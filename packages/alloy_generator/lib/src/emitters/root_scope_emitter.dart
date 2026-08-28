@@ -1,5 +1,4 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
-import 'package:alloy_annotations/alloy_annotations.dart';
 import 'package:alloy_generator/src/emitters/alloy_factory_names.dart';
 import 'package:alloy_generator/src/emitters/alloy_references.dart';
 import 'package:code_builder/code_builder.dart';

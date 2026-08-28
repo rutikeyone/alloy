@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:alloy_analyzer/alloy_analyzer.dart';
-import 'package:alloy_annotations/alloy_annotations.dart';
 import 'package:test/test.dart';
 
 AlloyLibraryDeclarations roundTrip(AlloyLibraryDeclarations declarations) =>

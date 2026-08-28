@@ -43,13 +43,26 @@ plugins:
 | `alloy_environment_needs_a_registration` | `@AlloyEnvironment` on a class nothing registers, where it silently does nothing |
 | `alloy_dependency_is_not_registered` | an injected dependency nothing in the package registers |
 | `alloy_dependency_cycle` | an injectable class that depends, eventually, on itself |
+| `alloy_registration_is_never_released` | a registered class with a `dispose()` or `close()` the scope cannot see |
 
 All rules are warnings, so they are on by default. Every rule reads annotations through
 `alloy_analyzer`, the same layer the generator uses.
 
 ## Why the graph rules report less than the build does
 
-Nine of the eleven rules answer a question about one declaration. The other two —
+`alloy_registration_is_never_released` is the one that pays for itself in a Flutter application.
+A scope releases what implements `Disposable` or `AsyncDisposable`, and Dart has no structural
+typing — so `ChangeNotifier.dispose`, which matches the interface method exactly, is invisible to
+it, and `Bloc.close` is not even the right name. The rule reports a registered class that declares
+a teardown-shaped method (no required parameters, returning `void` or a `Future`) and neither
+implements an interface nor names a `dispose:` function.
+
+It stays quiet where the scope would never call one anyway: a transient and a parameterized
+registration are not retained. It also stays quiet when a `Disposable` from somewhere else is in
+the supertypes, because it matches by name rather than by library — a rule that cannot see the
+whole graph should fail towards silence.
+
+Ten of the twelve rules answer a question about one declaration. The other two —
 `alloy_dependency_is_not_registered` and `alloy_dependency_cycle` — answer one about the whole
 package, and the analysis server does not offer that view: it hands a rule one library at a time,
 and the only synchronous window onto the others is their **parsed**, unresolved source.

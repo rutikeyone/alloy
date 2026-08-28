@@ -508,7 +508,7 @@ Gallery 提供英文、俄文和中文，可以在首页直接切换 —— 它�
 
 ## Lint 插件
 
-`alloy_lint` 是一个 `analysis_server_plugin`，而不是 `custom_lint` 插件（见"工具链"）。它提供十一条 warning
+`alloy_lint` 是一个 `analysis_server_plugin`，而不是 `custom_lint` 插件（见"工具链"）。它提供十二条 warning
 级别的规则，全部构建在生成器所用的同一个 `alloy_analyzer` 解析层之上，因此错误会在 IDE 中浮现，而不是
 只在跑 `build_runner` 时才出现：
 
@@ -524,6 +524,7 @@ Gallery 提供英文、俄文和中文，可以在首页直接切换 —— 它�
 | `alloy_bootstrap_step_cannot_inject` | 构造函数需要参数的引导步骤 |
 | `alloy_dependency_is_not_registered` | 包内无人注册的被注入依赖 |
 | `alloy_dependency_cycle` | 最终依赖到自身的可注入类 |
+| `alloy_registration_is_never_released` | 已注册的类有 `dispose()` 或 `close()`，但作用域看不见它 |
 | `alloy_environment_needs_a_registration` | `@AlloyEnvironment` 用在没人注册的类上，此时它什么也不做 |
 
 接入时有两件事会实实在在地耗掉时间，而且很容易弄错：

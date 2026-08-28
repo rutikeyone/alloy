@@ -560,7 +560,7 @@ examples in one package would have their graphs merged.
 ## Lint plugin
 
 `alloy_lint` is an `analysis_server_plugin`, not a `custom_lint` plugin (see Toolchain). It ships
-eleven warning rules, all built on the same `alloy_analyzer` parsing layer the generator uses, so a
+twelve warning rules, all built on the same `alloy_analyzer` parsing layer the generator uses, so a
 mistake surfaces in the IDE instead of only when `build_runner` runs:
 
 | Rule | Catches |
@@ -576,6 +576,7 @@ mistake surfaces in the IDE instead of only when `build_runner` runs:
 | `alloy_environment_needs_a_registration` | `@AlloyEnvironment` on a class nothing registers, where it silently does nothing |
 | `alloy_dependency_is_not_registered` | an injected dependency nothing in the package registers |
 | `alloy_dependency_cycle` | an injectable class that depends, eventually, on itself |
+| `alloy_registration_is_never_released` | a registered class with a `dispose()` or `close()` the scope cannot see |
 
 Two things about wiring it up cost real time and are easy to get wrong:
 

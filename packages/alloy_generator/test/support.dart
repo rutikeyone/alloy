@@ -1,5 +1,4 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
-import 'package:alloy_annotations/alloy_annotations.dart';
 import 'package:alloy_generator/alloy_generator.dart';
 
 const appImport = 'package:app/app.dart';

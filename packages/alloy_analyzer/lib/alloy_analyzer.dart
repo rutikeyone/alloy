@@ -9,6 +9,10 @@
 library;
 
 export 'package:alloy/alloy.dart' show AlloyCycleError, layeredTopologicalSort;
+// The IR exposes these in its own public API — `AlloyInjectableClass.lifetime`
+// is an AlloyLifetime — so a reader of the model needs them to say anything
+// about what it read.
+export 'package:alloy_annotations/alloy_annotations.dart' show AlloyLifetime;
 
 export 'package:alloy_analyzer/src/model/bootstrap_step_class.dart';
 export 'package:alloy_analyzer/src/model/function_ref.dart';

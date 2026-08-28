@@ -1,14 +1,27 @@
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 
 const alloyAnnotationsStub = r'''
+// The order matters: the parser reads this field by enum index, so a stub
+// that lists them differently maps every lifetime to the wrong one and
+// says nothing about it.
+enum AlloyLifetime { transient, lazySingleton, singleton }
+
 class AlloyInject {
-  const AlloyInject({this.name, this.exposeAs, this.dispose});
+  const AlloyInject({
+    this.name,
+    this.exposeAs,
+    this.dispose,
+    this.lifetime = AlloyLifetime.lazySingleton,
+  });
   final String? name;
   final Type? exposeAs;
   final Function? dispose;
+  final AlloyLifetime lifetime;
 }
 
 const alloyInject = AlloyInject();
+
+const alloyTransient = AlloyInject(lifetime: AlloyLifetime.transient);
 
 class Named {
   const Named(this.name);
@@ -70,6 +83,27 @@ class AlloyEnvironment {
 
 const alloyImport =
     "import 'package:alloy_annotations/alloy_annotations.dart';";
+
+/// What the runtime recognises as closeable.
+///
+/// A stub rather than the real `package:alloy`, for the same reason the
+/// annotations are one: these tests drive rules, not a resolver over the whole
+/// workspace.
+const alloyRuntimeStub = r'''
+abstract interface class Disposable {
+  void dispose();
+}
+
+abstract interface class AsyncDisposable {
+  Future<void> dispose();
+}
+''';
+
+const alloyRuntimeImport = "import 'package:alloy/alloy.dart';";
+
+void stubAlloyRuntime(AnalysisRuleTest test) {
+  test.newPackage('alloy').addFile('lib/alloy.dart', alloyRuntimeStub);
+}
 
 void stubAlloyAnnotations(AnalysisRuleTest test) {
   test
