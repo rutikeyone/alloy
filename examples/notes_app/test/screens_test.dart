@@ -1,4 +1,5 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:alloy_test_flutter/alloy_test_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
@@ -23,20 +24,12 @@ void main() {
 
   setUp(BootLog.reset);
 
-  Future<void> settle(WidgetTester tester) async {
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-  }
-
   /// Mounts [screen] with its own graph and records the graph as [app].
   Future<void> open(WidgetTester tester, Widget screen) async {
     await tester.pumpWidget(notesScreenUnderTest(screen));
     await settle(tester);
     await settle(tester);
-    // Climbs to the root: a screen that owns a scope publishes its own
-    // provider, so the nearest one is the screen's, not the graph's.
-    app = AlloyScopeProvider.of(tester.element(find.byType(Scaffold).first))
-        .root;
+    app = mountedRootScope(tester);
   }
 
   Future<void> pumpApp(WidgetTester tester) => open(tester, const HomeScreen());

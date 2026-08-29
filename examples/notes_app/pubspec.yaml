@@ -19,6 +19,7 @@ dependencies:
   intl: ^0.20.2
 
 dev_dependencies:
+  alloy_test_flutter: ^0.1.0
   alloy_test: ^0.1.0
   alloy_generator: ^0.1.0
   build_runner: ^2.16.0

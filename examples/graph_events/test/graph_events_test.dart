@@ -1,6 +1,7 @@
 import 'package:alloy_flutter/alloy_flutter.dart';
 import 'package:alloy_test/alloy_test.dart';
 import 'package:alloy_talker/alloy_talker.dart';
+import 'package:alloy_test_flutter/alloy_test_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,11 +24,6 @@ void main() {
     audit = AuditLog();
     reports = ReportLog();
   });
-
-  Future<void> settle(WidgetTester tester) async {
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-  }
 
   Future<void> pumpApp(WidgetTester tester) async {
     // The app widget is gone — the gallery owns that now — so the test mounts

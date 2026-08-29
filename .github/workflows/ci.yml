@@ -77,6 +77,7 @@ jobs:
           for package in packages/alloy_flutter packages/alloy_go_router \
                          packages/alloy_inspector \
                          packages/alloy_talker_flutter \
+                         packages/alloy_test_flutter \
                          examples/codegen_basics examples/notes_app \
                          examples/flow_scopes examples/graph_events \
                          examples/testing_patterns examples/gallery; do
@@ -97,7 +98,8 @@ jobs:
                          packages/alloy_logging packages/alloy_logger \
                          packages/alloy_flutter packages/alloy_go_router \
                          packages/alloy_inspector \
-                         packages/alloy_talker_flutter; do
+                         packages/alloy_talker_flutter \
+                         packages/alloy_test_flutter; do
             (cd "$package" && dart pub publish --dry-run)
           done
 

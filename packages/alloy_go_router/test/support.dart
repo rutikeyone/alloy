@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+// Re-exported so every test file here keeps reaching `settle` through this
+// one import, which is what they all did when it was defined below.
+export 'package:alloy_test_flutter/alloy_test_flutter.dart';
+
 /// Where the fixtures below report their teardown, replaced by every `setUp`.
 ///
 /// This was a plain list cleared at the start of each test, which does not
@@ -61,12 +65,6 @@ Widget app(AlloyScope scope, GoRouter router) => AlloyScopeProvider(
   scope: scope,
   child: MaterialApp.router(routerConfig: router),
 );
-
-/// Pumps without `pumpAndSettle`, which hangs on an indefinite animation.
-Future<void> settle(WidgetTester tester) async {
-  await tester.pump();
-  await tester.pump(const Duration(seconds: 1));
-}
 
 String textStartingWith(String prefix) {
   final finder = find.textContaining(prefix);

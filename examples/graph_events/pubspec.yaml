@@ -22,6 +22,7 @@ dependencies:
   talker_flutter: ^5.1.0
 
 dev_dependencies:
+  alloy_test_flutter: ^0.1.0
   alloy_test: ^0.1.0
   flutter_test:
     sdk: flutter

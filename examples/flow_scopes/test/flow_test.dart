@@ -3,6 +3,7 @@ import 'package:flow_scopes/app/app_router.dart';
 import 'package:flow_scopes/app/flow_scopes_app.dart';
 import 'package:flow_scopes/core/event_log.dart';
 import 'package:flow_scopes/core/flow_event.dart';
+import 'package:alloy_test_flutter/alloy_test_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -15,18 +16,11 @@ void main() {
 
   tearDown(() => router.dispose());
 
-  Future<void> settle(WidgetTester tester) async {
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-  }
-
   Future<void> start(WidgetTester tester) async {
     await tester.pumpWidget(FlowScopesApp(router: router));
     await settle(tester);
     await settle(tester);
-    // Below the app, not above it: AlloyAppScope.builder publishes the scope
-    // inside MaterialApp so loading and error screens get its theme.
-    app = AlloyScopeProvider.of(tester.element(find.byType(Navigator).first));
+    app = mountedRootScope(tester);
   }
 
   Future<void> go(WidgetTester tester, String location) async {

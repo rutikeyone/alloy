@@ -18,6 +18,7 @@ workspace:
   - packages/alloy_lint
   - packages/alloy_inspector
   - packages/alloy_test
+  - packages/alloy_test_flutter
   - examples/manual_mode
   - examples/codegen_basics
   - examples/notes_app

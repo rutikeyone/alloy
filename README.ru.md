@@ -30,6 +30,7 @@
 | `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | только dev_dependency |
 | `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | только dev_dependency |
 | `alloy_test` | `alloy`, `test_api`, `matcher` | только dev_dependency |
+| `alloy_test_flutter` | `alloy_flutter`, `flutter_test` | только dev_dependency |
 | `alloy_inspector` | `alloy_flutter`, `flutter` | только dev_dependency |
 | `alloy_talker_flutter` | `alloy_inspector`, `alloy_talker`, `talker_flutter` | dev_dependency only |
 
@@ -77,7 +78,9 @@ dart format --output=none --set-exit-if-changed .
 ```
 
 `tool/coverage.sh` меряет построчное покрытие одиннадцати публикуемых пакетов с тестами, печатает
-их от худшего и падает ниже порога по **сумме** — 85% против 92.6% сегодня. Порог именно на сумме,
+их от худшего и падает ниже порога по **сумме** — 85%. Текущую цифру печатает сам скрипт, и здесь
+она не повторяется: величина, которая двигается на каждом коммите, в прозе устаревает, и проверить
+это нечем — так уже случалось дважды. Порог именно на сумме,
 а не на каждом пакете, и это осознанно: покрытие меряется по пакетам, а код общий, поэтому парсеры
 `alloy_analyzer` гоняются куда больше из тестов `alloy_generator` и из `compat/external_consumer`,
 чем из собственного набора. Порог на пакет требовал бы писать тесты не там, где им место.

@@ -27,6 +27,7 @@ what does not.
 | `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | dev_dependency only |
 | `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | dev_dependency only |
 | `alloy_test` | `alloy`, `test_api`, `matcher` | dev_dependency only |
+| `alloy_test_flutter` | `alloy_flutter`, `flutter_test` | dev_dependency only |
 | `alloy_inspector` | `alloy_flutter`, `flutter` | dev_dependency only |
 | `alloy_talker_flutter` | `alloy_inspector`, `alloy_talker`, `talker_flutter` | dev_dependency only |
 
@@ -73,7 +74,9 @@ dart format --output=none --set-exit-if-changed .
 ```
 
 `tool/coverage.sh` measures line coverage of the eleven publishable packages that have tests, prints
-them worst-first, and fails under a floor on the **total** — 85%, against 92.6% today. The floor is
+them worst-first, and fails under a floor on the **total** — 85%. The current figure is what the script prints, and
+is not repeated here: a number that moves with every commit goes stale in prose and nothing checks
+it, which it has already done twice. The floor is
 on the total rather than per package deliberately: coverage is measured per package while the code
 is shared, so `alloy_analyzer`'s parsers are driven far more from `alloy_generator`'s tests and from
 `compat/external_consumer` than from their own suite. A per-package floor would demand tests written

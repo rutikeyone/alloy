@@ -27,6 +27,7 @@
 | `alloy_generator` | `alloy_analyzer`、`build`、`source_gen`、`code_builder` | 仅 dev_dependency |
 | `alloy_lint` | `alloy_analyzer`、`analysis_server_plugin` | 仅 dev_dependency |
 | `alloy_test` | `alloy`、`test_api`、`matcher` | 仅 dev_dependency |
+| `alloy_test_flutter` | `alloy_flutter`、`flutter_test` | 仅 dev_dependency |
 | `alloy_inspector` | `alloy_flutter`、`flutter` | 仅 dev_dependency |
 | `alloy_talker_flutter` | `alloy_inspector`, `alloy_talker`, `talker_flutter` | dev_dependency only |
 
@@ -71,7 +72,8 @@ dart format --output=none --set-exit-if-changed .
 ```
 
 `tool/coverage.sh` 测量十一个有测试的可发布包的行覆盖率，从最低者开始打印，并在**总计**低于下限时失败
-——下限 85%，当前 92.6%。下限放在总计而非每个包上是有意为之：覆盖率按包测量，而代码是共享的，
+——下限 85%。当前数值由脚本自己打印，这里不再重复：一个每次提交都会变的数字写进正文就会过时，
+而且没有任何东西检查它——这已经发生过两次。下限放在总计而非每个包上是有意为之：覆盖率按包测量，而代码是共享的，
 `alloy_analyzer` 的解析器主要由 `alloy_generator` 的测试和 `compat/external_consumer` 驱动，
 而非它自己的用例。按包设下限会迫使测试写在不属于它们的地方。可用
 `COVERAGE_FLOOR=90 ./tool/coverage.sh` 覆盖。
