@@ -21,7 +21,7 @@ version solving fails.
    alloy_go_router            (alloy_flutter)
    alloy_inspector            (alloy_flutter)
    alloy_test_flutter         (alloy_flutter)
-alloy_talker_flutter       (alloy_inspector, alloy_talker)
+5. alloy_talker_flutter       (alloy_inspector, alloy_talker)
 ```
 
 Steps within a numbered group are independent of each other. Between groups,
