@@ -1,0 +1,23 @@
+include: analysis_options.yaml
+
+# Turns on the alloy_lint plugin for the stand, which is off by default.
+#
+# Copy this over `analysis_options.yaml` when you want to check that the plugin
+# loads from outside the workspace — the one thing this stand exists to prove
+# that the workspace cannot. See the root `analysis_options.plugin.yaml` for
+# why it is not on by default.
+#
+# A published alloy_lint needs only the `plugins` entry. The overrides are
+# scaffolding for the unpublished state, not something a consumer writes.
+plugins:
+  alloy_lint:
+    path: ../../packages/alloy_lint
+  dependency_overrides:
+    alloy_lint:
+      path: ../../packages/alloy_lint
+    alloy_analyzer:
+      path: ../../packages/alloy_analyzer
+    alloy:
+      path: ../../packages/alloy
+    alloy_annotations:
+      path: ../../packages/alloy_annotations

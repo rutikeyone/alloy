@@ -45,6 +45,15 @@ wait for the previous group to appear on pub.dev — the index is not instant.
       `MIGRATION.zh-CN.md` track the English originals; nothing checks that they
       still say the same thing, so this box is the only thing that does. English
       is authoritative — if a translation is stale, fix it or say so in it.
+- [ ] After publishing, put the plugin back where it belongs. `alloy_lint` is
+      enabled from `analysis_options.plugin.yaml` rather than from
+      `analysis_options.yaml`, in the repository root and in
+      `compat/external_consumer`, because the analysis server resolves a
+      synthetic plugin package against pub.dev and that fails while ours are
+      unpublished. Once they are not, delete both `*.plugin.yaml`, put a plain
+      `plugins: alloy_lint: ^x.y.z` in each `analysis_options.yaml`, and drop
+      the `dependency_overrides`. Only then does the stand prove the ordinary
+      installation, which today cannot be checked at all.
 - [ ] **Shipped strings** translated too, which is a different job from the
       documents above: `packages/alloy_inspector/l10n/*.arb` and the examples'
       — `gallery`, `notes_app`, `flow_scopes`, `graph_events` and

@@ -28,6 +28,26 @@ plugins:
       path: ../packages/alloy_analyzer
 ```
 
+### The second thing outside your pubspec
+
+The synthetic `plugin_entrypoint` also depends on `analysis_server_plugin` at a version the **SDK**
+chooses, not one you write. An SDK that vendors an unpublished version asks pub.dev for something
+like `^0.3.21-dev`, finds nothing, and analysis fails before a single file is read:
+
+```
+Because plugin_entrypoint depends on analysis_server_plugin ^0.3.21-dev
+which doesn't match any versions, version solving failed.
+```
+
+That is not a failure of the code being analysed and it is not fixable from here — which is why
+this repository does **not** enable the plugin from its own `analysis_options.yaml`. The block
+lives in `analysis_options.plugin.yaml`, to be copied over when you want the rules in your editor,
+and CI analyzes without it. The rules themselves are covered by this package's tests, which drive
+them through `analyzer_testing` and never start a server.
+
+Both problems end at publication: the overrides disappear, the plugin resolves like any other
+package, and the three lines go back into `analysis_options.yaml`.
+
 ## Rules
 
 | Rule | Catches |
