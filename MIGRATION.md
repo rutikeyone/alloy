@@ -251,11 +251,14 @@ The part that needs saying out loud is teardown. A scope releases what implement
 once per class:
 
 ```dart
-class CounterCubit extends Cubit<int> implements AsyncDisposable {
-  @override
-  Future<void> dispose() => close();
-}
+class CounterCubit extends Cubit<int> with AlloyBloc {}
 ```
+
+That mixin is [`alloy_bloc`](https://pub.dev/packages/alloy_bloc), which exists for this one
+sentence; writing `implements AsyncDisposable` and `Future<void> dispose() => close();` by hand does
+the same thing. For a bloc you cannot mix into, name the function:
+`@AlloyInject(dispose: closeBloc)`. And use `BlocProvider.value` rather than
+`BlocProvider(create: ...)` — the latter closes what it was handed, and the scope still owns it.
 
 A `ChangeNotifier` needs even less — its `dispose` already matches, so `implements Disposable` is
 the whole change. Skip either and the object is built, used and never closed, quietly. See the

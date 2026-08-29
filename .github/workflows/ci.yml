@@ -67,6 +67,7 @@ jobs:
                          packages/alloy_generator packages/alloy_lint \
                          packages/alloy_talker packages/alloy_logging \
                          packages/alloy_logger packages/alloy_test \
+                         packages/alloy_bloc \
                          examples/manual_mode examples/teardown \
                          compat/external_consumer; do
             (cd "$package" && dart test)
@@ -95,6 +96,7 @@ jobs:
           for package in packages/alloy_annotations packages/alloy \
                          packages/alloy_analyzer packages/alloy_generator \
                          packages/alloy_test packages/alloy_talker \
+                         packages/alloy_bloc \
                          packages/alloy_logging packages/alloy_logger \
                          packages/alloy_flutter packages/alloy_go_router \
                          packages/alloy_inspector \

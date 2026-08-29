@@ -239,11 +239,14 @@ BlocProvider.value(
 Мостик пишется один раз на класс:
 
 ```dart
-class CounterCubit extends Cubit<int> implements AsyncDisposable {
-  @override
-  Future<void> dispose() => close();
-}
+class CounterCubit extends Cubit<int> with AlloyBloc {}
 ```
+
+Этот миксин — [`alloy_bloc`](https://pub.dev/packages/alloy_bloc), пакет существует ради одной этой
+фразы; написать `implements AsyncDisposable` и `Future<void> dispose() => close();` руками — то же
+самое. Для блока, в который не примешаться, называется функция:
+`@AlloyInject(dispose: closeBloc)`. И провайдить через `BlocProvider.value`, а не
+`BlocProvider(create: ...)`: второй закрывает то, что ему передали, а владеет этим скоуп.
 
 `ChangeNotifier` требует ещё меньше: его `dispose` уже совпадает по сигнатуре, так что
 `implements Disposable` — вся правка. Пропустите любое из двух — и объект построится, поработает и

@@ -23,6 +23,7 @@
 | `alloy` | `alloy_annotations` | да, ядро рантайма, без Flutter |
 | `alloy_flutter` | `alloy`, `flutter` | да |
 | `alloy_go_router` | `alloy_flutter`, `go_router` | да, опционально |
+| `alloy_bloc` | `alloy`, `bloc` | да, опционально |
 | `alloy_talker` | `alloy`, `talker` | да, опционально |
 | `alloy_logging` | `alloy`, `logging` | да, опционально |
 | `alloy_logger` | `alloy`, `logger` | да, опционально |

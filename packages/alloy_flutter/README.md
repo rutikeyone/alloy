@@ -192,7 +192,7 @@ object a Flutter app registers has one without the declaration:
 | Type | What it has | What it needs |
 |---|---|---|
 | `ChangeNotifier`, `ValueNotifier` | `void dispose()` | `implements Disposable` — nothing else, the signature already matches |
-| `Bloc`, `Cubit` | `Future<void> close()` | `implements AsyncDisposable` and `Future<void> dispose() => close();` |
+| `Bloc`, `Cubit` | `Future<void> close()` | `with AlloyBloc` from [`alloy_bloc`](https://pub.dev/packages/alloy_bloc), or the same two lines by hand |
 | `StreamController` | `Future close()` | `dispose:` at the registration — it is not yours to change |
 
 ```dart

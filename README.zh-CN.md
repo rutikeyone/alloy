@@ -20,6 +20,7 @@
 | `alloy` | `alloy_annotations` | 是，运行时核心，不含 Flutter |
 | `alloy_flutter` | `alloy`、`flutter` | 是 |
 | `alloy_go_router` | `alloy_flutter`、`go_router` | 是，可选 |
+| `alloy_bloc` | `alloy`、`bloc` | 是，可选 |
 | `alloy_talker` | `alloy`、`talker` | 是，可选 |
 | `alloy_logging` | `alloy`、`logging` | 是，可选 |
 | `alloy_logger` | `alloy`、`logger` | 是，可选 |

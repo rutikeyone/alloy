@@ -20,6 +20,7 @@ what does not.
 | `alloy` | `alloy_annotations` | yes, runtime core, no Flutter |
 | `alloy_flutter` | `alloy`, `flutter` | yes |
 | `alloy_go_router` | `alloy_flutter`, `go_router` | yes, optional |
+| `alloy_bloc` | `alloy`, `bloc` | yes, optional |
 | `alloy_talker` | `alloy`, `talker` | yes, optional |
 | `alloy_logging` | `alloy`, `logging` | yes, optional |
 | `alloy_logger` | `alloy`, `logger` | yes, optional |

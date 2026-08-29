@@ -215,11 +215,13 @@ BlocProvider.value(
 `Future<void> close()` 关闭 —— 两者都不是。每个类桥接一次即可：
 
 ```dart
-class CounterCubit extends Cubit<int> implements AsyncDisposable {
-  @override
-  Future<void> dispose() => close();
-}
+class CounterCubit extends Cubit<int> with AlloyBloc {}
 ```
+
+这个 mixin 就是 [`alloy_bloc`](https://pub.dev/packages/alloy_bloc)，整个包就是为了这一句话而存在；
+手写 `implements AsyncDisposable` 和 `Future<void> dispose() => close();` 效果相同。对于无法混入的
+bloc，改为指定函数：`@AlloyInject(dispose: closeBloc)`。另外要用 `BlocProvider.value` 而不是
+`BlocProvider(create: ...)`——后者会关闭交给它的对象，而所有权在作用域手里。
 
 `ChangeNotifier` 需要的更少：它的 `dispose` 签名本来就匹配，所以 `implements Disposable` 就是全部
 改动。漏掉其中任何一个，对象都会被构建、被使用，然后永远不会关闭，而且悄无声息。完整对照表见
