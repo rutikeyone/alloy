@@ -38,6 +38,7 @@ jobs:
       - name: Translations are present
         run: |
           for f in README.ru.md README.zh-CN.md \
+                   GUIDE.md GUIDE.ru.md GUIDE.zh-CN.md \
                    MIGRATION.md MIGRATION.ru.md MIGRATION.zh-CN.md; do
             test -s "$f" || { echo "missing or empty: $f"; exit 1; }
           done
