@@ -30,3 +30,8 @@ xcuserdata/
 .DS_Store
 # Widget Preview related
 .widget_preview/
+
+# Design canvases. Scratch for how a screen should look, not a source the build
+# reads — and the published export is two megabytes of HTML, which is enough to
+# make GitHub call this an HTML project.
+.design/
