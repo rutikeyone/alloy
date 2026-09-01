@@ -38,6 +38,10 @@ class _GalleryAppState extends State<GalleryApp> {
     select: _select,
     child: MaterialApp(
       onGenerateTitle: (context) => GalleryL10n.of(context).appTitle,
+      // The gallery exists to be looked at, including in screenshots for the
+      // README. A debug ribbon across the corner of every one of them is
+      // noise about the build, not about Alloy.
+      debugShowCheckedModeBanner: false,
       // Built again below `Localizations`, where there is a language to ask
       // about: the face the interface is set in depends on it, and a
       // `ThemeData` handed to `MaterialApp` is assembled above that. What

@@ -31,6 +31,14 @@ generators and the lint plugin are implemented and tested.
 | **Coming from `get_it` or `injectable`** | [MIGRATION.md](MIGRATION.md) — what maps, and what does not |
 | **See it running** | `cd examples/gallery && flutter run` |
 
+<p align="center">
+  <img src="assets/screenshots/hub.png" width="30%" alt="The example gallery">
+  <img src="assets/screenshots/tree.png" width="30%" alt="The live scope tree">
+  <img src="assets/screenshots/log.png" width="30%" alt="Everything the graph reported">
+</p>
+
+<p align="center"><sub>The example gallery, the live scope tree with every registration's lifetime, and everything the graph reported — <code>alloy_inspector</code>, inside the running app.</sub></p>
+
 ## What it is
 
 A container that owns what it builds. Scopes form a tree rather than a stack, so a session, a

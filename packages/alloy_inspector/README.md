@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/rutikeyone/alloy/main/assets/screenshots/tree.png" width="30%" alt="The live scope tree">
+  <img src="https://raw.githubusercontent.com/rutikeyone/alloy/main/assets/screenshots/log.png" width="30%" alt="Everything the graph reported">
+</p>
+
 # alloy_inspector
 
 The live scope tree, what [Alloy](https://pub.dev/packages/alloy) built and with what lifetime, and

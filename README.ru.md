@@ -34,6 +34,14 @@
 | **Пришли с `get_it` или `injectable`** | [MIGRATION.ru.md](MIGRATION.ru.md) — что переводится, а что нет |
 | **Посмотреть вживую** | `cd examples/gallery && flutter run` |
 
+<p align="center">
+  <img src="assets/screenshots/hub.png" width="30%" alt="Галерея примеров">
+  <img src="assets/screenshots/tree.png" width="30%" alt="Живое дерево скоупов">
+  <img src="assets/screenshots/log.png" width="30%" alt="Всё, о чём сообщил граф">
+</p>
+
+<p align="center"><sub>Галерея примеров, живое дерево скоупов с временем жизни каждой регистрации и всё, о чём сообщил граф, — <code>alloy_inspector</code> внутри работающего приложения.</sub></p>
+
 ## Что это
 
 Контейнер, который владеет тем, что построил. Скоупы образуют дерево, а не стек, поэтому у сессии,

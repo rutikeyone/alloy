@@ -32,6 +32,14 @@
 | **从 `get_it` 或 `injectable` 过来** | [MIGRATION.zh-CN.md](MIGRATION.zh-CN.md)——哪些对得上，哪些对不上 |
 | **跑起来看看** | `cd examples/gallery && flutter run` |
 
+<p align="center">
+  <img src="assets/screenshots/hub.png" width="30%" alt="示例画廊">
+  <img src="assets/screenshots/tree.png" width="30%" alt="实时作用域树">
+  <img src="assets/screenshots/log.png" width="30%" alt="图上报过的一切">
+</p>
+
+<p align="center"><sub>示例画廊、带每条注册生命周期的实时作用域树，以及图上报过的一切——运行中应用里的 <code>alloy_inspector</code>。</sub></p>
+
 ## 它是什么
 
 一个拥有自己所构建之物的容器。作用域构成一棵树而不是一个栈，
