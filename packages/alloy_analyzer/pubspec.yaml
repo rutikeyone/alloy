@@ -17,7 +17,7 @@ resolution: workspace
 dependencies:
   alloy: ^0.1.0
   alloy_annotations: ^0.1.0
-  analyzer: ">=10.0.0 <15.0.0"
+  analyzer: ">=12.1.0 <15.0.0"
   collection: ^1.19.0
   meta: ^1.16.0
   path: ^1.9.0

@@ -70,6 +70,12 @@ dev_dependencies:
   alloy_test_flutter: ^0.1.0
 ```
 
+**这里的下限比另一个模式高，而且它是真实的约束，不是一个凑整的数字。**
+`alloy_generator` 和 `alloy_lint` 需要 analyzer 13，而后者通过 `_fe_analyzer_shared` 需要 Dart 3.11；
+再往下，解析器还会看不见构造参数上的 `@AlloyParam`。单是运行时只要求 Dart `^3.10.0` /
+Flutter `>=3.38.0`，所以还没升到 3.47 的应用今天可以走 [GUIDE_MANUAL.zh-CN.md](GUIDE_MANUAL.zh-CN.md)，
+之后再来这里。
+
 纯 Dart 包——命令行工具、服务端、没有 widget 的包——去掉 `alloy_flutter` 和
 `alloy_test_flutter`。运行时任何地方都不需要 Flutter。
 

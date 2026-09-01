@@ -11,9 +11,7 @@
 </p>
 
 <p align="center">
-  <p align="center">
   <a href="README.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh-CN.md">中文</a>
-</p>
 </p>
 
 # Alloy
@@ -112,10 +110,19 @@ needs something Manual Mode cannot express, these are two frameworks sharing a n
 
 Built and tested on **Flutter 3.47.1 / Dart 3.13.1**, with analyzer 13.3.0.
 
-Every package requires Dart `^3.13.0`, and no Flutter below **3.47** ships it — so that is the floor,
-uniformly, and there is no version spread between packages to watch out for. CI runs `stable` and
-`beta` rather than a matrix of past releases: the useful failure to catch is the one that has not
-shipped yet.
+Every runtime package requires Dart `^3.10.0` and Flutter `>=3.38.0`. The three that carry the
+toolchain — `alloy_analyzer`, `alloy_generator`, `alloy_lint` — require Dart `^3.13.0`, and that
+split is measured rather than cautious: `alloy_lint` needs analyzer 13 to compile at all, and below
+Dart 3.11 the parser stops seeing `@AlloyParam` on constructor parameters, which is worse than
+refusing to build. analyzer 13 needs `_fe_analyzer_shared 100`, which needs Dart 3.11.
+
+So an application still on Flutter 3.38 can adopt Manual Mode today and take the generator when it
+upgrades — and nothing written in the meantime is thrown away, because the generated container is an
+`AlloyScopeBuilder` like the ones you wrote by hand.
+
+CI runs `stable` and `beta` rather than a matrix of past releases, plus one job pinned to Flutter
+3.38.9 that resolves, analyses and tests every package against the floor it declares
+(`tool/floor_check.sh`). A floor nothing exercises is a claim that rots.
 
 Do not use a Homebrew `dart` on PATH — put the Flutter SDK first. An older `dart` does not fail
 loudly: `dart analyze .` reports dozens of phantom issues against the wrong analyzer, and `dart pub

@@ -17,7 +17,7 @@ resolution: workspace
 dependencies:
   alloy_analyzer: ^0.1.0
   analysis_server_plugin: ^0.3.0
-  analyzer: ">=10.0.0 <15.0.0"
+  analyzer: ">=12.1.0 <15.0.0"
   analyzer_plugin: ^0.14.0
 
 dev_dependencies:

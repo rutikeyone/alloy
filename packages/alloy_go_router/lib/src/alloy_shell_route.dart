@@ -4,9 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 /// Builds the registrations a flow adds, from the route state that opened it.
-typedef AlloyRouteScopeBuilder = AlloyScopeBuilder Function(
-  GoRouterState state,
-);
+typedef AlloyRouteScopeBuilder =
+    AlloyScopeBuilder Function(GoRouterState state);
 
 /// Reads what distinguishes one run of a flow from another.
 ///

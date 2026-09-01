@@ -1,3 +1,6 @@
+@Tags(['repo'])
+library;
+
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -90,10 +93,9 @@ void main() {
 
     test('both CI loops', () {
       final ci = read('.github/workflows/ci.yml');
-      final named = RegExp(r'packages/(alloy[a-z_]*)')
-          .allMatches(ci)
-          .map((it) => it.group(1)!)
-          .toSet();
+      final named = RegExp(
+        r'packages/(alloy[a-z_]*)',
+      ).allMatches(ci).map((it) => it.group(1)!).toSet();
 
       expect(
         shipped.difference(named),
@@ -158,6 +160,91 @@ void main() {
         );
       });
     }
+  });
+
+  group('there are two floors, and each is one floor', () {
+    /// The toolchain packages sit a floor above the rest, on purpose.
+    ///
+    /// Measured 2026-09-01: `alloy_lint` needs analyzer 13 to compile at all
+    /// (`FormalParameter.type`, `NamedArgument`, `Folder.getFolder`), and on
+    /// Dart 3.10 the parser stops seeing `@AlloyParam` on constructor
+    /// parameters — a generator that reads it wrong is worse than one that
+    /// refuses to resolve. analyzer 13 needs `_fe_analyzer_shared 100`, which
+    /// needs Dart 3.11, so the floor could not be 3.10 whatever we wrote.
+    const toolchain = {'alloy_analyzer', 'alloy_generator', 'alloy_lint'};
+
+    /// The constraint a package declares, by key.
+    String? constraintOf(String package, String key) {
+      for (final line in File(
+        '${root.path}/packages/$package/pubspec.yaml',
+      ).readAsLinesSync()) {
+        if (line.startsWith('  $key:')) {
+          return line.substring('  $key:'.length).trim();
+        }
+      }
+      return null;
+    }
+
+    Map<String, String?> declaredBy(Iterable<String> packages, String key) => {
+      for (final package in packages) package: constraintOf(package, key),
+    };
+
+    test('the runtime packages agree on one Dart floor', () {
+      final declared = declaredBy(shipped.difference(toolchain), 'sdk');
+
+      expect(
+        declared.values.toSet(),
+        hasLength(1),
+        reason:
+            'the floor is a promise, and packages that disagree about it make '
+            'the promise unreadable — a consumer gets the highest floor among '
+            'whatever subset they happen to depend on.\n'
+            'Declared: $declared',
+      );
+    });
+
+    test('the toolchain packages agree on one Dart floor', () {
+      final declared = declaredBy(toolchain, 'sdk');
+
+      expect(declared.values.toSet(), hasLength(1), reason: '$declared');
+    });
+
+    test('the toolchain floor is the higher of the two', () {
+      final runtime = declaredBy(
+        shipped.difference(toolchain),
+        'sdk',
+      ).values.first;
+      final tools = declaredBy(toolchain, 'sdk').values.first;
+
+      expect(
+        runtime,
+        isNot(tools),
+        reason:
+            'if these ever match, the split has served its purpose and this '
+            'group should collapse back into one check',
+      );
+    });
+
+    test('every Flutter package agrees on one Flutter floor', () {
+      final declared = {
+        for (final package in shipped)
+          package: ?constraintOf(package, 'flutter'),
+      };
+
+      expect(
+        declared,
+        isNotEmpty,
+        reason: 'no package names Flutter, which cannot be right',
+      );
+      expect(
+        declared.values.toSet(),
+        hasLength(1),
+        reason:
+            'the Dart floor and the Flutter floor have to mean the same '
+            'release, and only one of them is checked by pub\n'
+            'Declared: $declared',
+      );
+    });
   });
 
   test('the release note counts the packages it lists', () {

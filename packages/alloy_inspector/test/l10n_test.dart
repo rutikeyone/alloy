@@ -120,9 +120,9 @@ void main() {
 
   test('every translation covers the template, key for key', () {
     Set<String> keysOf(String name) {
-      final decoded = jsonDecode(
-        File('l10n/$name.arb').readAsStringSync(),
-      ) as Map<String, dynamic>;
+      final decoded =
+          jsonDecode(File('l10n/$name.arb').readAsStringSync())
+              as Map<String, dynamic>;
       return decoded.keys.where((key) => !key.startsWith('@')).toSet();
     }
 

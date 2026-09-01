@@ -261,8 +261,9 @@ void main() {
       await tester.pumpAndSettle();
       final firstRoot = _rootOf(tester);
 
-      await AlloyAppScope.of(tester.element(find.byType(_ChildProbe)))
-          .restart();
+      await AlloyAppScope.of(
+        tester.element(find.byType(_ChildProbe)),
+      ).restart();
       await tester.pumpAndSettle();
 
       expect(_rootOf(tester), isNot(same(firstRoot)));

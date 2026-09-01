@@ -8,9 +8,9 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    # Two channels, not two Flutter versions: every package needs Dart ^3.13,
-    # which no Flutter below 3.47 ships, so there is no older version to test
-    # against. beta is the useful axis — it finds breakage before it lands.
+    # Two channels, not a matrix of past releases: beta is the axis that finds
+    # breakage before it lands. The old floor is a separate job below, because
+    # it needs a different SDK and a different way of resolving.
     strategy:
       fail-fast: false
       matrix:
@@ -116,3 +116,26 @@ jobs:
           cd packages/alloy_lint
           dart pub publish --dry-run 2>&1 | tee /tmp/lint-dry-run.txt || true
           grep -q 'Package has 1 warning' /tmp/lint-dry-run.txt
+
+  # The runtime packages claim Dart ^3.10.0 / Flutter >=3.38.0. A floor nothing
+  # exercises is a claim that rots, and this one matters: it is what lets an
+  # application still on 3.38 adopt Manual Mode before it upgrades.
+  #
+  # Its own job rather than a third matrix entry, because it cannot run the
+  # workspace. One workspace is one resolution, and on 3.38 `flutter_test` pins
+  # `test_api 0.7.7`, capping the `test` runner at 1.26.3 and `analyzer` below
+  # 9 — while `alloy_analyzer` needs 13. Consumers never meet that; we do,
+  # because our analyzer packages and the test runner share a resolution. So
+  # the script resolves each package on its own, and skips the three that
+  # declare a higher floor.
+  floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.38.9
+
+      - name: Every package meets the floor it declares
+        run: ./tool/floor_check.sh

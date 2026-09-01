@@ -46,7 +46,7 @@
 
 ```yaml
 environment:
-  sdk: ^3.13.0
+  sdk: ^3.10.0
 
 dependencies:
   alloy: ^0.1.0
@@ -56,8 +56,8 @@ Flutter 应用再加上绑定包，它会重新导出整个运行时，所以你
 
 ```yaml
 environment:
-  sdk: ^3.13.0
-  flutter: ">=3.47.0"
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
 
 dependencies:
   alloy: ^0.1.0
@@ -67,6 +67,11 @@ dev_dependencies:
   alloy_test: ^0.1.0
   alloy_test_flutter: ^0.1.0
 ```
+
+**这个模式比另一个能往回够得更远。** 运行时要求 Dart `^3.10.0` 和 Flutter `>=3.38.0`；
+生成器和 lint 插件要求 `^3.13.0`，因为它们需要 analyzer 13。因此仍停留在 Flutter 3.38 的应用
+可以从这里开始，等升级之后再转到 [GUIDE_CODEGEN.zh-CN.md](GUIDE_CODEGEN.zh-CN.md)——
+为什么期间写的东西不会白费，见 [§15](#15-什么时候该加上生成器)。
 
 可选，且只在你需要时才加：`alloy_go_router` 为每段导航流程提供一个作用域，
 `alloy_bloc` 让作用域能关闭 bloc，`alloy_inspector` 让你在运行时看这张图，

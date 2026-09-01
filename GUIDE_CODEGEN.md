@@ -70,6 +70,12 @@ dev_dependencies:
   alloy_test_flutter: ^0.1.0
 ```
 
+**The floor here is higher than in the other mode, and it is a real constraint rather than a round
+number.** `alloy_generator` and `alloy_lint` need analyzer 13, which needs Dart 3.11 through
+`_fe_analyzer_shared`; below that the parser also stops seeing `@AlloyParam` on constructor
+parameters. The runtime alone asks only for Dart `^3.10.0` / Flutter `>=3.38.0`, so an application
+not yet on 3.47 can run [GUIDE_MANUAL.md](GUIDE_MANUAL.md) today and arrive here later.
+
 A pure-Dart package — a CLI, a server, a package with no widgets — drops `alloy_flutter` and
 `alloy_test_flutter`. Nothing in the runtime needs Flutter.
 

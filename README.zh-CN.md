@@ -11,9 +11,7 @@
 </p>
 
 <p align="center">
-  <p align="center">
   <a href="README.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh-CN.md">中文</a>
-</p>
 </p>
 
 > 本文档译自 [README.md](README.md)。英文版为准：若有出入，以英文为准。
@@ -111,9 +109,17 @@
 
 在 **Flutter 3.47.1 / Dart 3.13.1**、analyzer 13.3.0 上构建并测试。
 
-所有包都要求 Dart `^3.13.0`，而 3.47 以下的 Flutter 都不附带该版本——所以这就是统一的下限，包与包
-之间并不存在需要留意的版本差异。CI 跑 `stable` 和 `beta`，而不是历史版本矩阵：值得提前发现的是**尚未
-发布**的那个问题。
+每个运行时包要求 Dart `^3.10.0` 和 Flutter `>=3.38.0`。承载工具链的三个——`alloy_analyzer`、
+`alloy_generator`、`alloy_lint`——要求 Dart `^3.13.0`。这个分界是量出来的，而不是出于谨慎：
+`alloy_lint` 没有 analyzer 13 根本编译不过，而在 Dart 3.11 以下，解析器会看不见构造参数上的
+`@AlloyParam`——那比编译失败更糟。analyzer 13 依赖 `_fe_analyzer_shared 100`，后者需要 Dart 3.11。
+
+因此，仍停留在 Flutter 3.38 的应用今天就能采用 Manual Mode，升级之后再拿到生成器，
+期间写的东西一点都不用丢：生成的容器和你手写的一样，就是一个 `AlloyScopeBuilder`。
+
+CI 跑 `stable` 和 `beta`，而不是历史版本矩阵，另外还有一个固定在 Flutter 3.38.9 的 job，
+它按每个包自己声明的下限去解析、分析并测试它们（`tool/floor_check.sh`）。
+没有任何东西去验证的下限，就是一个会过期的说法。
 
 不要让 Homebrew 的 `dart` 出现在 PATH 前面——把 Flutter SDK 放在最前。旧版 `dart` 不会大声报错：
 `dart analyze .` 会用错误的 analyzer 报出几十条幻觉问题，而 `dart pub get` 则直接拒绝 SDK 约束。

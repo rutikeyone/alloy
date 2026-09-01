@@ -100,15 +100,36 @@ visible in a diff you are scrolling past.
 
 ## Flutter and Dart versions
 
-Every package requires Dart `^3.13.0`, which no Flutter below **3.47** ships.
-The two Flutter packages say so directly (`flutter: ">=3.47.0"`); the pure-Dart
-ones do not mention Flutter at all. There is no version spread to document and
-none to test against — CI runs `stable` and `beta` instead, so an upcoming
-Flutter change is found before it is released rather than after.
+There are two floors, deliberately.
 
-Lowering that floor is possible for `alloy` and `alloy_annotations`, which are
-plain Dart. It is not possible for `alloy_analyzer`, `alloy_generator` and
-`alloy_lint`, which track the current analyzer.
+**The twelve runtime packages** require Dart `^3.10.0`, and the five that need
+Flutter say `>=3.38.0`. **The three toolchain packages** — `alloy_analyzer`,
+`alloy_generator`, `alloy_lint` — require Dart `^3.13.0`.
+
+The split is measured, not cautious. Below Dart 3.11 the parser stops seeing
+`@AlloyParam` on constructor parameters, and `alloy_lint` does not compile at
+all: `FormalParameter.type`, `NamedArgument` and `Folder.getFolder` arrived in
+analyzer 13, which needs `_fe_analyzer_shared 100`, which needs Dart 3.11. A
+generator that reads an annotation wrong is worse than one that refuses to
+resolve, so the toolchain stays where it is verified.
+
+What that buys: an application still on Flutter 3.38 can adopt Manual Mode now
+and take the generator when it upgrades, losing nothing in between.
+
+`tool/floor_check.sh` proves both floors. It copies each package out of the
+workspace and resolves it alone, because a workspace is one resolution and this
+one cannot exist on 3.38 — `flutter_test` there pins `test_api 0.7.7`, capping
+the `test` runner at 1.26.3 and `analyzer` below 9. Consumers never meet that;
+we do, because our analyzer packages and the test runner share a resolution.
+Packages declaring a floor above the running SDK are skipped, named, and not
+counted as passing.
+
+CI runs it pinned to Flutter 3.38.9 alongside `stable` and `beta`, so an
+upcoming Flutter change is found before release and the old floor cannot rot
+unnoticed.
+
+Raising a floor later is a breaking change; lowering one is not. That asymmetry
+is why this was settled before the first publish rather than after.
 
 ## After publishing
 

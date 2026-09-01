@@ -104,8 +104,9 @@ class RecordDetailSheet extends StatelessWidget {
                     _Field(
                       key: const Key('record-structured'),
                       label: strings.fieldStructured,
-                      value: const JsonEncoder.withIndent('  ')
-                          .convert(_stringify(record.toStructured())),
+                      value: const JsonEncoder.withIndent(
+                        '  ',
+                      ).convert(_stringify(record.toStructured())),
                     ),
                   ],
                 ),
@@ -125,8 +126,9 @@ class RecordDetailSheet extends StatelessWidget {
     final messenger = ScaffoldMessenger.maybeOf(context);
     await Clipboard.setData(
       ClipboardData(
-        text: const JsonEncoder.withIndent('  ')
-            .convert(_stringify(record.toStructured())),
+        text: const JsonEncoder.withIndent(
+          '  ',
+        ).convert(_stringify(record.toStructured())),
       ),
     );
     messenger?.showSnackBar(

@@ -36,10 +36,9 @@ class _EventLogViewState extends State<EventLogView> {
     return ListenableBuilder(
       listenable: widget.log,
       builder: (context, _) {
-        final entries = _matching(widget.log.entries)
-            .toList()
-            .reversed
-            .toList();
+        final entries = _matching(
+          widget.log.entries,
+        ).toList().reversed.toList();
 
         return Container(
           color: theme.background,

@@ -45,7 +45,7 @@ One dependency for a pure-Dart program — a CLI, a server, a package with no wi
 
 ```yaml
 environment:
-  sdk: ^3.13.0
+  sdk: ^3.10.0
 
 dependencies:
   alloy: ^0.1.0
@@ -55,8 +55,8 @@ A Flutter app adds the bindings, which re-export the whole runtime, so you never
 
 ```yaml
 environment:
-  sdk: ^3.13.0
-  flutter: ">=3.47.0"
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
 
 dependencies:
   alloy: ^0.1.0
@@ -66,6 +66,12 @@ dev_dependencies:
   alloy_test: ^0.1.0
   alloy_test_flutter: ^0.1.0
 ```
+
+**This mode reaches further back than the other one.** The runtime asks for Dart `^3.10.0` and
+Flutter `>=3.38.0`; the generator and the lint plugin ask for `^3.13.0`, because they need analyzer
+13. An application still on Flutter 3.38 can therefore start here, and take
+[GUIDE_CODEGEN.md](GUIDE_CODEGEN.md) when it upgrades — see [§15](#15-when-to-add-the-generator)
+for why nothing written in the meantime is wasted.
 
 Optional, and only if you want them: `alloy_go_router` for a scope per navigation flow, `alloy_bloc`
 so a scope can close a bloc, `alloy_inspector` to see the graph while the app runs, and one of
