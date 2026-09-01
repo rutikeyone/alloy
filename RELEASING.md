@@ -41,13 +41,13 @@ wait for the previous group to appear on pub.dev — the index is not instant.
       exists and has the code pushed. They are currently
       `github.com/rutikeyone/alloy`.
 - [ ] CI is green on that repository.
-- [ ] Translations updated. `README.ru.md`, `README.zh-CN.md`, `GUIDE.ru.md`,
-      `GUIDE.zh-CN.md`, `MIGRATION.ru.md` and `MIGRATION.zh-CN.md` track the
-      English originals; a test checks that all three sets exist and link to each
+- [ ] Translations updated. `README.ru.md`, `README.zh-CN.md`, the four
+      translated guides, `MIGRATION.ru.md` and `MIGRATION.zh-CN.md` track the
+      English originals; a test checks that all four sets exist and link to each
       other, and CI checks they are not empty, but nothing checks that they still
       say the same thing — so this box is the only thing that does. English is
       authoritative: if a translation is stale, fix it or say so in it.
-- [ ] Code in `GUIDE.md` still compiles against the API it describes. It is the
+- [ ] Code in both guides still compiles against the API it describes. It is the
       document a new reader copies from, and the two defects this repository has
       already shipped in prose — `AlloyInspectorScreen` without its required
       `scope:`, `AlloyLoggerSink` called positionally — were both in example

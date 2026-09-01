@@ -2,14 +2,15 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
-/// The root documents come in threes, and every one of them links to the rest.
+/// Every root document comes in three languages, and links to its siblings.
 ///
-/// Splitting the README into a description and a [GUIDE.md] doubled the number
-/// of files that have to exist in three languages and the number of links
-/// between them. Neither half is checkable for meaning — that stays a line in
-/// the RELEASING checklist — but both are checkable for existence, and a
-/// translation that was never written or a link to a document that moved are
-/// the two ways this actually goes wrong.
+/// Splitting the README into a description and a guide, and then splitting the
+/// guide by mode, took the root documents from three files to twelve and
+/// multiplied the links between them by more than that. Whether a translation
+/// still says what the English says is not checkable by machine — that stays a
+/// line in the RELEASING checklist. What is checkable is that it exists and
+/// that its links land somewhere, which are the two ways this actually goes
+/// wrong.
 ///
 /// Like the package and rule guards, it reads files above its own package,
 /// because the check belongs where the thing being checked lives and there is
@@ -17,11 +18,7 @@ import 'package:test/test.dart';
 void main() {
   final root = Directory('../..');
 
-  const families = {
-    'README': 'README',
-    'GUIDE': 'GUIDE',
-    'MIGRATION': 'MIGRATION',
-  };
+  const families = {'README', 'GUIDE_MANUAL', 'GUIDE_CODEGEN', 'MIGRATION'};
 
   String path(String stem) => '${root.path}/$stem';
 
@@ -32,7 +29,7 @@ void main() {
   ];
 
   group('every root document exists in three languages', () {
-    for (final family in families.values) {
+    for (final family in families) {
       for (final name in translationsOf(family)) {
         test(name, () {
           final file = File(path(name));
@@ -48,7 +45,7 @@ void main() {
   });
 
   group('every translation offers the other two', () {
-    for (final family in families.values) {
+    for (final family in families) {
       final switcher =
           '[English]($family.md) · '
           '[Русский]($family.ru.md) · '
@@ -83,7 +80,7 @@ void main() {
         .map((target) => target.split('#').first)
         .where((target) => target.isNotEmpty);
 
-    for (final family in families.values) {
+    for (final family in families) {
       for (final name in translationsOf(family)) {
         test(name, () {
           final broken = linksIn(name)

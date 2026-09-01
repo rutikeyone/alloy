@@ -10,7 +10,8 @@ generators and the lint plugin are implemented and tested.
 
 | | |
 |---|---|
-| **How to use it** | [GUIDE.md](GUIDE.md) — install, first graph, scopes, testing, with working code |
+| **Using it without code generation** | [GUIDE_MANUAL.md](GUIDE_MANUAL.md) — you write the registrations |
+| **Using it with the generator** | [GUIDE_CODEGEN.md](GUIDE_CODEGEN.md) — annotations, and the graph checked at build time |
 | **Coming from `get_it` or `injectable`** | [MIGRATION.md](MIGRATION.md) — what maps, and what does not |
 | **See it running** | `cd examples/gallery && flutter run` |
 
@@ -192,7 +193,7 @@ coexist with a modern analyzer. `riverpod_lint` migrated off it to the first-par
 `analysis_server_plugin`, and `alloy_lint` follows.
 
 Setting the plugin up has two traps worth reading about before you hit them — see
-[GUIDE.md §14](GUIDE.md#14-the-lint-plugin).
+[GUIDE_CODEGEN.md §16](GUIDE_CODEGEN.md#16-the-lint-plugin).
 
 ## Examples
 

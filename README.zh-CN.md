@@ -11,7 +11,8 @@
 
 | | |
 |---|---|
-| **怎么用** | [GUIDE.zh-CN.md](GUIDE.zh-CN.md)——安装、第一张图、作用域、测试，都有可用代码 |
+| **不用代码生成** | [GUIDE_MANUAL.zh-CN.md](GUIDE_MANUAL.zh-CN.md)——注册由你来写 |
+| **用生成器** | [GUIDE_CODEGEN.zh-CN.md](GUIDE_CODEGEN.zh-CN.md)——注解，以及在构建期被检查的图 |
 | **从 `get_it` 或 `injectable` 过来** | [MIGRATION.zh-CN.md](MIGRATION.zh-CN.md)——哪些对得上，哪些对不上 |
 | **跑起来看看** | `cd examples/gallery && flutter run` |
 
@@ -179,7 +180,7 @@ something outside the generated container registers it.
 `riverpod_lint` 已迁移到官方的 `analysis_server_plugin`，`alloy_lint` 亦然。
 
 配置这个插件有两个坑，最好在踩上之前先读一读——见
-[GUIDE.zh-CN.md §14](GUIDE.zh-CN.md#14-lint-插件)。
+[GUIDE_CODEGEN.zh-CN.md §16](GUIDE_CODEGEN.zh-CN.md#16-lint-插件)。
 
 ## 示例
 
