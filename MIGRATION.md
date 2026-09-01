@@ -1,4 +1,6 @@
-[English](MIGRATION.md) · [Русский](MIGRATION.ru.md) · [中文](MIGRATION.zh-CN.md)
+<p align="center">
+  <a href="MIGRATION.md">English</a> · <a href="MIGRATION.ru.md">Русский</a> · <a href="MIGRATION.zh-CN.md">中文</a>
+</p>
 
 # Migrating to Alloy
 

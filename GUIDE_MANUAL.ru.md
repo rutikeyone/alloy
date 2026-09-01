@@ -1,4 +1,6 @@
-[English](GUIDE_MANUAL.md) · [Русский](GUIDE_MANUAL.ru.md) · [中文](GUIDE_MANUAL.zh-CN.md)
+<p align="center">
+  <a href="GUIDE_MANUAL.md">English</a> · <a href="GUIDE_MANUAL.ru.md">Русский</a> · <a href="GUIDE_MANUAL.zh-CN.md">中文</a>
+</p>
 
 > Перевод [GUIDE_MANUAL.md](GUIDE_MANUAL.md). Канонический текст — английский: при расхождении верен он.
 

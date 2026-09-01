@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" font-family="'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif">
+  <defs>
+    <radialGradient id="glow" cx="0.78" cy="0.32" r="0.62">
+      <stop offset="0" stop-color="#5FD4C8" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#5FD4C8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5FD4C8"/>
+      <stop offset="1" stop-color="#5FD4C8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="360" rx="20" fill="#1B1E24"/>
+  <rect width="1200" height="360" rx="20" fill="url(#glow)"/>
+
+  <!-- wordmark -->
+  <text x="80" y="150" fill="#EDEFF2" font-size="88" font-weight="700" letter-spacing="-2">Alloy</text>
+  <rect x="82" y="176" width="180" height="3" rx="1.5" fill="url(#rule)"/>
+
+  <text x="80" y="228" fill="#A3A9B4" font-size="27" font-weight="500">Dependency injection for Dart and Flutter</text>
+  <text x="80" y="272" fill="#5FD4C8" font-size="21" font-weight="600">Scopes that own what they build</text>
+  <text x="80" y="304" fill="#7C838F" font-size="19" font-weight="500">Code generation and a manual API over one runtime</text>
+
+  <!-- scope tree -->
+  <g stroke="#383D46" stroke-width="2" fill="none">
+    <path d="M834 180 C874 180 874 106 914 106"/>
+    <path d="M834 180 L914 180"/>
+    <path d="M834 180 C874 180 874 254 914 254"/>
+  </g>
+
+  <g>
+    <rect x="726" y="156" width="108" height="48" rx="12" fill="#262A31" stroke="#5FD4C8" stroke-width="2"/>
+    <text x="780" y="186" fill="#EDEFF2" font-size="19" font-weight="600" text-anchor="middle">app</text>
+  </g>
+
+  <g>
+    <rect x="914" y="82" width="150" height="48" rx="12" fill="#262A31" stroke="#383D46" stroke-width="2"/>
+    <text x="989" y="112" fill="#EDEFF2" font-size="19" font-weight="500" text-anchor="middle">session</text>
+  </g>
+
+  <g>
+    <rect x="914" y="156" width="150" height="48" rx="12" fill="#262A31" stroke="#383D46" stroke-width="2"/>
+    <text x="989" y="186" fill="#EDEFF2" font-size="19" font-weight="500" text-anchor="middle">checkout</text>
+  </g>
+
+  <g opacity="0.45">
+    <rect x="914" y="230" width="150" height="48" rx="12" fill="#262A31" stroke="#383D46" stroke-width="2" stroke-dasharray="5 5"/>
+    <text x="989" y="260" fill="#A3A9B4" font-size="19" font-weight="500" text-anchor="middle">disposed</text>
+  </g>
+</svg>

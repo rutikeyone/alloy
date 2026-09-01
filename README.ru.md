@@ -1,4 +1,20 @@
-[English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md)
+<p align="center">
+  <img src="assets/banner.png" alt="Alloy — dependency injection for Dart and Flutter" width="880">
+</p>
+
+<p align="center">
+  <a href="https://pub.dev/packages/alloy"><img src="https://img.shields.io/pub/v/alloy?logo=dart&logoColor=white&label=pub&color=5FD4C8" alt="pub package"></a>
+  <a href="https://pub.dev/packages/alloy/score"><img src="https://img.shields.io/pub/points/alloy?color=5FD4C8" alt="pub points"></a>
+  <a href="https://pub.dev/packages/alloy"><img src="https://img.shields.io/pub/likes/alloy?color=5FD4C8" alt="pub likes"></a>
+  <a href="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml"><img src="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="licence"></a>
+</p>
+
+<p align="center">
+  <p align="center">
+  <a href="README.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh-CN.md">中文</a>
+</p>
+</p>
 
 > Перевод [README.md](README.md). Канонический текст — английский: при расхождении верен он.
 > README отдельных пакетов не переводятся — это справочники по API.

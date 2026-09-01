@@ -47,19 +47,26 @@ void main() {
   group('every translation offers the other two', () {
     for (final family in families) {
       final switcher =
-          '[English]($family.md) · '
-          '[Русский]($family.ru.md) · '
-          '[中文]($family.zh-CN.md)';
+          '  <a href="$family.md">English</a> · '
+          '<a href="$family.ru.md">Русский</a> · '
+          '<a href="$family.zh-CN.md">中文</a>';
 
       for (final name in translationsOf(family)) {
         test(name, () {
+          /// Near the top rather than on line one: a banner and a badge row
+          /// come first in the READMEs. Twenty lines sounds generous and is
+          /// not — centred HTML costs three source lines per visual row, so
+          /// that window is still the first screenful. What matters is that
+          /// the switcher is there, is reachable without scrolling, and is
+          /// byte-identical in all three; a differing one makes a language a
+          /// dead end.
           expect(
-            File(path(name)).readAsLinesSync().first,
-            switcher,
+            File(path(name)).readAsLinesSync().take(20),
+            contains(switcher),
             reason:
                 'the switcher is the only way a reader moves between '
-                'languages, and it has to be identical in all three or one '
-                'of them becomes a dead end',
+                'languages, so it has to be identical in all three and near '
+                'enough to the top to be seen',
           );
         });
       }
@@ -69,16 +76,22 @@ void main() {
   group('every relative link resolves', () {
     /// Markdown links that point at a path in this repository.
     ///
-    /// External URLs are somebody else's to keep alive; an anchor is dropped
-    /// because headings are checked by reading, not by regex.
-    Iterable<String> linksIn(String name) => RegExp(r'\]\(([^)\s]+)\)')
-        .allMatches(File(path(name)).readAsStringSync())
-        .map((it) => it.group(1)!)
-        .where(
-          (target) => !target.startsWith('http') && !target.startsWith('#'),
-        )
-        .map((target) => target.split('#').first)
-        .where((target) => target.isNotEmpty);
+    /// All three spellings. The language switcher is centred HTML, so a regex
+    /// that only knew markdown would stop checking the very links that matter
+    /// most — the ones between translations — and `src` covers the banner,
+    /// which is the one image a missing file would show as a broken box on
+    /// the landing page. External URLs are somebody else's to
+    /// keep alive; an anchor is dropped because headings are checked by
+    /// reading, not by regex.
+    Iterable<String> linksIn(String name) =>
+        RegExp(r'\]\(([^)\s]+)\)|(?:href|src)="([^"]+)"')
+            .allMatches(File(path(name)).readAsStringSync())
+            .map((it) => it.group(1) ?? it.group(2)!)
+            .where(
+              (target) => !target.startsWith('http') && !target.startsWith('#'),
+            )
+            .map((target) => target.split('#').first)
+            .where((target) => target.isNotEmpty);
 
     for (final family in families) {
       for (final name in translationsOf(family)) {

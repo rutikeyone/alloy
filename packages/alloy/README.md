@@ -1,3 +1,14 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/rutikeyone/alloy/main/assets/banner.png" alt="Alloy — dependency injection for Dart and Flutter" width="880">
+</p>
+
+<p align="center">
+  <a href="https://pub.dev/packages/alloy"><img src="https://img.shields.io/pub/v/alloy?logo=dart&logoColor=white&label=pub&color=5FD4C8" alt="pub package"></a>
+  <a href="https://pub.dev/packages/alloy/score"><img src="https://img.shields.io/pub/points/alloy?color=5FD4C8" alt="pub points"></a>
+  <a href="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml"><img src="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://github.com/rutikeyone/alloy/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="licence"></a>
+</p>
+
 # alloy
 
 Runtime core of [Alloy](https://github.com/rutikeyone/alloy), a dependency injection framework for

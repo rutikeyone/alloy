@@ -1,4 +1,6 @@
-[English](GUIDE_CODEGEN.md) · [Русский](GUIDE_CODEGEN.ru.md) · [中文](GUIDE_CODEGEN.zh-CN.md)
+<p align="center">
+  <a href="GUIDE_CODEGEN.md">English</a> · <a href="GUIDE_CODEGEN.ru.md">Русский</a> · <a href="GUIDE_CODEGEN.zh-CN.md">中文</a>
+</p>
 
 # Code-Gen Mode
 

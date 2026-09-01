@@ -1,4 +1,6 @@
-[English](GUIDE_CODEGEN.md) · [Русский](GUIDE_CODEGEN.ru.md) · [中文](GUIDE_CODEGEN.zh-CN.md)
+<p align="center">
+  <a href="GUIDE_CODEGEN.md">English</a> · <a href="GUIDE_CODEGEN.ru.md">Русский</a> · <a href="GUIDE_CODEGEN.zh-CN.md">中文</a>
+</p>
 
 > 本文档译自 [GUIDE_CODEGEN.md](GUIDE_CODEGEN.md)。英文版为准：若有出入，以英文为准。
 
