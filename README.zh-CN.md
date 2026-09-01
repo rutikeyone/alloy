@@ -40,6 +40,14 @@
 
 <p align="center"><sub>示例画廊、带每条注册生命周期的实时作用域树，以及图上报过的一切——运行中应用里的 <code>alloy_inspector</code>。</sub></p>
 
+<p align="center">
+  <img src="assets/screenshots/flow.png" width="30%" alt="由导航流程持有的作用域">
+  <img src="assets/screenshots/flowlog.png" width="30%" alt="每份草稿随其流程一起创建与销毁">
+  <img src="assets/screenshots/env.png" width="30%" alt="同一个接口，每种构建一个实现">
+</p>
+
+<p align="center"><sub>结账流程持有一个作用域——草稿在流程内部导航时存活，随流程一起消失——以及决定究竟注册哪一个实现的环境。</sub></p>
+
 ## 它是什么
 
 一个拥有自己所构建之物的容器。作用域构成一棵树而不是一个栈，

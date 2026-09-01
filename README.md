@@ -39,6 +39,14 @@ generators and the lint plugin are implemented and tested.
 
 <p align="center"><sub>The example gallery, the live scope tree with every registration's lifetime, and everything the graph reported — <code>alloy_inspector</code>, inside the running app.</sub></p>
 
+<p align="center">
+  <img src="assets/screenshots/flow.png" width="30%" alt="A scope owned by a navigation flow">
+  <img src="assets/screenshots/flowlog.png" width="30%" alt="Each draft created and disposed with its flow">
+  <img src="assets/screenshots/env.png" width="30%" alt="One interface, a different implementation per build">
+</p>
+
+<p align="center"><sub>A checkout flow owning a scope — the draft survives navigation inside the flow and goes when the flow does — and an environment choosing which implementation is registered at all.</sub></p>
+
 ## What it is
 
 A container that owns what it builds. Scopes form a tree rather than a stack, so a session, a
