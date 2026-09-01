@@ -105,6 +105,61 @@ void main() {
     });
   });
 
+  group('versions move in lockstep', () {
+    /// The version a package declares, and the one its changelog heads with.
+    ///
+    /// Read by line rather than parsed: a pubspec's `version:` is always at
+    /// the top level, and a changelog's first `## ` heading is the release
+    /// being described. Neither needs a parser to be read correctly, and a
+    /// parser here would be a dependency this package does not otherwise have.
+    (String?, String?) versionsOf(String package) {
+      final pubspec = File('${root.path}/packages/$package/pubspec.yaml')
+          .readAsLinesSync()
+          .firstWhere((line) => line.startsWith('version:'), orElse: () => '');
+      final changelog = File('${root.path}/packages/$package/CHANGELOG.md')
+          .readAsLinesSync()
+          .firstWhere((line) => line.startsWith('## '), orElse: () => '');
+
+      return (
+        pubspec.isEmpty ? null : pubspec.substring('version:'.length).trim(),
+        changelog.isEmpty ? null : changelog.substring('## '.length).trim(),
+      );
+    }
+
+    test('every package declares the same version', () {
+      final declared = {
+        for (final package in shipped) package: versionsOf(package).$1,
+      };
+
+      expect(
+        declared.values.toSet(),
+        hasLength(1),
+        reason:
+            'lockstep is the whole versioning policy, and RELEASING says why: '
+            'a DI framework whose runtime and generator drift apart produces '
+            'generation errors nobody can decipher. A release that bumps '
+            'fourteen of fifteen is how the drift starts.\n'
+            'Declared: $declared',
+      );
+    });
+
+    for (final package in shipped) {
+      test('$package changelogs the version it declares', () {
+        final (pubspec, changelog) = versionsOf(package);
+
+        expect(pubspec, isNotNull, reason: '$package declares no version');
+        expect(
+          changelog,
+          pubspec,
+          reason:
+              'pub.dev shows the changelog beside the version, so a heading '
+              'that names a different one is the first thing a reader sees '
+              'and the last thing anyone re-reads before publishing',
+        );
+      });
+    }
+  });
+
   test('the release note counts the packages it lists', () {
     const words = {
       12: 'Twelve',

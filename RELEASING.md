@@ -84,7 +84,7 @@ Lockstep is the whole policy, including the awkward cases:
   major even if not one line of it changed. The cost is a meaningless version
   bump; the alternative cost is a user resolving `alloy 2.x` against
   `alloy_talker 1.x` and reading a generator error that names neither.
-- **A fix in one package still ships as a patch for all ten.** Publishing a
+- **A fix in one package still ships as a patch for all fifteen.** Publishing a
   subset is what lets the set drift.
 - **The dependency constraint between our own packages stays exact-major**
   (`^X.Y.0`), never `>=X <Z`. Widening it is the same trap in slower motion.
@@ -92,6 +92,11 @@ Lockstep is the whole policy, including the awkward cases:
 Before 1.0, `0.x` majors mean `0.x` — a breaking change bumps the minor, so
 `^0.1.0` already refuses `0.2.0`. That is the behaviour we want; it just looks
 different from what the rule above describes.
+
+A test enforces the mechanical half of this: every package declares the same
+version, and every changelog heads with the version its own pubspec declares.
+Bumping a release is fifteen identical edits, and the one you miss is not
+visible in a diff you are scrolling past.
 
 ## Flutter and Dart versions
 
