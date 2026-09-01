@@ -126,7 +126,7 @@ dart pub global activate pana
 (cd packages/alloy_annotations && dart pub global run pana --no-warning .)
 ```
 
-Measured 2026-08-27: `alloy_annotations` scores **160/160**, with all six platforms detected and
+Measured 2026-09-01: `alloy_annotations` scores **160/160**, with all six platforms detected and
 `is:wasm-ready`, without declaring a `platforms:` key. Two things follow, and both save work:
 declaring platforms by hand buys nothing here and can only contradict what the analysis finds; and
 the documentation criterion is *20% or more* of the public API, not all of it, so chasing complete
@@ -139,13 +139,20 @@ That one is runnable locally against the whole workspace:
 
 ```bash
 flutter pub downgrade && dart analyze --fatal-infos .
-flutter pub get
+flutter pub upgrade
 ```
 
-Measured 2026-08-27: clean. The test *runner* cannot run down there — `frontend_server_client`
-resolves to 3.2.0, which invokes a `frontend_server.dart.snapshot` that Dart 3.13 no longer ships —
-but that is a transitive dev dependency nothing here declares, and it is invisible to consumers,
-who never run these tests.
+Measured 2026-09-01: clean, with 92 packages moved — including `bloc` at its floor of 9.0.0, which
+`alloy_bloc` is the only thing to constrain and which nothing had resolved before.
+
+Restore with `pub upgrade`, never `pub get`: `get` honours the existing lockfile and leaves
+`frontend_server_client` downgraded, and that version invokes a `frontend_server.dart.snapshot` Dart
+3.13 no longer ships. The symptom is not an error — `dart analyze` stays green while every test file
+silently fails to load.
+
+That same downgraded package is why the test *runner* cannot run at the lower bounds at all. It is a
+transitive dev dependency nothing here declares, invisible to consumers, who never run these tests —
+so `dart analyze` is the whole of the check, and it is also the whole of what `pana` scores.
 
 ## `alloy` dev-depends on `alloy_test`
 
