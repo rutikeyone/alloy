@@ -108,25 +108,36 @@ needs something Manual Mode cannot express, these are two frameworks sharing a n
 
 ## Requirements
 
-Built and tested on **Flutter 3.47.1 / Dart 3.13.1**, with analyzer 13.3.0.
+**Every package requires Dart `^3.10.0`, and the ones that need Flutter say `>=3.38.0`.** All
+fifteen, including the generator and the lint plugin — an application still on Flutter 3.38 gets
+both modes, not just Manual Mode.
 
-Every runtime package requires Dart `^3.10.0` and Flutter `>=3.38.0`. The three that carry the
-toolchain — `alloy_analyzer`, `alloy_generator`, `alloy_lint` — require Dart `^3.13.0`, and that
-split is measured rather than cautious: `alloy_lint` needs analyzer 13 to compile at all, and below
-Dart 3.11 the parser stops seeing `@AlloyParam` on constructor parameters, which is worse than
-refusing to build. analyzer 13 needs `_fe_analyzer_shared 100`, which needs Dart 3.11.
+Built and tested on Flutter 3.47.1 / Dart 3.13.1 as well.
 
-So an application still on Flutter 3.38 can adopt Manual Mode today and take the generator when it
-upgrades — and nothing written in the meantime is thrown away, because the generated container is an
-`AlloyScopeBuilder` like the ones you wrote by hand.
+The floor has a mechanism behind it worth knowing, because it is not the Dart version that binds.
+**Flutter 3.38 pins `meta 1.17.0`, and analyzer 10.0.2 wants `^1.18.0`** — so a Flutter application
+on 3.38 tops out at analyzer 10.0.1, whatever its SDK constraint says. A pure-Dart consumer is not
+bound by that and takes 12.1.0; 13.0.0 is out of reach for both, because it needs
+`_fe_analyzer_shared 100`, which needs Dart 3.11.
+
+So the three toolchain packages declare `analyzer: ">=10.0.1 <13.0.0"` rather than a single version.
+That is a range with exactly two usable rows, and every package that reads the analyzer pins it
+exactly, so which row you get is decided by your project rather than by us:
+
+| your project | analyzer | analyzer_plugin | analysis_server_plugin | analyzer_testing | dart_style |
+|---|---|---|---|---|---|
+| Flutter 3.38 | 10.0.1 | 0.14.1 | 0.3.7 | 0.1.9 | 3.1.7 |
+| anything newer | 12.1.0 | 0.14.8 | 0.3.14 | 0.2.5 | 3.1.8 |
+
+The two `dart_style` versions emit identical bytes for generated code — 3.1.7 is a dependency bump,
+and 3.1.8's style changes are language-versioned above this floor — so the same source generates the
+same file on both rows. That is checked rather than assumed: the floor job regenerates the
+compatibility stand on 3.38.9 and diffs it against what is committed.
 
 CI runs `stable` and `beta` rather than a matrix of past releases, plus one job pinned to Flutter
-3.38.9 that resolves, analyses and tests every package against the floor it declares
-(`tool/floor_check.sh`). A floor nothing exercises is a claim that rots.
-
-Do not use a Homebrew `dart` on PATH — put the Flutter SDK first. An older `dart` does not fail
-loudly: `dart analyze .` reports dozens of phantom issues against the wrong analyzer, and `dart pub
-get` refuses the SDK constraint outright. Check with `dart --version` before trusting a run.
+3.38.9 that resolves, analyses and tests every package, the compatibility stand and every example
+against the floor it declares (`tool/floor_check.sh`). A floor nothing exercises is a claim that
+rots.
 
 ## How it works
 

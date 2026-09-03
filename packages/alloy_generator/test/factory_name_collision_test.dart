@@ -30,10 +30,9 @@ void main() {
         reason: 'the base name is still the readable part of both',
       );
       expect(
-        RegExp(r'final class (_TelemetryFactory\S*)')
-            .allMatches(source)
-            .map((match) => match.group(1))
-            .toSet(),
+        RegExp(
+          r'final class (_TelemetryFactory\S*)',
+        ).allMatches(source).map((match) => match.group(1)).toSet(),
         hasLength(2),
         reason: 'two declarations, two classes, two names',
       );
@@ -83,8 +82,6 @@ void main() {
   });
 }
 
-Set<String> _factoryNamesIn(String source) =>
-    RegExp(r'final class (_\S+Factory\S*)')
-        .allMatches(source)
-        .map((match) => match.group(1)!)
-        .toSet();
+Set<String> _factoryNamesIn(String source) => RegExp(
+  r'final class (_\S+Factory\S*)',
+).allMatches(source).map((match) => match.group(1)!).toSet();

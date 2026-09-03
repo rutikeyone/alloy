@@ -56,23 +56,33 @@ void main() {
   test('there is a rule to check', () => expect(shipped, isNotEmpty));
 
   documents.forEach((path, what) {
-    test('$what lists exactly the rules that ship', () {
-      final listed = tabulated(path);
+    test(
+      '$what lists exactly the rules that ship',
+      tags: [
+        // The three root documents live above this package, so this check
+        // cannot run from a copy of it taken out of the tree — which is what
+        // tool/floor_check.sh does. The package's own README is beside it and
+        // needs no tag. See dart_test.yaml.
+        if (path.startsWith('../')) 'repo',
+      ],
+      () {
+        final listed = tabulated(path);
 
-      expect(
-        shipped.difference(listed),
-        isEmpty,
-        reason:
-            'a rule nobody can find is a rule nobody turns off when it fires '
-            'wrongly, and the table is where people look',
-      );
-      expect(
-        listed.difference(shipped),
-        isEmpty,
-        reason:
-            'a row for a rule that does not exist sends a reader to look '
-            'for something that was never there',
-      );
-    });
+        expect(
+          shipped.difference(listed),
+          isEmpty,
+          reason:
+              'a rule nobody can find is a rule nobody turns off when it fires '
+              'wrongly, and the table is where people look',
+        );
+        expect(
+          listed.difference(shipped),
+          isEmpty,
+          reason:
+              'a row for a rule that does not exist sends a reader to look '
+              'for something that was never there',
+        );
+      },
+    );
   });
 }

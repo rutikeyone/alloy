@@ -68,10 +68,9 @@ dev_dependencies:
   alloy_test_flutter: ^0.1.0
 ```
 
-**这个模式比另一个能往回够得更远。** 运行时要求 Dart `^3.10.0` 和 Flutter `>=3.38.0`；
-生成器和 lint 插件要求 `^3.13.0`，因为它们需要 analyzer 13。因此仍停留在 Flutter 3.38 的应用
-可以从这里开始，等升级之后再转到 [GUIDE_CODEGEN.zh-CN.md](GUIDE_CODEGEN.zh-CN.md)——
-为什么期间写的东西不会白费，见 [§15](#15-什么时候该加上生成器)。
+**从这里出发不会走进死胡同。** 下限是 Dart `^3.10.0` / Flutter `>=3.38.0`，
+和 [GUIDE_CODEGEN.zh-CN.md](GUIDE_CODEGEN.zh-CN.md) 要求的完全一样，
+所以之后要不要加生成器是一个选择，而不是一次升级——两者如何叠加，见 [§15](#15-什么时候该加上生成器)。
 
 可选，且只在你需要时才加：`alloy_go_router` 为每段导航流程提供一个作用域，
 `alloy_bloc` 让作用域能关闭 bloc，`alloy_inspector` 让你在运行时看这张图，

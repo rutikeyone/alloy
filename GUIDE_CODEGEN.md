@@ -55,8 +55,8 @@ The runtime ships to the app; the generator never does.
 
 ```yaml
 environment:
-  sdk: ^3.13.0
-  flutter: ">=3.47.0"
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
 
 dependencies:
   alloy: ^0.1.0
@@ -70,11 +70,13 @@ dev_dependencies:
   alloy_test_flutter: ^0.1.0
 ```
 
-**The floor here is higher than in the other mode, and it is a real constraint rather than a round
-number.** `alloy_generator` and `alloy_lint` need analyzer 13, which needs Dart 3.11 through
-`_fe_analyzer_shared`; below that the parser also stops seeing `@AlloyParam` on constructor
-parameters. The runtime alone asks only for Dart `^3.10.0` / Flutter `>=3.38.0`, so an application
-not yet on 3.47 can run [GUIDE_MANUAL.md](GUIDE_MANUAL.md) today and arrive here later.
+**The floor is the same as the other mode's**, so an application on Flutter 3.38 can start here
+rather than starting in [GUIDE_MANUAL.md](GUIDE_MANUAL.md) and migrating.
+
+One thing comes with it: on Flutter 3.38 your project resolves `analyzer 10.0.1` and
+`build_runner 2.15.1`, because Flutter pins `meta 1.17.0` there and a newer analyzer wants
+`^1.18.0`. On a newer Flutter it resolves 12.1.0 instead, and the generated code is the same either
+way. See **Requirements** in the [README](README.md) for the whole row.
 
 A pure-Dart package — a CLI, a server, a package with no widgets — drops `alloy_flutter` and
 `alloy_test_flutter`. Nothing in the runtime needs Flutter.

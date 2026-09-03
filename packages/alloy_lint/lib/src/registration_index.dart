@@ -1,4 +1,5 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
+import 'package:alloy_lint/src/class_members.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -150,7 +151,7 @@ class _IndexBuilder {
   /// weaker signal than an annotated class, and reading every method of every
   /// class would quietly answer for types nobody registers.
   void _collectMembers(ClassDeclaration module) {
-    for (final member in module.body.members) {
+    for (final member in membersOf(module)) {
       if (member is! MethodDeclaration) continue;
       for (final annotation in member.metadata) {
         switch (annotation.name.name.split('.').last) {
@@ -192,7 +193,7 @@ class _IndexBuilder {
   /// read first to give it one.
   void _addConstructorParameters(ClassDeclaration node, Set<String> out) {
     final fieldTypes = <String, String>{};
-    for (final member in node.body.members) {
+    for (final member in membersOf(node)) {
       if (member is! FieldDeclaration) continue;
       final type = _returnedName(member.fields.type);
       if (type == null) continue;
@@ -201,7 +202,7 @@ class _IndexBuilder {
       }
     }
 
-    for (final member in node.body.members) {
+    for (final member in membersOf(node)) {
       if (member is! ConstructorDeclaration) continue;
       if (member.factoryKeyword != null) continue;
       if (member.name?.lexeme.startsWith('_') ?? false) continue;
@@ -222,16 +223,41 @@ class _IndexBuilder {
     Map<String, String> fieldTypes,
     Set<String> out,
   ) {
-    if (parameter is SuperFormalParameter) return;
+    final declared = _declaredBy(parameter);
+    if (declared is SuperFormalParameter) return;
     if (_isCallSiteValue(parameter)) return;
     final name = parameter.name?.lexeme;
     final type =
-        _returnedName(parameter.type) ??
-        (parameter is FieldFormalParameter && name != null
+        _returnedName(_typeOf(declared)) ??
+        (declared is FieldFormalParameter && name != null
             ? fieldTypes[name]
             : null);
     if (type != null) out.add(type);
   }
+
+  /// The node that carries a parameter's declaration.
+  ///
+  /// A parameter that can take a default value — every named one, and every
+  /// optional positional one — arrives wrapped in a [DefaultFormalParameter],
+  /// so asking the outer node what kind of parameter it is answers about the
+  /// wrapper. `{@alloyParam required this.id}` is the common shape here, and
+  /// unwrapped it is a [FieldFormalParameter] like any other.
+  static NormalFormalParameter _declaredBy(FormalParameter parameter) =>
+      parameter is DefaultFormalParameter
+      ? parameter.parameter
+      : parameter as NormalFormalParameter;
+
+  /// The type a parameter writes down, or null when it writes none.
+  ///
+  /// A function-typed parameter has a return type rather than a type of its
+  /// own; reading that would name the wrong thing, so it names nothing.
+  static TypeAnnotation? _typeOf(NormalFormalParameter parameter) =>
+      switch (parameter) {
+        SimpleFormalParameter(:final type) => type,
+        FieldFormalParameter(:final type) => type,
+        SuperFormalParameter(:final type) => type,
+        _ => null,
+      };
 
   /// Whether `@AlloyParam` marks this parameter.
   ///
@@ -244,7 +270,7 @@ class _IndexBuilder {
       });
 
   void _addInjectedFields(ClassDeclaration node, Set<String> out) {
-    for (final member in node.body.members) {
+    for (final member in membersOf(node)) {
       if (member is! FieldDeclaration) continue;
       for (final annotation in member.metadata) {
         switch (annotation.name.name.split('.').last) {
@@ -305,13 +331,18 @@ class _IndexBuilder {
 
   static Expression? _namedArgument(Annotation annotation, String parameter) {
     for (final argument
-        in annotation.arguments?.arguments ?? const <Argument>[]) {
-      if (argument is NamedArgument && argument.name.lexeme == parameter) {
-        return argument.argumentExpression;
+        in annotation.arguments?.arguments ?? const <Expression>[]) {
+      if (argument is NamedExpression &&
+          argument.name.label.name == parameter) {
+        return argument.expression;
       }
     }
     return null;
   }
+
+  /// The value an argument carries, past its label if it has one.
+  static Expression _valueOf(Expression argument) =>
+      argument is NamedExpression ? argument.expression : argument;
 
   /// Reads the type an expression names, in every shape `provides`,
   /// `exposeAs` and `dependsOn` accept: `Foo`, `prefix.Foo`,
@@ -338,7 +369,7 @@ class _IndexBuilder {
 
   static void _addFirstArgument(ArgumentList arguments, Set<String> names) {
     final first = arguments.arguments.firstOrNull;
-    if (first != null) _addExpression(first.argumentExpression, names);
+    if (first != null) _addExpression(_valueOf(first), names);
   }
 }
 
@@ -356,7 +387,7 @@ class AlloyRegistrationIndexCache {
   /// The index for the package rooted at [packageRoot], or null when it cannot
   /// be read whole.
   AlloyRegistrationIndex? of(Folder packageRoot, AnalysisSession session) {
-    final lib = packageRoot.getFolder('lib');
+    final lib = packageRoot.getChildAssumingFolder('lib');
     if (!lib.exists) return null;
 
     final stamps = <String, int>{};

@@ -141,9 +141,9 @@ class _Action extends StatelessWidget {
           ),
         ),
         onPressed: open != null
-            ? () =>
-                  Navigator.of(context)
-                      .push(MaterialPageRoute<void>(builder: open))
+            ? () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute<void>(builder: open))
             : () => _copy(context, l10n),
         child: Text(
           open != null ? l10n.openExample : l10n.copyCommand,

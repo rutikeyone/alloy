@@ -85,8 +85,9 @@ class ContainerSourceEmitter {
       ),
     );
 
-    return DartFormatter(languageVersion: DartFormatter.latestLanguageVersion)
-        .format('$_header\n\n$emitted');
+    return DartFormatter(
+      languageVersion: DartFormatter.latestLanguageVersion,
+    ).format('$_header\n\n$emitted');
   }
 
   /// The record a parameterized registration is resolved with.

@@ -94,8 +94,9 @@ void main() {
   testWidgets('the inspector inside the gallery follows the switch too', (
     tester,
   ) async {
-    final entry = buildCatalog(lookupGalleryL10n(const Locale('ru')))
-        .firstWhere((e) => e.id == 'inspector');
+    final entry = buildCatalog(
+      lookupGalleryL10n(const Locale('ru')),
+    ).firstWhere((e) => e.id == 'inspector');
 
     await tester.pumpWidget(
       galleryHarness(
@@ -179,9 +180,9 @@ void main() {
                   subtitle: Text('подпись плитки'),
                 ),
                 TextButton(
-                  onPressed: () =>
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(const SnackBar(content: Text('снек'))),
+                  onPressed: () => ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('снек'))),
                   child: const Text('go'),
                 ),
               ],
@@ -347,9 +348,9 @@ void main() {
 
   test('every translation covers the template, key for key', () {
     Set<String> keysOf(String name) {
-      final decoded = jsonDecode(
-        File('l10n/$name.arb').readAsStringSync(),
-      ) as Map<String, dynamic>;
+      final decoded =
+          jsonDecode(File('l10n/$name.arb').readAsStringSync())
+              as Map<String, dynamic>;
       return decoded.keys.where((key) => !key.startsWith('@')).toSet();
     }
 

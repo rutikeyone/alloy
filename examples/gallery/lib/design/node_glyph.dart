@@ -25,8 +25,9 @@ class GlyphBuilder {
   Path _pick({required bool dashed}) => dashed ? _dashed : _solid;
 
   void node(double x, double y, {double r = 2.1, bool dashed = false}) {
-    _pick(dashed: dashed)
-        .addOval(Rect.fromCircle(center: Offset(x, y), radius: r));
+    _pick(
+      dashed: dashed,
+    ).addOval(Rect.fromCircle(center: Offset(x, y), radius: r));
   }
 
   void edge(double x1, double y1, double x2, double y2, {bool dashed = false}) {

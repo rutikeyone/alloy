@@ -10,8 +10,9 @@ void main() {
   testWidgets('a second visit does not stack onto the first one’s boot log', (
     tester,
   ) async {
-    final entry = buildCatalog(englishStrings)
-        .firstWhere((e) => e.id == 'startup');
+    final entry = buildCatalog(
+      englishStrings,
+    ).firstWhere((e) => e.id == 'startup');
 
     Future<void> visit(String key) async {
       await tester.pumpWidget(
@@ -47,8 +48,9 @@ void main() {
   testWidgets('a visit does not read the last one’s remote config', (
     tester,
   ) async {
-    final entry = buildCatalog(englishStrings)
-        .firstWhere((e) => e.id == 'startup');
+    final entry = buildCatalog(
+      englishStrings,
+    ).firstWhere((e) => e.id == 'startup');
 
     // The value the step writes is a static too. Poisoning it stands in for
     // "some earlier visit left this behind": a visit must not surface it.

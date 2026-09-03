@@ -65,7 +65,8 @@ List<ExampleEntry> buildCatalog(GalleryL10n l10n) => [
       l10n.environmentsPoint4,
     ],
     transcriptLabel: l10n.whereItLives,
-    transcript: 'examples/notes_app/lib/features/environments/ui/environments_screen.dart',
+    transcript:
+        'examples/notes_app/lib/features/environments/ui/environments_screen.dart',
     open: (_) => notesGraph(const EnvironmentsScreen()),
   ),
 
@@ -116,7 +117,8 @@ List<ExampleEntry> buildCatalog(GalleryL10n l10n) => [
       l10n.widgetScopePoint4,
     ],
     transcriptLabel: l10n.whereItLives,
-    transcript: 'examples/notes_app/lib/features/note_detail/ui/note_detail_screen.dart',
+    transcript:
+        'examples/notes_app/lib/features/note_detail/ui/note_detail_screen.dart',
     open: (_) => notesGraph(const NoteDetailScreen()),
   ),
   ExampleEntry(

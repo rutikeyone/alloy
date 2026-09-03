@@ -1,15 +1,21 @@
 #!/usr/bin/env sh
-# Proves the declared floor: every package resolves, analyses and tests on the
-# oldest SDK it claims to support.
+# Proves the declared floor: every package, the compatibility stand and every
+# example resolve, analyse and test on the oldest SDK they claim to support.
 #
-# It copies the packages out of the workspace first, and that is the whole
-# reason this script exists rather than a few lines in CI. A workspace is one
-# resolution, and this one cannot exist on the old SDK: `flutter_test` there
-# pins `test_api 0.7.7`, which caps the `test` runner at 1.26.3, which caps
-# `analyzer` below 9 — while `alloy_analyzer` needs 12 or better. A consumer
-# never meets that, because a consumer does not have the `test` runner sitting
-# in the same resolution as our analyzer packages. We do. So each package is
-# resolved on its own, which is also what pub.dev does when it scores them.
+# It copies them out of the workspace first, and that is the whole reason this
+# script exists rather than a few lines in CI. A workspace is one resolution,
+# and this one cannot exist on the old SDK: `flutter_test` there pins
+# `test_api 0.7.7`, which caps the `test` runner at 1.26.3, which caps
+# `analyzer` below 9 — while `alloy_analyzer` needs 10.0.1 or better. A
+# consumer never meets that, because a consumer does not have the `test` runner
+# sitting in the same resolution as our analyzer packages. We do. So each
+# member is resolved on its own, which is also what pub.dev does when it scores
+# them.
+#
+# The members do not all land on the same analyzer, and that is the point.
+# Flutter 3.38 pins `meta 1.17.0`, and analyzer 10.0.2 wants `^1.18.0`, so a
+# Flutter package that also has the generator resolves 10.0.1 while a pure-Dart
+# one takes 12.1.0. Both ends of that range are exercised here.
 #
 # Run it with the old SDK first on PATH:
 #
@@ -21,64 +27,129 @@ ROOT=$PWD
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
-DART_PACKAGES="alloy_annotations alloy alloy_bloc alloy_talker alloy_logging alloy_logger alloy_test alloy_analyzer alloy_generator alloy_lint"
-FLUTTER_PACKAGES="alloy_flutter alloy_go_router alloy_inspector alloy_talker_flutter alloy_test_flutter"
+# name=path, because the members no longer all live under packages/.
+DART_MEMBERS="\
+alloy_annotations=packages/alloy_annotations \
+alloy=packages/alloy \
+alloy_bloc=packages/alloy_bloc \
+alloy_talker=packages/alloy_talker \
+alloy_logging=packages/alloy_logging \
+alloy_logger=packages/alloy_logger \
+alloy_test=packages/alloy_test \
+alloy_analyzer=packages/alloy_analyzer \
+alloy_generator=packages/alloy_generator \
+alloy_lint=packages/alloy_lint \
+manual_mode=examples/manual_mode \
+teardown=examples/teardown \
+alloy_external_consumer=compat/external_consumer"
+
+FLUTTER_MEMBERS="\
+alloy_flutter=packages/alloy_flutter \
+alloy_go_router=packages/alloy_go_router \
+alloy_inspector=packages/alloy_inspector \
+alloy_talker_flutter=packages/alloy_talker_flutter \
+alloy_test_flutter=packages/alloy_test_flutter \
+codegen_basics=examples/codegen_basics \
+flow_scopes=examples/flow_scopes \
+graph_events=examples/graph_events \
+notes_app=examples/notes_app \
+testing_patterns=examples/testing_patterns \
+gallery=examples/gallery"
+
+# The stand is the one member that runs the generator here. It is pure Dart and
+# outside the workspace by design, so building it proves the whole pipeline —
+# resolve, generate, compare, test — in the arrangement a real consumer has.
+GENERATES="alloy_external_consumer"
 
 echo "Dart:    $(dart --version 2>&1)"
 echo "Flutter: $(flutter --version 2>&1 | head -1)"
 echo
 
-# Each package is checked against the floor it declares, not against a list
-# kept here. The toolchain three sit a floor higher than the rest — see the
-# guard in packages/alloy/test/registered_packages_test.dart for why — so on an
-# old SDK they are skipped rather than failed, and the day they come down they
-# join without anyone remembering to edit this.
+# Each member is checked against the floor it declares, not against a list kept
+# here, so raising one package's floor takes it out of this run by name rather
+# than silently shrinking what the run covers.
 DART_VERSION=$(dart --version 2>&1 | sed -E 's/.*version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-ALL=$(python3 "$ROOT/tool/floor_select.py" "$ROOT" "$DART_VERSION" $DART_PACKAGES $FLUTTER_PACKAGES)
+ALL=$(python3 "$ROOT/tool/floor_select.py" "$ROOT" "$DART_VERSION" \
+  $DART_MEMBERS $FLUTTER_MEMBERS)
 
-for package in $DART_PACKAGES $FLUTTER_PACKAGES; do
+for member in $DART_MEMBERS $FLUTTER_MEMBERS; do
+  name=${member%%=*}
   case " $ALL " in
-    *" $package "*) ;;
-    *) printf '%-22s skipped, declares a floor above %s\n' "$package" "$DART_VERSION" ;;
+    *" $name "*) ;;
+    *) printf '%-24s skipped, declares a floor above %s\n' "$name" "$DART_VERSION" ;;
   esac
 done
 
-for package in $ALL; do
-  mkdir -p "$WORK/$package"
+# The copies keep the layout they have here, so a path that reaches out of a
+# package means the same thing in both trees. Nothing above them is copied: a
+# package that cannot be analysed on its own terms is a package a consumer
+# cannot analyse either.
+SELECTED=""
+for member in $DART_MEMBERS $FLUTTER_MEMBERS; do
+  name=${member%%=*}
+  path=${member#*=}
+  case " $ALL " in *" $name "*) ;; *) continue ;; esac
+  SELECTED="$SELECTED $member"
+  mkdir -p "$WORK/$path"
   # Everything but the build output, which is large and rebuilt anyway.
-  (cd "$ROOT/packages/$package" && tar cf - \
+  (cd "$ROOT/$path" && tar cf - \
     --exclude build --exclude .dart_tool --exclude coverage .) \
-    | (cd "$WORK/$package" && tar xf -)
+    | (cd "$WORK/$path" && tar xf -)
 done
 
-python3 "$ROOT/tool/floor_overrides.py" "$WORK" $ALL
+python3 "$ROOT/tool/floor_overrides.py" "$WORK" $SELECTED
 
 failed=""
-for package in $ALL; do
-  case " $FLUTTER_PACKAGES " in
-    *" $package "*) get="flutter pub get"; run="flutter test" ;;
-    # `-x repo` drops the two guards that read the repository around this
-    # package: the root documents, the other pubspecs, the CI workflow. They
-    # are right to live where they do and cannot run from a copy taken out of
-    # the tree. See packages/alloy/dart_test.yaml.
+for member in $SELECTED; do
+  name=${member%%=*}
+  path=${member#*=}
+  case " $FLUTTER_MEMBERS " in
+    *" $name="*) get="flutter pub get"; run="flutter test" ;;
+    # `-x repo` drops the guards that read the repository around their package:
+    # the root documents, the other pubspecs, the CI workflow. They are right
+    # to live where they do and cannot run from a copy taken out of the tree.
+    # See packages/alloy/dart_test.yaml and packages/alloy_lint/dart_test.yaml.
     *) get="dart pub get"; run="dart test -x repo" ;;
   esac
 
-  log=$WORK/$package.log
-  printf '%-22s ' "$package"
+  log=$WORK/$name.log
+  printf '%-24s ' "$name"
 
-  if ! (cd "$WORK/$package" && $get >"$log" 2>&1); then
-    echo "RESOLVE FAILED"; tail -8 "$log"; failed="$failed $package"; continue
+  if ! (cd "$WORK/$path" && $get >"$log" 2>&1); then
+    echo "RESOLVE FAILED"; tail -8 "$log"; failed="$failed $name"; continue
   fi
-  if ! (cd "$WORK/$package" && dart analyze --fatal-infos . >>"$log" 2>&1); then
-    echo "ANALYZE FAILED"; tail -20 "$log"; failed="$failed $package"; continue
+
+  case " $GENERATES " in
+    *" $name "*)
+      if ! (cd "$WORK/$path" && dart run build_runner build >>"$log" 2>&1); then
+        echo "GENERATE FAILED"; tail -20 "$log"; failed="$failed $name"; continue
+      fi
+      # The committed output is the claim; regenerating it on the old SDK and
+      # finding it unchanged is what turns the claim into a check. This is the
+      # one place the formatter is compared across SDKs, and it is the drift
+      # that broke CI twice before the row was pinned.
+      if ! diff -r "$WORK/$path/lib" "$ROOT/$path/lib" \
+        >>"$log" 2>&1; then
+        echo "GENERATED CODE DIFFERS"; tail -20 "$log"; failed="$failed $name"
+        continue
+      fi
+      ;;
+  esac
+
+  if ! (cd "$WORK/$path" && dart analyze --fatal-infos . >>"$log" 2>&1); then
+    echo "ANALYZE FAILED"; tail -20 "$log"; failed="$failed $name"; continue
   fi
-  if [ ! -d "$WORK/$package/test" ]; then
+  if [ ! -d "$WORK/$path/test" ]; then
     echo "ok (resolved, analysed; no tests)"
     continue
   fi
-  if ! (cd "$WORK/$package" && $run >>"$log" 2>&1); then
-    echo "TESTS FAILED"; tail -30 "$log"; failed="$failed $package"; continue
+  if ! (cd "$WORK/$path" && $run >>"$log" 2>&1); then
+    # The failure body, not the tail: a suite this size ends in progress lines,
+    # and `tail` on those says a test failed without saying which or why.
+    echo "TESTS FAILED"
+    sed -n '/\[E\]/,/^$/p' "$log" | head -30
+    sed -n '/^Failing tests:/,$p' "$log" | head -12
+    failed="$failed $name"; continue
   fi
   echo "ok (resolved, analysed, tested)"
 done
@@ -90,4 +161,4 @@ if [ -n "$failed" ]; then
 fi
 
 echo
-echo "Every package meets the floor it declares."
+echo "Every member meets the floor it declares."

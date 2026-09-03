@@ -100,29 +100,55 @@ visible in a diff you are scrolling past.
 
 ## Flutter and Dart versions
 
-There are two floors, deliberately.
+One floor: Dart `^3.10.0` for all fifteen, and Flutter `>=3.38.0` for the five
+that need Flutter. The compatibility stand and every example say the same.
 
-**The twelve runtime packages** require Dart `^3.10.0`, and the five that need
-Flutter say `>=3.38.0`. **The three toolchain packages** — `alloy_analyzer`,
-`alloy_generator`, `alloy_lint` — require Dart `^3.13.0`.
+It was two floors until 2026-09-04, and what collapsed it is worth keeping,
+because the binding constraint is not the one the pubspec names.
 
-The split is measured, not cautious. Below Dart 3.11 the parser stops seeing
-`@AlloyParam` on constructor parameters, and `alloy_lint` does not compile at
-all: `FormalParameter.type`, `NamedArgument` and `Folder.getFolder` arrived in
-analyzer 13, which needs `_fe_analyzer_shared 100`, which needs Dart 3.11. A
-generator that reads an annotation wrong is worse than one that refuses to
-resolve, so the toolchain stays where it is verified.
+**`meta` decides, not the SDK.** Flutter 3.38 pins `meta 1.17.0`; analyzer
+10.0.2 wants `^1.18.0`. So a Flutter application on 3.38 cannot resolve an
+analyzer newer than 10.0.1 no matter what its SDK constraint says, and no
+matter what ours says. A pure-Dart consumer is not bound by that and takes
+12.1.0. 13.0.0 is out of reach for both: it needs `_fe_analyzer_shared 100`,
+which needs Dart 3.11.
 
-What that buys: an application still on Flutter 3.38 can adopt Manual Mode now
-and take the generator when it upgrades, losing nothing in between.
+**And every package that reads the analyzer pins it exactly** —
+`analysis_server_plugin`, `analyzer_plugin`, `analyzer_testing`, `dart_style`
+all do. So the constraint does not permit a span, it selects a row:
 
-`tool/floor_check.sh` proves both floors. It copies each package out of the
-workspace and resolves it alone, because a workspace is one resolution and this
-one cannot exist on 3.38 — `flutter_test` there pins `test_api 0.7.7`, capping
-the `test` runner at 1.26.3 and `analyzer` below 9. Consumers never meet that;
-we do, because our analyzer packages and the test runner share a resolution.
-Packages declaring a floor above the running SDK are skipped, named, and not
-counted as passing.
+| where | analyzer | analyzer_plugin | analysis_server_plugin | analyzer_testing | dart_style |
+|---|---|---|---|---|---|
+| Flutter 3.38 | 10.0.1 | 0.14.1 | 0.3.7 | 0.1.9 | 3.1.7 |
+| everywhere else | 12.1.0 | 0.14.8 | 0.3.14 | 0.2.5 | 3.1.8 |
+
+The three toolchain packages therefore declare `analyzer: ">=10.0.1 <13.0.0"`
+and `alloy_generator` declares `dart_style: ">=3.1.6 <3.1.9"` — two rows, both
+tested, which is the same shape `injectable_generator` uses and the reason it
+works on 3.38 while we did not.
+
+Two things worth knowing about the row that were measured rather than assumed:
+
+- **The two `dart_style` versions emit identical bytes for generated code.**
+  3.1.7 is a dependency bump; 3.1.8's style changes are language-versioned to
+  3.13 or concern extension types, and the generator emits neither. The floor
+  job regenerates the stand on 3.38.9 and diffs it against what is committed,
+  so this is checked on every run rather than trusted.
+- **Only `alloy_lint` ever touched an analyzer-version-specific API**, in
+  `registration_index.dart`. `alloy_analyzer` reads the element model, which
+  does not change across this range, and `alloy_generator` does not import the
+  analyzer at all.
+
+`tool/floor_check.sh` proves the floor. It copies each member out of the
+workspace — keeping the repository layout, so a package whose analysis options
+reach the root still find them — and resolves it alone, because a workspace is
+one resolution and this one cannot exist on 3.38: `flutter_test` there pins
+`test_api 0.7.7`, capping the `test` runner at 1.26.3 and `analyzer` below 9.
+Consumers never meet that; we do, because our analyzer packages and the test
+runner share a resolution. Both ends of the analyzer range are exercised —
+`codegen_basics` is a Flutter package with the generator, so it lands on
+10.0.1, while the pure-Dart members land on 12.1.0. Members declaring a floor
+above the running SDK are skipped, named, and not counted as passing.
 
 CI runs it pinned to Flutter 3.38.9 alongside `stable` and `beta`, so an
 upcoming Flutter change is found before release and the old floor cannot rot

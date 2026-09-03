@@ -100,9 +100,8 @@ class RootScopeEmitter {
         ? factory.property('create').call([refer('scope')])
         : factory;
 
-    return refer('scope')
-        .property(method)
-        .call([argument], named, [exposed])
-        .statement;
+    return refer(
+      'scope',
+    ).property(method).call([argument], named, [exposed]).statement;
   }
 }

@@ -10,9 +10,9 @@ void main() {
   testWidgets('every openable entry mounts with a graph of its own', (
     tester,
   ) async {
-    final openable = buildCatalog(englishStrings)
-        .where((e) => e.isOpenable)
-        .toList();
+    final openable = buildCatalog(
+      englishStrings,
+    ).where((e) => e.isOpenable).toList();
     expect(openable, isNotEmpty, reason: 'nothing is wired in yet');
 
     for (final entry in openable) {

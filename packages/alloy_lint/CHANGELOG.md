@@ -1,5 +1,11 @@
 ## 0.1.0
 
+- Requires Dart `^3.10.0` — Flutter 3.38 — instead of `^3.13.0`, and moves
+  `analyzer` to `>=10.0.1 <13.0.0`. The registration index was reading the
+  analyzer 13 AST (`FormalParameter.type`, `NamedArgument`, `Folder.getFolder`,
+  `ClassBody.members`); it now reads the model that spans the range. The old
+  lower bound never compiled — `Folder.getFolder` arrived in 13.1, not 12.1.
+
 - `alloy_param_needs_an_injectable` reports `@AlloyParam` on a class nothing
   registers, where the marking does nothing at all.
 - `alloy_dependency_is_not_registered` and `alloy_dependency_cycle` skip

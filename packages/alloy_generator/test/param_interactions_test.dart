@@ -114,10 +114,9 @@ void main() {
       ),
     ]);
 
-    final names = RegExp(r'typedef (\$Editor\S*) =')
-        .allMatches(source)
-        .map((match) => match.group(1))
-        .toSet();
+    final names = RegExp(
+      r'typedef (\$Editor\S*) =',
+    ).allMatches(source).map((match) => match.group(1)).toSet();
 
     expect(names, hasLength(2), reason: 'two declarations, two record types');
     expect(

@@ -1,4 +1,5 @@
 import 'package:alloy_analyzer/alloy_analyzer.dart';
+import 'package:alloy_lint/src/class_members.dart';
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
@@ -56,7 +57,7 @@ class _Visitor extends SimpleAstVisitor<void> {
     if (_parser.declares(element) || _modules.declares(element)) return;
 
     final name = node.namePart.typeName.lexeme;
-    for (final member in node.body.members) {
+    for (final member in membersOf(node)) {
       if (member is! ConstructorDeclaration) continue;
       for (final parameter in member.parameters.parameters) {
         if (!_isMarked(parameter)) continue;

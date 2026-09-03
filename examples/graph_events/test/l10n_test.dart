@@ -9,9 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// rather than as a gap in the translation — so the gap is made a failure.
 void main() {
   Set<String> keysOf(String locale) {
-    final decoded = jsonDecode(
-      File('l10n/graph_events_$locale.arb').readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final decoded =
+        jsonDecode(File('l10n/graph_events_$locale.arb').readAsStringSync())
+            as Map<String, dynamic>;
     return decoded.keys.where((key) => !key.startsWith('@')).toSet();
   }
 

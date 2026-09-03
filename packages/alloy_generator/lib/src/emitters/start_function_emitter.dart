@@ -60,8 +60,9 @@ class StartFunctionEmitter {
         ..lambda = true
         ..body = alloyRef('AlloyApplication').property('start').call(const [], {
           'root': scopeUsesEnvironments
-              ? refer(r'$AlloyRootScope')
-                    .newInstance(const [], {'environment': environment})
+              ? refer(
+                  r'$AlloyRootScope',
+                ).newInstance(const [], {'environment': environment})
               : refer(r'$AlloyRootScope').constInstance(const []),
           if (hasBootstrap)
             'bootstrap': bootstrapUsesEnvironments

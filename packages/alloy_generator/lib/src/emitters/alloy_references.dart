@@ -73,9 +73,8 @@ Expression resolveCall(AlloyInjectedProperty dependency) {
 Expression get defaultEnvironment =>
     alloyRef('AlloyEnvironment').property('defaultEnvironment');
 
-Expression environmentGuard(Set<String> environments) => refer('environment')
-    .property('matches')
-    .call([
+Expression environmentGuard(Set<String> environments) =>
+    refer('environment').property('matches').call([
       literalConstSet(
         (environments.toList()..sort()).toSet(),
         refer('String', 'dart:core'),

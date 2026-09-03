@@ -107,23 +107,34 @@
 
 ## 环境要求
 
-在 **Flutter 3.47.1 / Dart 3.13.1**、analyzer 13.3.0 上构建并测试。
+**每个包都要求 Dart `^3.10.0`，需要 Flutter 的那些则写 `>=3.38.0`。** 全部十五个，
+包括生成器和 lint 插件——仍停留在 Flutter 3.38 的应用拿到的是两种模式，而不只是 Manual Mode。
 
-每个运行时包要求 Dart `^3.10.0` 和 Flutter `>=3.38.0`。承载工具链的三个——`alloy_analyzer`、
-`alloy_generator`、`alloy_lint`——要求 Dart `^3.13.0`。这个分界是量出来的，而不是出于谨慎：
-`alloy_lint` 没有 analyzer 13 根本编译不过，而在 Dart 3.11 以下，解析器会看不见构造参数上的
-`@AlloyParam`——那比编译失败更糟。analyzer 13 依赖 `_fe_analyzer_shared 100`，后者需要 Dart 3.11。
+也在 Flutter 3.47.1 / Dart 3.13.1 上构建并测试过。
 
-因此，仍停留在 Flutter 3.38 的应用今天就能采用 Manual Mode，升级之后再拿到生成器，
-期间写的东西一点都不用丢：生成的容器和你手写的一样，就是一个 `AlloyScopeBuilder`。
+这个下限背后的机制值得了解，因为真正卡住的并不是 Dart 版本。
+**Flutter 3.38 把 `meta` 钉在 1.17.0，而 analyzer 10.0.2 需要 `^1.18.0`**——
+所以运行在 3.38 上的 Flutter 应用最高只能拿到 analyzer 10.0.1，无论它的 SDK 约束怎么写。
+纯 Dart 的使用者不受此限制，会拿到 12.1.0；13.0.0 对两者都够不着，
+因为它依赖 `_fe_analyzer_shared 100`，后者需要 Dart 3.11。
+
+因此三个工具链包声明的是 `analyzer: ">=10.0.1 <13.0.0"`，而不是单一版本。
+这个区间恰好只有两行可用，而每个读取 analyzer 的包都会精确钉住它，
+所以你拿到哪一行由你的项目决定，而不是由我们决定：
+
+| 你的项目 | analyzer | analyzer_plugin | analysis_server_plugin | analyzer_testing | dart_style |
+|---|---|---|---|---|---|
+| Flutter 3.38 | 10.0.1 | 0.14.1 | 0.3.7 | 0.1.9 | 3.1.7 |
+| 更新的版本 | 12.1.0 | 0.14.8 | 0.3.14 | 0.2.5 | 3.1.8 |
+
+这两个 `dart_style` 版本对生成代码产出的字节完全一致——3.1.7 只是依赖升级，
+3.1.8 的样式变更按语言版本生效、在这个下限之上才起作用——所以同一份源码在两行上生成同一个文件。
+这一点是检查出来的，而不是假设的：下限 job 会在 3.38.9 上重新生成兼容性试验台，
+并与已提交的结果做 diff。
 
 CI 跑 `stable` 和 `beta`，而不是历史版本矩阵，另外还有一个固定在 Flutter 3.38.9 的 job，
-它按每个包自己声明的下限去解析、分析并测试它们（`tool/floor_check.sh`）。
+它按每个包、兼容性试验台和每个示例自己声明的下限去解析、分析并测试它们（`tool/floor_check.sh`）。
 没有任何东西去验证的下限，就是一个会过期的说法。
-
-不要让 Homebrew 的 `dart` 出现在 PATH 前面——把 Flutter SDK 放在最前。旧版 `dart` 不会大声报错：
-`dart analyze .` 会用错误的 analyzer 报出几十条幻觉问题，而 `dart pub get` 则直接拒绝 SDK 约束。
-在相信一次运行结果之前，先用 `dart --version` 确认。
 
 ## 它如何工作
 

@@ -162,15 +162,21 @@ void main() {
     }
   });
 
-  group('there are two floors, and each is one floor', () {
-    /// The toolchain packages sit a floor above the rest, on purpose.
+  group('there is one floor, and it is one floor', () {
+    /// One floor for all fifteen, measured rather than rounded.
     ///
-    /// Measured 2026-09-01: `alloy_lint` needs analyzer 13 to compile at all
-    /// (`FormalParameter.type`, `NamedArgument`, `Folder.getFolder`), and on
-    /// Dart 3.10 the parser stops seeing `@AlloyParam` on constructor
-    /// parameters — a generator that reads it wrong is worse than one that
-    /// refuses to resolve. analyzer 13 needs `_fe_analyzer_shared 100`, which
-    /// needs Dart 3.11, so the floor could not be 3.10 whatever we wrote.
+    /// It was two until 2026-09-04, when the binding constraint turned out not
+    /// to be the SDK at all: Flutter 3.38 pins `meta 1.17.0` and analyzer
+    /// 10.0.2 wants `^1.18.0`, so a Flutter application there tops out at
+    /// analyzer 10.0.1 whatever anyone's SDK constraint says. The toolchain
+    /// three now declare `>=10.0.1 <13.0.0` and land on 10.0.1 or 12.1.0
+    /// depending on the consumer.
+    ///
+    /// That range has exactly two usable rows, because every package reading
+    /// the analyzer — `analysis_server_plugin`, `analyzer_plugin`,
+    /// `analyzer_testing`, `dart_style` — pins it exactly. Which is why the
+    /// third test here exists: the three have to agree on the range, or they
+    /// stop agreeing about what a declaration means.
     const toolchain = {'alloy_analyzer', 'alloy_generator', 'alloy_lint'};
 
     /// The constraint a package declares, by key.
@@ -189,8 +195,8 @@ void main() {
       for (final package in packages) package: constraintOf(package, key),
     };
 
-    test('the runtime packages agree on one Dart floor', () {
-      final declared = declaredBy(shipped.difference(toolchain), 'sdk');
+    test('every package agrees on one Dart floor', () {
+      final declared = declaredBy(shipped, 'sdk');
 
       expect(
         declared.values.toSet(),
@@ -200,28 +206,6 @@ void main() {
             'the promise unreadable — a consumer gets the highest floor among '
             'whatever subset they happen to depend on.\n'
             'Declared: $declared',
-      );
-    });
-
-    test('the toolchain packages agree on one Dart floor', () {
-      final declared = declaredBy(toolchain, 'sdk');
-
-      expect(declared.values.toSet(), hasLength(1), reason: '$declared');
-    });
-
-    test('the toolchain floor is the higher of the two', () {
-      final runtime = declaredBy(
-        shipped.difference(toolchain),
-        'sdk',
-      ).values.first;
-      final tools = declaredBy(toolchain, 'sdk').values.first;
-
-      expect(
-        runtime,
-        isNot(tools),
-        reason:
-            'if these ever match, the split has served its purpose and this '
-            'group should collapse back into one check',
       );
     });
 
@@ -242,6 +226,22 @@ void main() {
         reason:
             'the Dart floor and the Flutter floor have to mean the same '
             'release, and only one of them is checked by pub\n'
+            'Declared: $declared',
+      );
+    });
+
+    test('the toolchain packages agree on one analyzer', () {
+      final declared = declaredBy(toolchain, 'analyzer');
+
+      expect(
+        declared.values.toSet(),
+        hasLength(1),
+        reason:
+            'these three share an IR and a plugin protocol, and every package '
+            'that reads the analyzer pins it exactly — so a constraint that '
+            'drifts here does not widen what resolves, it picks a different '
+            'analyzer for one of them and the three stop agreeing about what '
+            'a declaration means.\n'
             'Declared: $declared',
       );
     });

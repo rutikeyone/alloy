@@ -1,5 +1,11 @@
 ## 0.1.0
 
+- Requires Dart `^3.10.0` — Flutter 3.38 — instead of `^3.13.0`, and moves
+  `analyzer` to `>=10.0.1 <13.0.0`. A Flutter 3.38 application cannot resolve
+  past 10.0.1, because Flutter pins `meta 1.17.0` there; everything else takes
+  12.1.0. This package reads only the element model, which does not change
+  across that range.
+
 - Initial release.
 - One parsing layer over `analyzer`, shared by `alloy_generator` and
   `alloy_lint` so the IDE and the build agree on what a declaration means.

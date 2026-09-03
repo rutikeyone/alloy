@@ -15,9 +15,9 @@ class InjectionMixinEmitter {
         ]),
     );
 
-    return Library((b) => b..body.add(mixin))
-        .accept(DartEmitter(useNullSafetySyntax: true))
-        .toString();
+    return Library(
+      (b) => b..body.add(mixin),
+    ).accept(DartEmitter(useNullSafetySyntax: true)).toString();
   }
 
   /// The setter takes the field's own type, nullability included.

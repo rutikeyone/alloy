@@ -18,8 +18,17 @@ include: analysis_options.yaml
 # single file is read. That is not a failure of the code being analysed, which
 # is why it must not gate a build.
 #
-# After publication both problems are gone: this file's contents become three
-# lines in `analysis_options.yaml` and this one is deleted.
+# There is a third thing to know, which publication does not fix. `alloy_lint`
+# declares `analyzer: ">=10.0.1 <13.0.0"`, and `analysis_server_plugin` pins the
+# analyzer exactly, so the plugin resolves to 0.3.7 or 0.3.14 depending on what
+# the SDK asks for — `^0.3.0` on Dart 3.10, `^0.3.8` on 3.13. Both are inside
+# the range. An SDK that asks for something above 0.3.14 is outside it, and the
+# plugin will not load there. The rules themselves do not depend on any of
+# this: they are covered by 84 tests that go through `analyzer_testing` and
+# never start a server.
+#
+# After publication the first two problems are gone: this file's contents
+# become three lines in `analysis_options.yaml` and this one is deleted.
 plugins:
   alloy_lint:
     path: packages/alloy_lint

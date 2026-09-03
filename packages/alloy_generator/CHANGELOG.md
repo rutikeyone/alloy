@@ -1,5 +1,11 @@
 ## 0.1.0
 
+- Requires Dart `^3.10.0` — Flutter 3.38 — instead of `^3.13.0`, and moves
+  `analyzer` to `>=10.0.1 <13.0.0` with `dart_style` to `>=3.1.6 <3.1.9`. The
+  two formatters that range admits emit identical bytes for generated code, so
+  no generated file changed; the floor job regenerates and diffs to keep that
+  true.
+
 - A nullable `@AlloyParam` keeps its `?` in the generated record. It used to
   be dropped, narrowing an argument the constructor was willing to take as
   null.

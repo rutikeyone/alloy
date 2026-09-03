@@ -31,27 +31,30 @@ void main() {
       expect(app.get<Clock>(), isA<SystemClock>());
     });
 
-    test('but a service registered in the parent does NOT see the override', () async {
-      // The sharp edge, and the reason this example exists. A factory is called
-      // with the scope that *owns* the registration, not the scope you asked
-      // from. Greeter lives in the root, so it resolves GreetingStore from the
-      // root — the child's fake is invisible to it.
-      final scope = underTest()
-        ..registerSingleton<GreetingStore>(
-          const InMemoryGreetingStore('Hello'),
+    test(
+      'but a service registered in the parent does NOT see the override',
+      () async {
+        // The sharp edge, and the reason this example exists. A factory is called
+        // with the scope that *owns* the registration, not the scope you asked
+        // from. Greeter lives in the root, so it resolves GreetingStore from the
+        // root — the child's fake is invisible to it.
+        final scope = underTest()
+          ..registerSingleton<GreetingStore>(
+            const InMemoryGreetingStore('Hello'),
+          );
+
+        await expectLater(
+          scope.get<Greeter>().greet('Ada'),
+          throwsUnsupportedError,
+          reason: 'it reached the real store, not the fake one in the child',
         );
 
-      await expectLater(
-        scope.get<Greeter>().greet('Ada'),
-        throwsUnsupportedError,
-        reason: 'it reached the real store, not the fake one in the child',
-      );
-
-      // And this is how to see it coming instead of debugging it: the consumer
-      // is owned higher up than the override, so the override cannot reach it.
-      expect(scope.ownerOf<Greeter>(), same(app));
-      expect(scope.ownerOf<GreetingStore>(), same(scope));
-    });
+        // And this is how to see it coming instead of debugging it: the consumer
+        // is owned higher up than the override, so the override cannot reach it.
+        expect(scope.ownerOf<Greeter>(), same(app));
+        expect(scope.ownerOf<GreetingStore>(), same(scope));
+      },
+    );
 
     test(
       'so override the consumer too, and it resolves from the child',
