@@ -156,7 +156,7 @@ class AppScope implements AlloyScopeBuilder {
 Future<void> main() async {
   final app = await AlloyApplication.start(root: const AppScope(), rootName: 'app');
 
-  app.get<EventLog>().add('запуск в ${app.get<Clock>().now()}');
+  app.get<EventLog>().add('started at ${app.get<Clock>().now()}');
 
   await app.dispose();
 }
