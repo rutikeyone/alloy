@@ -56,10 +56,12 @@ notes_app=examples/notes_app \
 testing_patterns=examples/testing_patterns \
 gallery=examples/gallery"
 
-# The stand is the one member that runs the generator here. It is pure Dart and
-# outside the workspace by design, so building it proves the whole pipeline —
-# resolve, generate, compare, test — in the arrangement a real consumer has.
-GENERATES="alloy_external_consumer"
+# The members that run the generator here, one per analyzer row. The stand is
+# pure Dart and outside the workspace, so it proves the whole pipeline in the
+# arrangement a real consumer has — but being pure Dart it lands on the same
+# analyzer as the development SDK. `codegen_basics` is the Flutter one, and it
+# is the only place the older row's formatter is ever asked to emit anything.
+GENERATES="alloy_external_consumer codegen_basics"
 
 echo "Dart:    $(dart --version 2>&1)"
 echo "Flutter: $(flutter --version 2>&1 | head -1)"
@@ -125,13 +127,22 @@ for member in $SELECTED; do
         echo "GENERATE FAILED"; tail -20 "$log"; failed="$failed $name"; continue
       fi
       # The committed output is the claim; regenerating it on the old SDK and
-      # finding it unchanged is what turns the claim into a check. This is the
-      # one place the formatter is compared across SDKs, and it is the drift
-      # that broke CI twice before the row was pinned.
-      if ! diff -r "$WORK/$path/lib" "$ROOT/$path/lib" \
-        >>"$log" 2>&1; then
-        echo "GENERATED CODE DIFFERS"; tail -20 "$log"; failed="$failed $name"
-        continue
+      # finding it unchanged is what turns the claim into a check. This is
+      # where the formatter is compared across rows, and formatter drift is
+      # what broke CI twice before the range was narrowed.
+      #
+      # Ours only: `flutter gen-l10n` also writes into `lib/`, and its output
+      # differs by a blank line between Flutter releases. That is Flutter's
+      # generator disagreeing with itself, not ours, and failing on it would
+      # say nothing about Alloy.
+      drift=""
+      for generated in $(cd "$WORK/$path" && find lib -name '*.g.dart'); do
+        diff "$WORK/$path/$generated" "$ROOT/$path/$generated" >>"$log" 2>&1 \
+          || drift="$drift $generated"
+      done
+      if [ -n "$drift" ]; then
+        echo "GENERATED CODE DIFFERS:$drift"; tail -20 "$log"
+        failed="$failed $name"; continue
       fi
       ;;
   esac

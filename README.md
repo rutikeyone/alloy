@@ -131,8 +131,9 @@ exactly, so which row you get is decided by your project rather than by us:
 
 The two `dart_style` versions emit identical bytes for generated code — 3.1.7 is a dependency bump,
 and 3.1.8's style changes are language-versioned above this floor — so the same source generates the
-same file on both rows. That is checked rather than assumed: the floor job regenerates the
-compatibility stand on 3.38.9 and diffs it against what is committed.
+same file on both rows. That is checked rather than assumed: the floor job regenerates on 3.38.9 and
+diffs against what is committed, once per row — the compatibility stand for the newer one and
+`codegen_basics`, a Flutter package, for the older.
 
 CI runs `stable` and `beta` rather than a matrix of past releases, plus one job pinned to Flutter
 3.38.9 that resolves, analyses and tests every package, the compatibility stand and every example

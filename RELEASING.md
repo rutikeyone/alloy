@@ -132,8 +132,12 @@ Two things worth knowing about the row that were measured rather than assumed:
 - **The two `dart_style` versions emit identical bytes for generated code.**
   3.1.7 is a dependency bump; 3.1.8's style changes are language-versioned to
   3.13 or concern extension types, and the generator emits neither. The floor
-  job regenerates the stand on 3.38.9 and diffs it against what is committed,
-  so this is checked on every run rather than trusted.
+  job regenerates on 3.38.9 and diffs against what is committed, once per row:
+  the stand covers the newer one, and `codegen_basics` — a Flutter package,
+  therefore held to `meta 1.17.0` — is the only place the older formatter is
+  ever asked to emit anything. Only `*.g.dart` is compared: `flutter gen-l10n`
+  also writes into `lib/`, and its output differs by a blank line between
+  Flutter releases, which is Flutter disagreeing with itself.
 - **Only `alloy_lint` ever touched an analyzer-version-specific API**, in
   `registration_index.dart`. `alloy_analyzer` reads the element model, which
   does not change across this range, and `alloy_generator` does not import the
