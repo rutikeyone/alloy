@@ -171,6 +171,27 @@ is why this was settled before the first publish rather than after.
 
 ## After publishing
 
+**Tag the commit the archives were built from**, and do it before anything else
+lands on `main`:
+
+```bash
+git tag -a v0.1.0 -m 'Cobalt 0.1.0'
+git push origin v0.1.0
+```
+
+Without it nothing in git says which source is on pub.dev. An archive carries
+no commit, so a bug reported against a published version can only be traced by
+guessing at dates — and the version itself cannot help, because lockstep means
+fifteen packages share one number and the repository has one history for all
+of them. The tag is the only join between them.
+
+One tag for the release, not fifteen: they are published together and carry the
+same version, so a tag each would say the same thing fifteen times and go stale
+the first time one of them is republished on its own.
+
+A GitHub release on that tag is optional and costs nothing — its body is the
+release's own CHANGELOG entry, which is written already.
+
 `cobalt_lint` becomes installable the normal way — just the `plugins:` entry.
 Until then the analysis server cannot find it, because it resolves plugins from
 pub.dev rather than from the consumer's pubspec, which is why
