@@ -77,6 +77,38 @@ void main() {
   });
 
   group('every relative link resolves', () {
+    /// The banner keeps its alpha channel.
+    ///
+    /// The card is a rounded rectangle, so without one its four corners are
+    /// filled with whatever the renderer painted the page — white, in
+    /// practice, which is invisible while you look at it on a light
+    /// background and glaring on GitHub's dark one. Regenerating it with the
+    /// flag left off has already happened once; `tool/banner.sh` exists so it
+    /// does not happen from memory, and this notices if it does.
+    test('the banner is transparent where it is round', () {
+      final header = File(
+        path('assets/banner.png'),
+      ).readAsBytesSync().sublist(0, 26);
+
+      expect(header.sublist(0, 8), [
+        137,
+        80,
+        78,
+        71,
+        13,
+        10,
+        26,
+        10,
+      ], reason: 'not a PNG at all');
+      expect(
+        header[25],
+        6,
+        reason:
+            'colour type 6 is RGBA; 2 is RGB, which is what Chrome writes '
+            'when --default-background-color=00000000 is left off',
+      );
+    });
+
     /// Markdown links that point at a path in this repository.
     ///
     /// All three spellings. The language switcher is centred HTML, so a regex
