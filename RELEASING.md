@@ -131,8 +131,16 @@ Two things worth knowing about the row that were measured rather than assumed:
 
 - **The two `dart_style` versions emit identical bytes for generated code.**
   3.1.7 is a dependency bump; 3.1.8's style changes are language-versioned to
-  3.13 or concern extension types, and the generator emits neither. The floor
-  job regenerates on 3.38.9 and diffs against what is committed, once per row:
+  3.13 or concern extension types, and the generator emits neither. Narrowing
+  the range did move something, though, and it is worth knowing before the next
+  narrowing: `flutter gen-l10n` formats its output with the `dart_style` the
+  *package* resolves, not the one the SDK bundles. Coming down from 3.1.13 to
+  3.1.8 dropped a blank line between directives in all eighteen generated
+  localisation files, so they had to be regenerated and committed. Both rows in
+  the table agree on that output; 3.1.13 was the odd one.
+
+  The floor job regenerates on 3.38.9 and diffs against what is committed, once
+  per row:
   the stand covers the newer one, and `codegen_basics` — a Flutter package,
   therefore held to `meta 1.17.0` — is the only place the older formatter is
   ever asked to emit anything. Only `*.g.dart` is compared: `flutter gen-l10n`
