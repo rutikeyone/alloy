@@ -39,7 +39,7 @@ wait for the previous group to appear on pub.dev — the index is not instant.
       two boxes are not really ticked.
 - [ ] `repository:` and `issue_tracker:` point at a repository that actually
       exists and has the code pushed. They are currently
-      `github.com/rutikeyone/alloy`.
+      `github.com/rutikeyone/cobalt`.
 - [ ] CI is green on that repository.
 - [ ] Translations updated. `README.ru.md`, `README.zh-CN.md`, the four
       translated guides, `MIGRATION.ru.md` and `MIGRATION.zh-CN.md` track the

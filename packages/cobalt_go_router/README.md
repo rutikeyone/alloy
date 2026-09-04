@@ -1,6 +1,6 @@
 # cobalt_go_router
 
-go_router bindings for [Cobalt](https://github.com/rutikeyone/alloy). A scope whose lifetime is a
+go_router bindings for [Cobalt](https://github.com/rutikeyone/cobalt). A scope whose lifetime is a
 navigation flow: created when the flow opens, disposed when it closes.
 
 ```dart

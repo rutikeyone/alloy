@@ -1,6 +1,6 @@
 # cobalt_test_flutter
 
-Widget-test helpers for [Cobalt](https://github.com/rutikeyone/alloy). Add it as a `dev_dependency`.
+Widget-test helpers for [Cobalt](https://github.com/rutikeyone/cobalt). Add it as a `dev_dependency`.
 
 ```yaml
 dev_dependencies:

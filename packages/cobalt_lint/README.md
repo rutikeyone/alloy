@@ -1,6 +1,6 @@
 # cobalt_lint
 
-Analyzer plugin with lint rules for [Cobalt](https://github.com/rutikeyone/alloy). It surfaces
+Analyzer plugin with lint rules for [Cobalt](https://github.com/rutikeyone/cobalt). It surfaces
 invalid annotations in the IDE instead of only when `build_runner` runs.
 
 ```yaml

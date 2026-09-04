@@ -42,4 +42,4 @@ class HomeScreen extends StatelessWidget {
 
 A scope that lives as long as one screen is `CobaltScopeWidget`; a full app with
 one screen per capability is
-[`examples/notes_app`](https://github.com/rutikeyone/alloy/tree/main/examples/notes_app).
+[`examples/notes_app`](https://github.com/rutikeyone/cobalt/tree/main/examples/notes_app).

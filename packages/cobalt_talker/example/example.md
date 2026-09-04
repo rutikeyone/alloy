@@ -30,4 +30,4 @@ CobaltTalkerObserver(talker, verbose: true)
 ```
 
 With `talker_flutter`, `TalkerScreen` shows the whole thing live; that is what
-[`examples/graph_events`](https://github.com/rutikeyone/alloy/tree/main/examples/graph_events) does.
+[`examples/graph_events`](https://github.com/rutikeyone/cobalt/tree/main/examples/graph_events) does.

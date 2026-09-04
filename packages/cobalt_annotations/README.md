@@ -1,6 +1,6 @@
 # cobalt_annotations
 
-Annotations for [Cobalt](https://github.com/rutikeyone/alloy), a dependency injection framework for
+Annotations for [Cobalt](https://github.com/rutikeyone/cobalt), a dependency injection framework for
 Dart and Flutter.
 
 This package holds nothing but the annotations, so neither the runtime nor the analyzer leaks into

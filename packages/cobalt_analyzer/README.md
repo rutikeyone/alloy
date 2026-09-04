@@ -1,6 +1,6 @@
 # cobalt_analyzer
 
-Shared static analysis layer for [Cobalt](https://github.com/rutikeyone/alloy). It turns annotated
+Shared static analysis layer for [Cobalt](https://github.com/rutikeyone/cobalt). It turns annotated
 Dart source into a typed intermediate representation.
 
 Both `cobalt_generator` and `cobalt_lint` consume this package, so a declaration is parsed by one

@@ -5,13 +5,13 @@
 <p align="center">
   <a href="https://pub.dev/packages/cobalt"><img src="https://img.shields.io/pub/v/cobalt?logo=dart&logoColor=white&label=pub&color=5FD4C8" alt="pub package"></a>
   <a href="https://pub.dev/packages/cobalt/score"><img src="https://img.shields.io/pub/points/cobalt?color=5FD4C8" alt="pub points"></a>
-  <a href="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml"><img src="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
-  <a href="https://github.com/rutikeyone/alloy/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="licence"></a>
+  <a href="https://github.com/rutikeyone/cobalt/actions/workflows/ci.yml"><img src="https://github.com/rutikeyone/cobalt/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://github.com/rutikeyone/cobalt/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="licence"></a>
 </p>
 
 # cobalt
 
-Runtime core of [Cobalt](https://github.com/rutikeyone/alloy), a dependency injection framework for
+Runtime core of [Cobalt](https://github.com/rutikeyone/cobalt), a dependency injection framework for
 Dart and Flutter. Pure Dart — it has no Flutter dependency, so the same graph runs in tests, CLIs
 and servers. For widgets, add `cobalt_flutter`.
 

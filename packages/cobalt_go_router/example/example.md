@@ -32,4 +32,4 @@ from the nearest scope, so the flow shadows the root automatically.
 For tabs there are `CobaltStatefulShellRoute` and `CobaltStatefulShellBranch`; note that a
 branch is kept **alive**, not **visible**, so switching tabs disposes nothing.
 Runnable version:
-[`examples/flow_scopes`](https://github.com/rutikeyone/alloy/tree/main/examples/flow_scopes).
+[`examples/flow_scopes`](https://github.com/rutikeyone/cobalt/tree/main/examples/flow_scopes).

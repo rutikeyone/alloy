@@ -41,4 +41,4 @@ Start it with the generated `$startCobalt()`, or hand the pieces to
 emitting code that would deadlock.
 
 Full setup:
-[`examples/codegen_basics`](https://github.com/rutikeyone/alloy/tree/main/examples/codegen_basics).
+[`examples/codegen_basics`](https://github.com/rutikeyone/cobalt/tree/main/examples/codegen_basics).

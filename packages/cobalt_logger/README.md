@@ -1,7 +1,7 @@
 # cobalt_logger
 
 Adapter for [package:logger](https://pub.dev/packages/logger) — the one with the boxed console
-output — for [Cobalt](https://github.com/rutikeyone/alloy).
+output — for [Cobalt](https://github.com/rutikeyone/cobalt).
 
 > Not `cobalt_logging`. That adapts [package:logging](https://pub.dev/packages/logging), the
 > dart.dev package whose name differs by one letter.

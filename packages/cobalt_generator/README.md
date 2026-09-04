@@ -1,6 +1,6 @@
 # cobalt_generator
 
-Code generator for [Cobalt](https://github.com/rutikeyone/alloy). Add it as a `dev_dependency` — it
+Code generator for [Cobalt](https://github.com/rutikeyone/cobalt). Add it as a `dev_dependency` — it
 never ships in an application.
 
 ```yaml

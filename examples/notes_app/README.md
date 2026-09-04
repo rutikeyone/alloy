@@ -1,7 +1,7 @@
 # notes_app
 
 A small multi-screen Flutter app that exercises every capability of
-[Cobalt](https://github.com/rutikeyone/alloy), one screen per case.
+[Cobalt](https://github.com/rutikeyone/cobalt), one screen per case.
 
 > **Not a runnable app.** This package is a library the gallery mounts — it has no `main.dart`
 > and no native project of its own. Run it, and everything else, from one place:

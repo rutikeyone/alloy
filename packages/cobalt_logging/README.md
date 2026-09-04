@@ -1,7 +1,7 @@
 # cobalt_logging
 
 Adapter for [package:logging](https://pub.dev/packages/logging), the dart.dev one, for
-[Cobalt](https://github.com/rutikeyone/alloy).
+[Cobalt](https://github.com/rutikeyone/cobalt).
 
 > Not `cobalt_logger`. That adapts [package:logger](https://pub.dev/packages/logger), a different
 > package whose name differs by one letter. This one is for the dart.dev `logging`.

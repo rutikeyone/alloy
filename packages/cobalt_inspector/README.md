@@ -132,7 +132,7 @@ result is not a crash or a missing-glyph box, it is a change of typeface partway
 mid-word where a scope name sits inside a translated sentence. Nothing in a test suite can see it,
 because widget tests draw in a test font. If you localize an app into a script your display face
 does not cover, choose a face per language; the gallery in this repository does exactly that, and
-[its README](https://github.com/rutikeyone/alloy/blob/main/examples/gallery/README.md) says how.
+[its README](https://github.com/rutikeyone/cobalt/blob/main/examples/gallery/README.md) says how.
 
 **What stays in English, deliberately.** Lifetimes (`lazySingleton`, `asyncSingleton`) and levels
 (`trace`, `warning`) are Cobalt's own identifiers — translating them would break the one thing the

@@ -1,7 +1,7 @@
 # cobalt_talker
 
 [talker](https://pub.dev/packages/talker) adapter for
-[Cobalt](https://github.com/rutikeyone/alloy). The DI graph reports itself as typed talker logs.
+[Cobalt](https://github.com/rutikeyone/cobalt). The DI graph reports itself as typed talker logs.
 
 ```dart
 final talker = Talker();

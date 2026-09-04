@@ -49,7 +49,7 @@ class NotesController with _$NotesController {
 ```
 
 A full application using every annotation lives in
-[`examples/notes_app`](https://github.com/rutikeyone/alloy/tree/main/examples/notes_app).
+[`examples/notes_app`](https://github.com/rutikeyone/cobalt/tree/main/examples/notes_app).
 
 `SearchIndex` may state `dependsOn: [Database]` only because `Database` is `@CobaltInit` too.
 `dependsOn` sequences phase 1, so it can wait for an async registration and nothing else; naming a

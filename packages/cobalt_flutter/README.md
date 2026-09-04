@@ -1,6 +1,6 @@
 # cobalt_flutter
 
-Flutter bindings for [Cobalt](https://github.com/rutikeyone/alloy).
+Flutter bindings for [Cobalt](https://github.com/rutikeyone/cobalt).
 
 ```dart
 CobaltScopeProvider(

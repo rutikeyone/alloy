@@ -20,4 +20,4 @@ Navigator.of(context).push(
 
 The screen takes its colours from `CobaltInspectorTheme` when one is above it, and from the
 application's own `Theme` when none is. A full example lives in
-[`examples/graph_events`](https://github.com/rutikeyone/alloy/tree/main/examples/graph_events).
+[`examples/graph_events`](https://github.com/rutikeyone/cobalt/tree/main/examples/graph_events).
