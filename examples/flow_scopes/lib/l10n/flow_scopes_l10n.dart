@@ -103,7 +103,7 @@ abstract class FlowScopesL10n {
   /// Title of the navigation-flow example.
   ///
   /// In en, this message translates to:
-  /// **'Alloy · flow scopes'**
+  /// **'Cobalt · flow scopes'**
   String get appTitle;
 
   /// Action that opens the live scope tree.
@@ -184,7 +184,7 @@ abstract class FlowScopesL10n {
   /// **'Scope tree'**
   String get scopeTree;
 
-  /// One node of the tree: its state, which is an Alloy identifier, and how many scopes hang from it.
+  /// One node of the tree: its state, which is an Cobalt identifier, and how many scopes hang from it.
   ///
   /// In en, this message translates to:
   /// **'{state} · {count, plural, =0{no children} =1{1 child} other{{count} children}}'**

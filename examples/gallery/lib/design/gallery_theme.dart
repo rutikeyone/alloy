@@ -1,4 +1,4 @@
-import 'package:alloy_inspector/alloy_inspector.dart';
+import 'package:cobalt_inspector/cobalt_inspector.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -284,13 +284,13 @@ ThemeData galleryTheme(GalleryFace face) {
   );
 }
 
-/// The gallery's palette, handed to the Alloy inspector.
+/// The gallery's palette, handed to the Cobalt inspector.
 ///
 /// Written out rather than derived from [galleryTheme] to show what the knob
 /// is for: an app with its own colours names them, and the inspector uses
 /// those instead of the ones it would infer.
-AlloyInspectorThemeData galleryInspectorTheme(BuildContext context) =>
-    AlloyInspectorThemeData(
+CobaltInspectorThemeData galleryInspectorTheme(BuildContext context) =>
+    CobaltInspectorThemeData(
       background: GalleryColors.canvas,
       surface: GalleryColors.card,
       onSurface: GalleryColors.text,

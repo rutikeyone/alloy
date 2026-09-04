@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/features/orders/order_flow_scope.dart';
 import 'package:flow_scopes/features/orders/ui/order_flow_chrome.dart';
 import 'package:flow_scopes/features/orders/ui/order_payment_screen.dart';
@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 ///
 /// Everything the flow is — its scope, its identity, its screens and its
 /// chrome — lives here, so the route table just names it.
-class OrderFlowRoute extends AlloyShellRoute {
+class OrderFlowRoute extends CobaltShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',

@@ -9,7 +9,7 @@ class FlowScopesL10nEn extends FlowScopesL10n {
   FlowScopesL10nEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy · flow scopes';
+  String get appTitle => 'Cobalt · flow scopes';
 
   @override
   String get whatIsAlive => 'what is alive right now';

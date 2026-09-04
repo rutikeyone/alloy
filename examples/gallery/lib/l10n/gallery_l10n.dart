@@ -103,10 +103,10 @@ abstract class GalleryL10n {
   /// Title of the gallery application.
   ///
   /// In en, this message translates to:
-  /// **'Alloy examples'**
+  /// **'Cobalt examples'**
   String get appTitle;
 
-  /// Subtitle under the Alloy wordmark.
+  /// Subtitle under the Cobalt wordmark.
   ///
   /// In en, this message translates to:
   /// **'dependency injection · examples'**
@@ -283,7 +283,7 @@ abstract class GalleryL10n {
   /// No description provided for @startupPoint3.
   ///
   /// In en, this message translates to:
-  /// **'Phase 1 awaits @AlloyInit as a graph, so independent branches run together'**
+  /// **'Phase 1 awaits @CobaltInit as a graph, so independent branches run together'**
   String get startupPoint3;
 
   /// No description provided for @startupPoint4.
@@ -307,7 +307,7 @@ abstract class GalleryL10n {
   /// No description provided for @environmentsPoint1.
   ///
   /// In en, this message translates to:
-  /// **'@AlloyEnvironment repeats rather than taking a list — a registration belongs to a set, a start picks one'**
+  /// **'@CobaltEnvironment repeats rather than taking a list — a registration belongs to a set, a start picks one'**
   String get environmentsPoint1;
 
   /// No description provided for @environmentsPoint2.
@@ -409,7 +409,7 @@ abstract class GalleryL10n {
   /// No description provided for @widgetScopePoint1.
   ///
   /// In en, this message translates to:
-  /// **'AlloyScopedStatefulWidget registers into a scope it owns'**
+  /// **'CobaltScopedStatefulWidget registers into a scope it owns'**
   String get widgetScopePoint1;
 
   /// No description provided for @widgetScopePoint2.
@@ -475,7 +475,7 @@ abstract class GalleryL10n {
   /// No description provided for @scopeTreePoint1.
   ///
   /// In en, this message translates to:
-  /// **'AlloyScope.children is public, so the tree is inspectable at runtime'**
+  /// **'CobaltScope.children is public, so the tree is inspectable at runtime'**
   String get scopeTreePoint1;
 
   /// No description provided for @scopeTreePoint2.
@@ -505,7 +505,7 @@ abstract class GalleryL10n {
   /// No description provided for @flowPoint1.
   ///
   /// In en, this message translates to:
-  /// **'AlloyShellRoute — enter the flow and the scope appears; leave and it is gone'**
+  /// **'CobaltShellRoute — enter the flow and the scope appears; leave and it is gone'**
   String get flowPoint1;
 
   /// No description provided for @flowPoint2.
@@ -577,7 +577,7 @@ abstract class GalleryL10n {
   /// No description provided for @codegenPoint1.
   ///
   /// In en, this message translates to:
-  /// **'Put @alloyInject on a class and lib/alloy.g.dart appears'**
+  /// **'Put @cobaltInject on a class and lib/cobalt.g.dart appears'**
   String get codegenPoint1;
 
   /// No description provided for @codegenPoint2.
@@ -625,7 +625,7 @@ abstract class GalleryL10n {
   /// No description provided for @manualPoint3.
   ///
   /// In en, this message translates to:
-  /// **'AlloyScopeBuilder composes; that is what replaces modules'**
+  /// **'CobaltScopeBuilder composes; that is what replaces modules'**
   String get manualPoint3;
 
   /// No description provided for @manualPoint4.
@@ -649,7 +649,7 @@ abstract class GalleryL10n {
   /// No description provided for @eventsPoint1.
   ///
   /// In en, this message translates to:
-  /// **'AlloyObserver events — scopes pushed, instances built, teardown failing'**
+  /// **'CobaltObserver events — scopes pushed, instances built, teardown failing'**
   String get eventsPoint1;
 
   /// No description provided for @eventsPoint2.
@@ -661,7 +661,7 @@ abstract class GalleryL10n {
   /// No description provided for @eventsPoint3.
   ///
   /// In en, this message translates to:
-  /// **'AlloyMultiSink fans a record out; a failing sink does not silence the rest'**
+  /// **'CobaltMultiSink fans a record out; a failing sink does not silence the rest'**
   String get eventsPoint3;
 
   /// No description provided for @eventsPoint4.
@@ -745,7 +745,7 @@ abstract class GalleryL10n {
   /// App bar of the screen the inspector example gives you to poke at.
   ///
   /// In en, this message translates to:
-  /// **'Alloy · inspector'**
+  /// **'Cobalt · inspector'**
   String get demoTitle;
 
   /// No description provided for @demoInspect.

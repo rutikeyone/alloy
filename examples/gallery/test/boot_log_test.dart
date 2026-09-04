@@ -34,7 +34,7 @@ void main() {
     //
     // Only the steps are counted. The outgoing graph's "released" line can
     // still land here, because teardown is not awaited — one scope is on its
-    // way out while the next is coming up. That is Alloy's documented
+    // way out while the next is coming up. That is Cobalt's documented
     // behaviour showing through, not this screen misreporting.
     for (final step in ['bind-platform', 'load-remote-config', 'warm-fonts']) {
       expect(

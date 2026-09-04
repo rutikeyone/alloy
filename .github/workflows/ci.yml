@@ -56,7 +56,7 @@ jobs:
                          compat/external_consumer; do
             (cd "$package" && dart run build_runner build)
           done
-          for package in packages/alloy_inspector examples/gallery \
+          for package in packages/cobalt_inspector examples/gallery \
                          examples/notes_app examples/flow_scopes \
                          examples/graph_events examples/codegen_basics; do
             (cd "$package" && flutter gen-l10n)
@@ -65,11 +65,11 @@ jobs:
 
       - name: Test pure Dart packages
         run: |
-          for package in packages/alloy packages/alloy_analyzer \
-                         packages/alloy_generator packages/alloy_lint \
-                         packages/alloy_talker packages/alloy_logging \
-                         packages/alloy_logger packages/alloy_test \
-                         packages/alloy_bloc \
+          for package in packages/cobalt packages/cobalt_analyzer \
+                         packages/cobalt_generator packages/cobalt_lint \
+                         packages/cobalt_talker packages/cobalt_logging \
+                         packages/cobalt_logger packages/cobalt_test \
+                         packages/cobalt_bloc \
                          examples/manual_mode examples/teardown \
                          compat/external_consumer; do
             (cd "$package" && dart test)
@@ -77,10 +77,10 @@ jobs:
 
       - name: Test Flutter packages
         run: |
-          for package in packages/alloy_flutter packages/alloy_go_router \
-                         packages/alloy_inspector \
-                         packages/alloy_talker_flutter \
-                         packages/alloy_test_flutter \
+          for package in packages/cobalt_flutter packages/cobalt_go_router \
+                         packages/cobalt_inspector \
+                         packages/cobalt_talker_flutter \
+                         packages/cobalt_test_flutter \
                          examples/codegen_basics examples/notes_app \
                          examples/flow_scopes examples/graph_events \
                          examples/testing_patterns examples/gallery; do
@@ -95,25 +95,25 @@ jobs:
 
       - name: Publish dry run
         run: |
-          for package in packages/alloy_annotations packages/alloy \
-                         packages/alloy_analyzer packages/alloy_generator \
-                         packages/alloy_test packages/alloy_talker \
-                         packages/alloy_bloc \
-                         packages/alloy_logging packages/alloy_logger \
-                         packages/alloy_flutter packages/alloy_go_router \
-                         packages/alloy_inspector \
-                         packages/alloy_talker_flutter \
-                         packages/alloy_test_flutter; do
+          for package in packages/cobalt_annotations packages/cobalt \
+                         packages/cobalt_analyzer packages/cobalt_generator \
+                         packages/cobalt_test packages/cobalt_talker \
+                         packages/cobalt_bloc \
+                         packages/cobalt_logging packages/cobalt_logger \
+                         packages/cobalt_flutter packages/cobalt_go_router \
+                         packages/cobalt_inspector \
+                         packages/cobalt_talker_flutter \
+                         packages/cobalt_test_flutter; do
             (cd "$package" && dart pub publish --dry-run)
           done
 
-      # alloy_lint cannot go in the loop above: pub exits non-zero because of
+      # cobalt_lint cannot go in the loop above: pub exits non-zero because of
       # the lib/main.dart warning the analysis-server plugin API requires, and
       # which riverpod_lint carries too. Asserting the count instead still
       # fails the build if a second warning ever appears.
-      - name: Publish dry run for alloy_lint
+      - name: Publish dry run for cobalt_lint
         run: |
-          cd packages/alloy_lint
+          cd packages/cobalt_lint
           dart pub publish --dry-run 2>&1 | tee /tmp/lint-dry-run.txt || true
           grep -q 'Package has 1 warning' /tmp/lint-dry-run.txt
 
@@ -125,7 +125,7 @@ jobs:
   # Its own job rather than a third matrix entry, because it cannot run the
   # workspace. One workspace is one resolution, and on 3.38 `flutter_test` pins
   # `test_api 0.7.7`, capping the `test` runner at 1.26.3 and `analyzer` below
-  # 9 — while `alloy_analyzer` needs 10.0.1 or better. Consumers never meet
+  # 9 — while `cobalt_analyzer` needs 10.0.1 or better. Consumers never meet
   # that; we do, because our analyzer packages and the test runner share a
   # resolution. So the script resolves each member on its own, and it
   # regenerates the stand, which is the one place the whole pipeline is proved

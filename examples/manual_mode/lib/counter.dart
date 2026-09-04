@@ -1,4 +1,4 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
 class Clock {
   DateTime now() => DateTime.now();
@@ -52,40 +52,40 @@ class Counter {
   }
 }
 
-class ClockFactory implements AlloyFactory<Clock> {
+class ClockFactory implements CobaltFactory<Clock> {
   const ClockFactory();
 
   @override
-  Clock create(AlloyResolver resolver) => Clock();
+  Clock create(CobaltResolver resolver) => Clock();
 }
 
-class EventLogFactory implements AlloyFactory<EventLog> {
+class EventLogFactory implements CobaltFactory<EventLog> {
   const EventLogFactory();
 
   @override
-  EventLog create(AlloyResolver resolver) => EventLog();
+  EventLog create(CobaltResolver resolver) => EventLog();
 }
 
-class CounterStorageFactory implements AlloyAsyncFactory<CounterStorage> {
+class CounterStorageFactory implements CobaltAsyncFactory<CounterStorage> {
   const CounterStorageFactory();
 
   @override
-  Future<CounterStorage> create(AlloyResolver resolver) async {
+  Future<CounterStorage> create(CobaltResolver resolver) async {
     final storage = CounterStorage(resolver.get<EventLog>());
     await storage.warmUp();
     return storage;
   }
 }
 
-class CounterFactory implements AlloyParamFactory<Counter, String> {
+class CounterFactory implements CobaltParamFactory<Counter, String> {
   const CounterFactory();
 
   @override
-  Counter create(AlloyResolver resolver, String param) =>
+  Counter create(CobaltResolver resolver, String param) =>
       Counter(resolver.get<CounterStorage>(), resolver.get<EventLog>(), param);
 }
 
-class BindPlatform implements AlloyBootstrapStep {
+class BindPlatform implements CobaltBootstrapStep {
   const BindPlatform();
 
   @override
@@ -95,11 +95,11 @@ class BindPlatform implements AlloyBootstrapStep {
   void run() {}
 }
 
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope
       ..registerLazySingleton<Clock>(const ClockFactory())
       ..registerLazySingleton<EventLog>(const EventLogFactory())
@@ -107,12 +107,12 @@ class AppScope implements AlloyScopeBuilder {
   }
 }
 
-AlloyScope openSession(AlloyScope root, String id) =>
+CobaltScope openSession(CobaltScope root, String id) =>
     root.push('session:$id')
       ..registerParamFactory<Counter, String>(const CounterFactory());
 
-Future<AlloyScope> startApp({List<AlloyObserver> observers = const []}) =>
-    AlloyApplication.start(
+Future<CobaltScope> startApp({List<CobaltObserver> observers = const []}) =>
+    CobaltApplication.start(
       root: const AppScope(),
       bootstrap: const [BindPlatform()],
       rootName: 'app',

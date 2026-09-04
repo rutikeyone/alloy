@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/core/flow_event.dart';
 import 'package:flutter/foundation.dart';
 
@@ -28,9 +28,9 @@ class EventLog extends ChangeNotifier {
   }
 }
 
-final class EventLogFactory implements AlloyFactory<EventLog> {
+final class EventLogFactory implements CobaltFactory<EventLog> {
   const EventLogFactory();
 
   @override
-  EventLog create(AlloyResolver resolver) => EventLog();
+  EventLog create(CobaltResolver resolver) => EventLog();
 }

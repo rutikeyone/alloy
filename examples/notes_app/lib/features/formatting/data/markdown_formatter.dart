@@ -1,7 +1,7 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/features/formatting/domain/note_formatter.dart';
 
-@AlloyInject(name: 'markdown', exposeAs: NoteFormatter)
+@CobaltInject(name: 'markdown', exposeAs: NoteFormatter)
 class MarkdownFormatter implements NoteFormatter {
   MarkdownFormatter();
 

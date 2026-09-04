@@ -1,6 +1,6 @@
 # testing_patterns
 
-How to test an app built on Alloy. The interesting code is in `test/`.
+How to test an app built on Cobalt. The interesting code is in `test/`.
 
 ```bash
 flutter test
@@ -54,7 +54,7 @@ then reuse them, the same reason a package ships a `*_test_utils` library.
 
 ## Why this matters
 
-The apps that motivated Alloy had no tests at all, and their own tech-debt
+The apps that motivated Cobalt had no tests at all, and their own tech-debt
 notes said only the code written *without* DI was testable. A container you
 cannot substitute into is a container that makes testing worse. This example
 exists to show that the substitution point is ordinary API, not a special mode.

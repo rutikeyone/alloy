@@ -1,11 +1,11 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/event_log.dart';
 import 'package:notes_app/features/notes/domain/note.dart';
 import 'package:notes_app/features/notes/domain/note_store.dart';
 
 part 'notes_controller.g.dart';
 
-@alloyTransient
+@cobaltTransient
 class NotesController with _$NotesController {
   NotesController();
 

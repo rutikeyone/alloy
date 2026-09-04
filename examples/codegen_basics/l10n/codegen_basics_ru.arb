@@ -1,7 +1,7 @@
 {
   "@@locale": "ru",
 
-  "appTitle": "Alloy: основы кодогенерации",
+  "appTitle": "Cobalt: основы кодогенерации",
 
   "environment": "окружение: {name}",
   "@environment": { "placeholders": { "name": { "type": "String" } } },

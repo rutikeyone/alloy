@@ -1,19 +1,19 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_external_consumer/src/clock.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_external_consumer/src/clock.dart';
 
 /// A screen-scoped controller: some of it comes from the graph, the rest from
 /// whoever opened the screen.
 ///
 /// This is the shape that dominates a real application's DI — a repository or
 /// two from the container, an id and a couple of flags from the route — and
-/// the reason `@AlloyParam` exists.
-@alloyInject
+/// the reason `@CobaltParam` exists.
+@cobaltInject
 class NoteEditor {
   NoteEditor(
     this.clock, {
-    @alloyParam required this.id,
-    @alloyParam required this.title,
-    @alloyParam required this.draft,
+    @cobaltParam required this.id,
+    @cobaltParam required this.title,
+    @cobaltParam required this.draft,
   });
 
   final Clock clock;

@@ -1,7 +1,7 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/event_log.dart';
 
-@AlloyInit()
+@CobaltInit()
 class Telemetry implements AsyncInitializable {
   Telemetry(this._log);
 

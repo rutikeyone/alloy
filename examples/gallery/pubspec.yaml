@@ -1,6 +1,6 @@
 name: gallery
 description: >-
-  One app that hosts every Alloy example — each opens with its own graph, built
+  One app that hosts every Cobalt example — each opens with its own graph, built
   on entry and disposed on exit.
 publish_to: none
 version: 0.1.0
@@ -12,11 +12,11 @@ environment:
 resolution: workspace
 
 dependencies:
-  alloy: ^0.1.0
-  alloy_flutter: ^0.1.0
-  alloy_go_router: ^0.1.0
-  alloy_inspector: ^0.1.0
-  alloy_talker: ^0.1.0
+  cobalt: ^0.1.0
+  cobalt_flutter: ^0.1.0
+  cobalt_go_router: ^0.1.0
+  cobalt_inspector: ^0.1.0
+  cobalt_talker: ^0.1.0
   flutter:
     sdk: flutter
   flutter_localizations:

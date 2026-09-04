@@ -1,5 +1,5 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:codegen_basics/alloy.g.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
+import 'package:codegen_basics/cobalt.g.dart';
 import 'package:codegen_basics/counter_bloc.dart';
 import 'package:codegen_basics/greeting.dart';
 import 'package:codegen_basics/l10n/codegen_basics_l10n.dart';
@@ -14,7 +14,7 @@ class CounterScreen extends StatelessWidget {
     // A scope that lives exactly as long as this screen. The bloc below is a
     // transient, so it would be rebuilt on every resolve — putting it in a
     // scope of its own is what gives it a lifetime and a disposal point.
-    body: const AlloyScopeWidget(
+    body: const CobaltScopeWidget(
       name: 'counter-screen',
       builder: _ScreenScope(),
       child: _Counter(),
@@ -24,11 +24,11 @@ class CounterScreen extends StatelessWidget {
 
 /// Registers nothing new — it exists to give the screen its own node in the
 /// scope tree, which is where screen-scoped state would go as the app grows.
-final class _ScreenScope implements AlloyScopeBuilder {
+final class _ScreenScope implements CobaltScopeBuilder {
   const _ScreenScope();
 
   @override
-  void build(AlloyScope scope) {}
+  void build(CobaltScope scope) {}
 }
 
 class _Counter extends StatefulWidget {
@@ -39,15 +39,15 @@ class _Counter extends StatefulWidget {
 }
 
 class _CounterState extends State<_Counter> {
-  late final CounterBloc _bloc = context.alloy<CounterBloc>();
+  late final CounterBloc _bloc = context.cobalt<CounterBloc>();
 
   @override
   Widget build(BuildContext context) {
     final l10n = CodegenBasicsL10n.of(context);
     // A parameterized registration: the config comes from the graph, the name
     // and the flag from here.
-    final greeting = context.alloyWithParam<Greeting, $GreetingArgs>((
-      name: 'Alloy',
+    final greeting = context.cobaltWithParam<Greeting, $GreetingArgs>((
+      name: 'Cobalt',
       loud: false,
     ));
 

@@ -1,8 +1,8 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 
-@AlloyBootstrap()
-class LoadRemoteConfig implements AlloyBootstrapStep {
+@CobaltBootstrap()
+class LoadRemoteConfig implements CobaltBootstrapStep {
   LoadRemoteConfig();
 
   static const unset = 'unset';

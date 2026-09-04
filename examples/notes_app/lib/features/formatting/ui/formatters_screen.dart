@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/features/formatting/domain/note_formatter.dart';
 import 'package:notes_app/l10n/notes_app_l10n.dart';
@@ -9,8 +9,8 @@ class FormattersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = NotesL10n.of(context);
-    final all = context.alloyAll<NoteFormatter>();
-    final markdown = context.alloy<NoteFormatter>(name: 'markdown');
+    final all = context.cobaltAll<NoteFormatter>();
+    final markdown = context.cobalt<NoteFormatter>(name: 'markdown');
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.namedAndMulti)),

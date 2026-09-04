@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 
 /// The graph the inspector entry looks at, owned by that entry alone.
 ///
@@ -28,11 +28,11 @@ class Database implements Disposable {
   void dispose() => isOpen = false;
 }
 
-final class DatabaseFactory implements AlloyFactory<Database> {
+final class DatabaseFactory implements CobaltFactory<Database> {
   const DatabaseFactory();
 
   @override
-  Database create(AlloyResolver resolver) => Database();
+  Database create(CobaltResolver resolver) => Database();
 }
 
 /// Needs I/O before it is usable, so it is built during `init()` — an async
@@ -43,11 +43,11 @@ class SearchIndex {
   final Database database;
 }
 
-final class SearchIndexFactory implements AlloyAsyncFactory<SearchIndex> {
+final class SearchIndexFactory implements CobaltAsyncFactory<SearchIndex> {
   const SearchIndexFactory();
 
   @override
-  Future<SearchIndex> create(AlloyResolver resolver) async {
+  Future<SearchIndex> create(CobaltResolver resolver) async {
     await Future<void>.delayed(const Duration(milliseconds: 30));
     return SearchIndex(resolver.get<Database>());
   }
@@ -60,11 +60,11 @@ class Query {
   final Database database;
 }
 
-final class QueryFactory implements AlloyFactory<Query> {
+final class QueryFactory implements CobaltFactory<Query> {
   const QueryFactory();
 
   @override
-  Query create(AlloyResolver resolver) => Query(resolver.get<Database>());
+  Query create(CobaltResolver resolver) => Query(resolver.get<Database>());
 }
 
 /// Takes a value the container cannot supply, so the inspector can describe it
@@ -75,19 +75,19 @@ class Ticket {
   final String id;
 }
 
-final class TicketFactory implements AlloyParamFactory<Ticket, String> {
+final class TicketFactory implements CobaltParamFactory<Ticket, String> {
   const TicketFactory();
 
   @override
-  Ticket create(AlloyResolver resolver, String param) => Ticket(param);
+  Ticket create(CobaltResolver resolver, String param) => Ticket(param);
 }
 
 /// What the entry owns for as long as it is open.
-final class InspectorScope implements AlloyScopeBuilder {
+final class InspectorScope implements CobaltScopeBuilder {
   const InspectorScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope.registerSingleton<Settings>(Settings('stable'));
     scope.registerLazySingleton<Database>(const DatabaseFactory());
     scope.registerAsyncSingleton<SearchIndex>(const SearchIndexFactory());
@@ -97,7 +97,7 @@ final class InspectorScope implements AlloyScopeBuilder {
 }
 
 /// A bootstrap step, so phase 0 shows up in the log too.
-class InspectorWarmUp implements AlloyBootstrapStep, Disposable {
+class InspectorWarmUp implements CobaltBootstrapStep, Disposable {
   InspectorWarmUp();
 
   @override
@@ -119,11 +119,11 @@ class SessionCache implements Disposable {
   void dispose() => isOpen = false;
 }
 
-final class SessionCacheFactory implements AlloyAsyncFactory<SessionCache> {
+final class SessionCacheFactory implements CobaltAsyncFactory<SessionCache> {
   const SessionCacheFactory();
 
   @override
-  Future<SessionCache> create(AlloyResolver resolver) async {
+  Future<SessionCache> create(CobaltResolver resolver) async {
     await Future<void>.delayed(const Duration(milliseconds: 20));
     return SessionCache();
   }
@@ -133,19 +133,19 @@ class Draft {
   final lines = <String>[];
 }
 
-final class DraftFactory implements AlloyFactory<Draft> {
+final class DraftFactory implements CobaltFactory<Draft> {
   const DraftFactory();
 
   @override
-  Draft create(AlloyResolver resolver) => Draft();
+  Draft create(CobaltResolver resolver) => Draft();
 }
 
 /// A child scope with a life of its own, and its own lifetimes inside it.
-final class InspectorSessionScope implements AlloyScopeBuilder {
+final class InspectorSessionScope implements CobaltScopeBuilder {
   const InspectorSessionScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope.registerAsyncSingleton<SessionCache>(const SessionCacheFactory());
     scope.registerLazySingleton<Draft>(const DraftFactory());
   }

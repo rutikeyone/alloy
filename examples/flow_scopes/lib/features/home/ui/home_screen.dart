@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/app/app_routes.dart';
 import 'package:flow_scopes/core/event_log.dart';
 import 'package:flow_scopes/core/flow_event.dart';
@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = FlowScopesL10n.of(context);
-    final log = context.alloy<EventLog>();
+    final log = context.cobalt<EventLog>();
 
     return Scaffold(
       appBar: AppBar(

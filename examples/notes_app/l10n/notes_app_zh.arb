@@ -3,10 +3,10 @@
 
   "twoPhaseStartup": "两阶段启动",
   "restartGraph": "释放应用作用域并重新启动一个",
-  "phaseZero": "阶段 0 —— @AlloyBootstrap",
+  "phaseZero": "阶段 0 —— @CobaltBootstrap",
   "phaseZeroNote": "由作用域 “{scope}” 收养，随它一起释放",
   "@phaseZeroNote": { "placeholders": { "scope": { "type": "String" } } },
-  "phaseOne": "阶段 1 —— @AlloyInit",
+  "phaseOne": "阶段 1 —— @CobaltInit",
   "databaseOpen": "数据库已打开",
   "searchIndexBuilt": "搜索索引已构建",
   "telemetryStarted": "遥测已启动",

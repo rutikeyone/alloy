@@ -1,5 +1,5 @@
 name: testing_patterns
-description: How to test an app built on Alloy — overriding dependencies and the traps.
+description: How to test an app built on Cobalt — overriding dependencies and the traps.
 publish_to: none
 version: 0.1.0
 
@@ -10,12 +10,12 @@ environment:
 resolution: workspace
 
 dependencies:
-  alloy: ^0.1.0
-  alloy_flutter: ^0.1.0
+  cobalt: ^0.1.0
+  cobalt_flutter: ^0.1.0
   flutter:
     sdk: flutter
 
 dev_dependencies:
-  alloy_test: ^0.1.0
+  cobalt_test: ^0.1.0
   flutter_test:
     sdk: flutter

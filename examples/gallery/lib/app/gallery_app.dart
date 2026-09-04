@@ -1,4 +1,4 @@
-import 'package:alloy_inspector/alloy_inspector.dart';
+import 'package:cobalt_inspector/cobalt_inspector.dart';
 import 'package:codegen_basics/l10n/codegen_basics_l10n.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ import 'package:notes_app/l10n/notes_app_l10n.dart';
 /// leave — which is the thing the gallery is really demonstrating, so putting
 /// a container above them all would undercut it.
 ///
-/// It does own the language. `AlloyInspectorL10n.delegate` is registered here
+/// It does own the language. `CobaltInspectorL10n.delegate` is registered here
 /// beside the gallery's own: the inspector renders in the host's language
 /// without it, but installing it is the documented way, and a gallery that
 /// showed the fallback rather than the intended path would be teaching the
@@ -40,7 +40,7 @@ class _GalleryAppState extends State<GalleryApp> {
       onGenerateTitle: (context) => GalleryL10n.of(context).appTitle,
       // The gallery exists to be looked at, including in screenshots for the
       // README. A debug ribbon across the corner of every one of them is
-      // noise about the build, not about Alloy.
+      // noise about the build, not about Cobalt.
       debugShowCheckedModeBanner: false,
       // Built again below `Localizations`, where there is a language to ask
       // about: the face the interface is set in depends on it, and a
@@ -61,7 +61,7 @@ class _GalleryAppState extends State<GalleryApp> {
         FlowScopesL10n.delegate,
         GraphEventsL10n.delegate,
         CodegenBasicsL10n.delegate,
-        AlloyInspectorL10n.delegate,
+        CobaltInspectorL10n.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

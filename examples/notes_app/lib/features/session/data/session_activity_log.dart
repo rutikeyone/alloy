@@ -1,4 +1,4 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/event_log.dart';
 import 'package:notes_app/features/session/domain/session_user.dart';
 
@@ -20,10 +20,10 @@ class SessionActivityLog implements Disposable {
   }
 }
 
-class SessionActivityLogFactory implements AlloyFactory<SessionActivityLog> {
+class SessionActivityLogFactory implements CobaltFactory<SessionActivityLog> {
   const SessionActivityLogFactory();
 
   @override
-  SessionActivityLog create(AlloyResolver resolver) =>
+  SessionActivityLog create(CobaltResolver resolver) =>
       SessionActivityLog(resolver.get<SessionUser>(), resolver.get<EventLog>());
 }

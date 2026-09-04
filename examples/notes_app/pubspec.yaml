@@ -1,5 +1,5 @@
 name: notes_app
-description: Full-surface Alloy example covering bootstrap, async init graph, scopes and property injection.
+description: Full-surface Cobalt example covering bootstrap, async init graph, scopes and property injection.
 publish_to: none
 version: 0.1.0
 
@@ -10,8 +10,8 @@ environment:
 resolution: workspace
 
 dependencies:
-  alloy: ^0.1.0
-  alloy_flutter: ^0.1.0
+  cobalt: ^0.1.0
+  cobalt_flutter: ^0.1.0
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -19,9 +19,9 @@ dependencies:
   intl: ^0.20.2
 
 dev_dependencies:
-  alloy_test_flutter: ^0.1.0
-  alloy_test: ^0.1.0
-  alloy_generator: ^0.1.0
+  cobalt_test_flutter: ^0.1.0
+  cobalt_test: ^0.1.0
+  cobalt_generator: ^0.1.0
   build_runner: ^2.15.0
   flutter_test:
     sdk: flutter

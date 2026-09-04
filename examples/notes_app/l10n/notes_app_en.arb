@@ -5,14 +5,14 @@
   "@twoPhaseStartup": { "description": "Title of the startup screen." },
   "restartGraph": "dispose the app scope and start a new one",
   "@restartGraph": { "description": "Action that rebuilds the whole graph." },
-  "phaseZero": "Phase 0 — @AlloyBootstrap",
+  "phaseZero": "Phase 0 — @CobaltBootstrap",
   "@phaseZero": { "description": "Heading above the bootstrap steps." },
   "phaseZeroNote": "adopted by scope \"{scope}\", released when it is disposed",
   "@phaseZeroNote": {
     "description": "Who owns the bootstrap steps.",
     "placeholders": { "scope": { "type": "String", "example": "app" } }
   },
-  "phaseOne": "Phase 1 — @AlloyInit",
+  "phaseOne": "Phase 1 — @CobaltInit",
   "@phaseOne": { "description": "Heading above the async initializers." },
   "databaseOpen": "database open",
   "@databaseOpen": { "description": "Whether the database finished opening." },

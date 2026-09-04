@@ -2,8 +2,8 @@
 # Line coverage of the publishable packages, per package and in total.
 #
 # The floor is on the total rather than per package on purpose. Coverage here
-# is measured per package while the code is shared: `alloy_analyzer`'s parsers,
-# for instance, are driven far more from `alloy_generator`'s tests and from
+# is measured per package while the code is shared: `cobalt_analyzer`'s parsers,
+# for instance, are driven far more from `cobalt_generator`'s tests and from
 # `compat/external_consumer` than from their own suite, so a per-package floor
 # would demand tests written where they do not belong. The total moves only
 # when the repository as a whole tests less than it did.
@@ -14,8 +14,8 @@ FLOOR=${COVERAGE_FLOOR:-85}
 OUT=$(mktemp -d)
 PACKAGES_FILE="$PWD/.dart_tool/package_config.json"
 
-DART_PACKAGES="alloy alloy_analyzer alloy_generator alloy_lint alloy_test alloy_talker alloy_logging alloy_logger"
-FLUTTER_PACKAGES="alloy_flutter alloy_go_router alloy_inspector"
+DART_PACKAGES="cobalt cobalt_analyzer cobalt_generator cobalt_lint cobalt_test cobalt_talker cobalt_logging cobalt_logger"
+FLUTTER_PACKAGES="cobalt_flutter cobalt_go_router cobalt_inspector"
 
 for package in $DART_PACKAGES; do
   (

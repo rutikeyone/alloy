@@ -1,10 +1,10 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_external_consumer/src/clock.dart';
-import 'package:alloy_external_consumer/src/search_index.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_external_consumer/src/clock.dart';
+import 'package:cobalt_external_consumer/src/search_index.dart';
 
 part 'report.g.dart';
 
-@alloyTransient
+@cobaltTransient
 class Report with _$Report {
   Report();
 

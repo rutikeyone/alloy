@@ -1,8 +1,8 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_external_consumer/src/clock.dart';
-import 'package:alloy_external_consumer/src/telemetry.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_external_consumer/src/clock.dart';
+import 'package:cobalt_external_consumer/src/telemetry.dart';
 
-@alloyInject
+@cobaltInject
 class Reporter {
   Reporter(this.clock, this.telemetry);
 

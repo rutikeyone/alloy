@@ -1,7 +1,7 @@
 # notes_app
 
 A small multi-screen Flutter app that exercises every capability of
-[Alloy](https://github.com/rutikeyone/alloy), one screen per case.
+[Cobalt](https://github.com/rutikeyone/alloy), one screen per case.
 
 > **Not a runnable app.** This package is a library the gallery mounts — it has no `main.dart`
 > and no native project of its own. Run it, and everything else, from one place:
@@ -34,12 +34,12 @@ Xcode with at least one simulator runtime installed.
 
 | Screen | Case |
 |---|---|
-| Home | both startup phases — the bootstrap log and every `@AlloyInit` service |
+| Home | both startup phases — the bootstrap log and every `@CobaltInit` service |
 | Property injection | a controller with an empty constructor and `@injected` fields |
-| Widget-owned scope | `AlloyScopeWidget` plus a parameterized factory |
+| Widget-owned scope | `CobaltScopeWidget` plus a parameterized factory |
 | Session scope | signing out disposes the scope; nothing implements `reset()` |
 | Named and multi-injection | three formatters behind one interface |
-| Scope tree | the live hierarchy, read from `AlloyScope.children` |
+| Scope tree | the live hierarchy, read from `CobaltScope.children` |
 | Environments | one interface, a different class per build |
 
 The restart button in the app bar disposes the root scope and starts a fresh
@@ -73,7 +73,7 @@ one for `dev`/`test`. Only the one naming the active environment is registered, 
 downstream knows which it got. The `report-crashes` bootstrap step is restricted the same way and
 simply does not appear in the boot log outside `prod` and `stage`.
 
-The environment is a compile-time constant handed to `$startAlloy`, not something a bootstrap step
+The environment is a compile-time constant handed to `$startCobalt`, not something a bootstrap step
 loads — the graph cannot be built before it is known. `LoadRemoteConfig` is the separate case: a
 phase-0 step that fetches values the graph then uses.
 
@@ -91,7 +91,7 @@ everything one case needs sits together:
 lib/
   main.dart                  entry point, nothing else
   app/                       composition root — startup, routes, MaterialApp
-  bootstrap/                 @AlloyBootstrap steps, phase 0
+  bootstrap/                 @CobaltBootstrap steps, phase 0
   core/                      used by more than one feature
   features/
     <feature>/
@@ -117,8 +117,8 @@ features/
   diagnostics/               domain-less: telemetry and the scope tree screen
 ```
 
-`lib/alloy.g.dart` is generated: it holds the container, the bootstrap list and
-`$startAlloy()`. `lib/features/notes/ui/notes_controller.g.dart` is the
+`lib/cobalt.g.dart` is generated: it holds the container, the bootstrap list and
+`$startCobalt()`. `lib/features/notes/ui/notes_controller.g.dart` is the
 property-injection mixin. Both are committed so the example reads without
 running the generator first.
 

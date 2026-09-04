@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:testing_patterns/src/greeter.dart';
 
@@ -13,7 +13,7 @@ class GreetingScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     body: Center(
       child: FutureBuilder<String>(
-        future: context.alloy<Greeter>().greet(name),
+        future: context.cobalt<Greeter>().greet(name),
         builder: (context, snapshot) =>
             Text(snapshot.data ?? 'loading', key: const Key('greeting')),
       ),

@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery/design/gallery_theme.dart';
 import 'package:gallery/l10n/gallery_l10n.dart';
@@ -7,7 +7,7 @@ import 'package:gallery/l10n/gallery_l10n.dart';
 ///
 /// The graph is built when this route is pushed and disposed when it is
 /// popped, so opening an example twice gives you two unrelated graphs — which
-/// is the whole point of the gallery. `AlloyAppScope` is used directly rather
+/// is the whole point of the gallery. `CobaltAppScope` is used directly rather
 /// than through `.builder`: there is already a `MaterialApp` above, so loading
 /// and error render under the gallery's theme without one of their own.
 ///
@@ -23,14 +23,14 @@ class ExampleHost extends StatelessWidget {
     super.key,
   });
 
-  final AlloyScopeBuilder root;
+  final CobaltScopeBuilder root;
   final Widget child;
-  final List<AlloyBootstrapStep> Function()? bootstrap;
+  final List<CobaltBootstrapStep> Function()? bootstrap;
   final String rootName;
-  final List<AlloyObserver> observers;
+  final List<CobaltObserver> observers;
 
   @override
-  Widget build(BuildContext context) => AlloyAppScope(
+  Widget build(BuildContext context) => CobaltAppScope(
     root: root,
     bootstrap: bootstrap,
     rootName: rootName,

@@ -1,4 +1,4 @@
-import 'package:alloy_inspector/alloy_inspector.dart';
+import 'package:cobalt_inspector/cobalt_inspector.dart';
 import 'package:codegen_basics/l10n/codegen_basics_l10n.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +39,7 @@ Widget galleryHarness({
       FlowScopesL10n.delegate,
       GraphEventsL10n.delegate,
       CodegenBasicsL10n.delegate,
-      AlloyInspectorL10n.delegate,
+      CobaltInspectorL10n.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,

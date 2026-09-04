@@ -1,6 +1,6 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
-@AlloyInit()
+@CobaltInit()
 class Database implements AsyncInitializable {
   Database();
 

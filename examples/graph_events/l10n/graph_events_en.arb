@@ -1,14 +1,14 @@
 {
   "@@locale": "en",
 
-  "appTitle": "Alloy · observability",
+  "appTitle": "Cobalt · observability",
   "@appTitle": { "description": "Title of the graph-events example." },
   "liveLog": "the live log",
   "@liveLog": { "description": "Action that opens talker's screen." },
 
   "everyEvent": "Every event below is the graph reporting itself",
   "@everyEvent": { "description": "What the list underneath is." },
-  "everyEventDetail": "AlloyTalkerObserver files each kind under its own title, so the log screen can filter them apart.",
+  "everyEventDetail": "CobaltTalkerObserver files each kind under its own title, so the log screen can filter them apart.",
   "@everyEventDetail": { "description": "Why the entries are colour-coded and filterable." },
 
   "openSession": "Open a session scope",

@@ -15,7 +15,7 @@ class NotesL10nZh extends NotesL10n {
   String get restartGraph => '释放应用作用域并重新启动一个';
 
   @override
-  String get phaseZero => '阶段 0 —— @AlloyBootstrap';
+  String get phaseZero => '阶段 0 —— @CobaltBootstrap';
 
   @override
   String phaseZeroNote(String scope) {
@@ -23,7 +23,7 @@ class NotesL10nZh extends NotesL10n {
   }
 
   @override
-  String get phaseOne => '阶段 1 —— @AlloyInit';
+  String get phaseOne => '阶段 1 —— @CobaltInit';
 
   @override
   String get databaseOpen => '数据库已打开';

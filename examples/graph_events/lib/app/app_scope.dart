@@ -1,17 +1,17 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:graph_events/core/telemetry.dart';
 
 /// What the app owns for as long as it runs.
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope();
 
   @override
-  void build(AlloyScope scope) =>
+  void build(CobaltScope scope) =>
       scope.registerAsyncSingleton<Telemetry>(const TelemetryFactory());
 }
 
 /// A bootstrap step, so phase 0 shows up in the log too.
-class WarmUp implements AlloyBootstrapStep, Disposable {
+class WarmUp implements CobaltBootstrapStep, Disposable {
   WarmUp();
 
   @override

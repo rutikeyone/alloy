@@ -6,7 +6,7 @@
 # script exists rather than a few lines in CI. A workspace is one resolution,
 # and this one cannot exist on the old SDK: `flutter_test` there pins
 # `test_api 0.7.7`, which caps the `test` runner at 1.26.3, which caps
-# `analyzer` below 9 — while `alloy_analyzer` needs 10.0.1 or better. A
+# `analyzer` below 9 — while `cobalt_analyzer` needs 10.0.1 or better. A
 # consumer never meets that, because a consumer does not have the `test` runner
 # sitting in the same resolution as our analyzer packages. We do. So each
 # member is resolved on its own, which is also what pub.dev does when it scores
@@ -29,26 +29,26 @@ trap 'rm -rf "$WORK"' EXIT
 
 # name=path, because the members no longer all live under packages/.
 DART_MEMBERS="\
-alloy_annotations=packages/alloy_annotations \
-alloy=packages/alloy \
-alloy_bloc=packages/alloy_bloc \
-alloy_talker=packages/alloy_talker \
-alloy_logging=packages/alloy_logging \
-alloy_logger=packages/alloy_logger \
-alloy_test=packages/alloy_test \
-alloy_analyzer=packages/alloy_analyzer \
-alloy_generator=packages/alloy_generator \
-alloy_lint=packages/alloy_lint \
+cobalt_annotations=packages/cobalt_annotations \
+cobalt=packages/cobalt \
+cobalt_bloc=packages/cobalt_bloc \
+cobalt_talker=packages/cobalt_talker \
+cobalt_logging=packages/cobalt_logging \
+cobalt_logger=packages/cobalt_logger \
+cobalt_test=packages/cobalt_test \
+cobalt_analyzer=packages/cobalt_analyzer \
+cobalt_generator=packages/cobalt_generator \
+cobalt_lint=packages/cobalt_lint \
 manual_mode=examples/manual_mode \
 teardown=examples/teardown \
-alloy_external_consumer=compat/external_consumer"
+cobalt_external_consumer=compat/external_consumer"
 
 FLUTTER_MEMBERS="\
-alloy_flutter=packages/alloy_flutter \
-alloy_go_router=packages/alloy_go_router \
-alloy_inspector=packages/alloy_inspector \
-alloy_talker_flutter=packages/alloy_talker_flutter \
-alloy_test_flutter=packages/alloy_test_flutter \
+cobalt_flutter=packages/cobalt_flutter \
+cobalt_go_router=packages/cobalt_go_router \
+cobalt_inspector=packages/cobalt_inspector \
+cobalt_talker_flutter=packages/cobalt_talker_flutter \
+cobalt_test_flutter=packages/cobalt_test_flutter \
 codegen_basics=examples/codegen_basics \
 flow_scopes=examples/flow_scopes \
 graph_events=examples/graph_events \
@@ -61,7 +61,7 @@ gallery=examples/gallery"
 # arrangement a real consumer has — but being pure Dart it lands on the same
 # analyzer as the development SDK. `codegen_basics` is the Flutter one, and it
 # is the only place the older row's formatter is ever asked to emit anything.
-GENERATES="alloy_external_consumer codegen_basics"
+GENERATES="cobalt_external_consumer codegen_basics"
 
 echo "Dart:    $(dart --version 2>&1)"
 echo "Flutter: $(flutter --version 2>&1 | head -1)"
@@ -110,7 +110,7 @@ for member in $SELECTED; do
     # `-x repo` drops the guards that read the repository around their package:
     # the root documents, the other pubspecs, the CI workflow. They are right
     # to live where they do and cannot run from a copy taken out of the tree.
-    # See packages/alloy/dart_test.yaml and packages/alloy_lint/dart_test.yaml.
+    # See packages/cobalt/dart_test.yaml and packages/cobalt_lint/dart_test.yaml.
     *) get="dart pub get"; run="dart test -x repo" ;;
   esac
 
@@ -134,7 +134,7 @@ for member in $SELECTED; do
       # Ours only: `flutter gen-l10n` also writes into `lib/`, and its output
       # differs by a blank line between Flutter releases. That is Flutter's
       # generator disagreeing with itself, not ours, and failing on it would
-      # say nothing about Alloy.
+      # say nothing about Cobalt.
       drift=""
       for generated in $(cd "$WORK/$path" && find lib -name '*.g.dart'); do
         diff "$WORK/$path/$generated" "$ROOT/$path/$generated" >>"$log" 2>&1 \

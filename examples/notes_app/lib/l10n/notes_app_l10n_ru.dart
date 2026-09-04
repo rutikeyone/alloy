@@ -15,7 +15,7 @@ class NotesL10nRu extends NotesL10n {
   String get restartGraph => 'разобрать скоуп приложения и поднять новый';
 
   @override
-  String get phaseZero => 'Фаза 0 — @AlloyBootstrap';
+  String get phaseZero => 'Фаза 0 — @CobaltBootstrap';
 
   @override
   String phaseZeroNote(String scope) {
@@ -23,7 +23,7 @@ class NotesL10nRu extends NotesL10n {
   }
 
   @override
-  String get phaseOne => 'Фаза 1 — @AlloyInit';
+  String get phaseOne => 'Фаза 1 — @CobaltInit';
 
   @override
   String get databaseOpen => 'база данных открыта';

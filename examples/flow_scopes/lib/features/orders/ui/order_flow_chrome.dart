@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +23,7 @@ class OrderFlowChrome extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              l10n.scopeLine(context.alloyScope.name),
+              l10n.scopeLine(context.cobaltScope.name),
               key: const Key('flow-scope-name'),
             ),
           ),

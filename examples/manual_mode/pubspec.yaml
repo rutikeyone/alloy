@@ -9,7 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  alloy: ^0.1.0
+  cobalt: ^0.1.0
 
 dev_dependencies:
   test: ^1.25.0

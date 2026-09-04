@@ -9,7 +9,7 @@ class CodegenBasicsL10nRu extends CodegenBasicsL10n {
   CodegenBasicsL10nRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy: основы кодогенерации';
+  String get appTitle => 'Cobalt: основы кодогенерации';
 
   @override
   String environment(String name) {

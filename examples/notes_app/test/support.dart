@@ -1,21 +1,21 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:alloy_test/alloy_test.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
+import 'package:cobalt_test/cobalt_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:notes_app/alloy.g.dart';
+import 'package:notes_app/cobalt.g.dart';
 import 'package:notes_app/l10n/notes_app_l10n.dart';
 import 'package:notes_app/app/app_startup.dart';
 
 /// Builds the graph without mounting the app.
 ///
-/// The same three pieces `AlloyAppScope` is given in `NotesApp.build`; the app
+/// The same three pieces `CobaltAppScope` is given in `NotesApp.build`; the app
 /// itself needs no such function, which is why this one lives in `test/`.
-Future<AlloyScope> startNotesGraph({
-  AlloyEnvironment environment = notesEnvironment,
-}) => alloyTestScope(
+Future<CobaltScope> startNotesGraph({
+  CobaltEnvironment environment = notesEnvironment,
+}) => cobaltTestScope(
   root: NotesScope(environment),
-  bootstrap: $alloyBootstrap(environment),
-  rootName: $alloyRootScopeName,
+  bootstrap: $cobaltBootstrap(environment),
+  rootName: $cobaltRootScopeName,
 );
 
 /// Mounts one screen with the notes graph beneath it.
@@ -24,7 +24,7 @@ Future<AlloyScope> startNotesGraph({
 /// here is reached directly. So a test mounts exactly the screen it is about.
 Widget notesScreenUnderTest(
   Widget screen, {
-  AlloyEnvironment environment = notesEnvironment,
+  CobaltEnvironment environment = notesEnvironment,
 }) => MaterialApp(
   // The gallery registers this delegate beside its own; a test mounting one
   // screen on its own has to supply it here.
@@ -35,10 +35,10 @@ Widget notesScreenUnderTest(
     GlobalCupertinoLocalizations.delegate,
   ],
   supportedLocales: NotesL10n.supportedLocales,
-  home: AlloyAppScope(
+  home: CobaltAppScope(
     root: NotesScope(environment),
-    bootstrap: () => $alloyBootstrap(environment),
-    rootName: $alloyRootScopeName,
+    bootstrap: () => $cobaltBootstrap(environment),
+    rootName: $cobaltRootScopeName,
     loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
     child: screen,
   ),

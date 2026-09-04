@@ -1,15 +1,15 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:manual_mode/counter.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late AlloyScope app;
+  late CobaltScope app;
 
   setUp(() async => app = await startApp());
   tearDown(() async => app.dispose());
 
   test('async storage is ready as soon as start returns', () {
-    expect(app.state, AlloyScopeState.active);
+    expect(app.state, CobaltScopeState.active);
     expect(app.get<EventLog>().entries, contains('storage warmed up'));
   });
 
@@ -48,7 +48,7 @@ void main() {
 
     expect(app.children, isEmpty);
     expect(app.get<CounterStorage>().isClosed, isFalse);
-    expect(app.state, AlloyScopeState.active);
+    expect(app.state, CobaltScopeState.active);
   });
 
   test('disposing the app closes sessions first, then async storage', () async {

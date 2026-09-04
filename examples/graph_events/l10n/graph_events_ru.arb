@@ -1,11 +1,11 @@
 {
   "@@locale": "ru",
 
-  "appTitle": "Alloy · наблюдаемость",
+  "appTitle": "Cobalt · наблюдаемость",
   "liveLog": "живой журнал",
 
   "everyEvent": "Каждое событие ниже — это граф, рассказывающий о себе",
-  "everyEventDetail": "AlloyTalkerObserver кладёт каждый вид под свой заголовок, поэтому экран журнала умеет их разделять.",
+  "everyEventDetail": "CobaltTalkerObserver кладёт каждый вид под свой заголовок, поэтому экран журнала умеет их разделять.",
 
   "openSession": "Открыть сессионный скоуп",
   "openSessionDetail": "пуш, async-инициализация, несколько объектов",

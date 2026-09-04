@@ -1,5 +1,5 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:alloy_test/alloy_test.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
+import 'package:cobalt_test/cobalt_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:testing_patterns/testing_patterns.dart';
@@ -7,26 +7,26 @@ import 'package:testing_patterns/testing_patterns.dart';
 /// Two things that cost real time to learn the hard way.
 void main() {
   group('building the graph', () {
-    late AlloyScope app;
+    late CobaltScope app;
 
     // In setUp, not inside testWidgets. `testWidgets` runs its body in a
     // fake-async zone where a real Future.delayed never completes, so an async
     // initializer started in there hangs the test until the suite times out —
     // with no error pointing at the cause.
     setUp(() async {
-      app = await alloyTestScope(root: const AppScope(), rootName: 'app');
+      app = await cobaltTestScope(root: const AppScope(), rootName: 'app');
     });
 
-    AlloyScope scopeWith(String greeting, int hour) {
+    CobaltScope scopeWith(String greeting, int hour) {
       return app.pushForTest()
         ..registerSingleton<Clock>(FixedClock(DateTime.utc(2026, 8, 23, hour)))
         ..registerSingleton<GreetingStore>(InMemoryGreetingStore(greeting))
         ..registerLazySingleton<Greeter>(const GreeterFactory());
     }
 
-    Future<void> pump(WidgetTester tester, AlloyScope scope) async {
+    Future<void> pump(WidgetTester tester, CobaltScope scope) async {
       await tester.pumpWidget(
-        AlloyScopeProvider(
+        CobaltScopeProvider(
           scope: scope,
           child: const MaterialApp(home: GreetingScreen(name: 'Ada')),
         ),
@@ -62,7 +62,7 @@ void main() {
   // zone, so real delays behave. Keep them out of testWidgets even when the app
   // under test is a Flutter app.
   test('the graph can be asserted on without any widgets', () async {
-    final app = await alloyTestScope(root: const AppScope());
+    final app = await cobaltTestScope(root: const AppScope());
 
     expect(app.isRegistered<Greeter>(), isTrue);
     expect(app.get<Clock>(), isA<SystemClock>());

@@ -1,7 +1,7 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_external_consumer/src/database.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_external_consumer/src/database.dart';
 
-@AlloyInit(dependsOn: [Database])
+@CobaltInit(dependsOn: [Database])
 class SearchIndex implements AsyncInitializable {
   SearchIndex(this._database);
 

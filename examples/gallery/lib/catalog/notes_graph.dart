@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gallery/catalog/example_host.dart';
-import 'package:notes_app/alloy.g.dart';
+import 'package:notes_app/cobalt.g.dart';
 import 'package:notes_app/app/app_startup.dart';
 import 'package:notes_app/bootstrap/bootstrap_state.dart';
 
@@ -38,8 +38,8 @@ class _NotesExampleState extends State<_NotesExample> {
   @override
   Widget build(BuildContext context) => ExampleHost(
     root: const NotesScope(notesEnvironment),
-    bootstrap: () => $alloyBootstrap(notesEnvironment),
-    rootName: $alloyRootScopeName,
+    bootstrap: () => $cobaltBootstrap(notesEnvironment),
+    rootName: $cobaltRootScopeName,
     child: widget.screen,
   );
 }

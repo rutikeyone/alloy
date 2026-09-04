@@ -16,7 +16,7 @@ dart run build_runner build
 ## What it shows
 
 **Annotations in, container out.** `services.dart` and `counter_bloc.dart`
-carry `@alloyInject`, `@alloyTransient` and `@injected`; `alloy.g.dart` is
+carry `@cobaltInject`, `@cobaltTransient` and `@injected`; `cobalt.g.dart` is
 written from them, and there is no hand-written wiring anywhere. The generated
 container is committed, so you can read exactly what the annotations produced.
 
@@ -25,7 +25,7 @@ container is committed, so you can read exactly what the annotations produced.
 this is the feature that removes five-to-fourteen-argument constructors from
 controllers.
 
-**A scope per screen.** `AlloyScopeWidget` gives the counter screen its own
+**A scope per screen.** `CobaltScopeWidget` gives the counter screen its own
 node in the scope tree. It registers nothing yet, which is the point: that is
 where screen-scoped state goes as the screen grows, and it is disposed when the
 screen leaves.

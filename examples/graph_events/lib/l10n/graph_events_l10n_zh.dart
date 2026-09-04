@@ -9,7 +9,7 @@ class GraphEventsL10nZh extends GraphEventsL10n {
   GraphEventsL10nZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy · 可观测性';
+  String get appTitle => 'Cobalt · 可观测性';
 
   @override
   String get liveLog => '实时日志';
@@ -19,7 +19,7 @@ class GraphEventsL10nZh extends GraphEventsL10n {
 
   @override
   String get everyEventDetail =>
-      'AlloyTalkerObserver 把每一类事件归到各自的标题下，因此日志界面可以把它们分开筛选。';
+      'CobaltTalkerObserver 把每一类事件归到各自的标题下，因此日志界面可以把它们分开筛选。';
 
   @override
   String get openSession => '打开一个会话作用域';

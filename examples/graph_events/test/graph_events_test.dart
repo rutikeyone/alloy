@@ -1,7 +1,7 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:alloy_test/alloy_test.dart';
-import 'package:alloy_talker/alloy_talker.dart';
-import 'package:alloy_test_flutter/alloy_test_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
+import 'package:cobalt_test/cobalt_test.dart';
+import 'package:cobalt_talker/cobalt_talker.dart';
+import 'package:cobalt_test_flutter/cobalt_test_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,7 +17,7 @@ void main() {
   late Talker talker;
   late AuditLog audit;
   late ReportLog reports;
-  late AlloyScope app;
+  late CobaltScope app;
 
   setUp(() {
     talker = Talker();
@@ -40,7 +40,7 @@ void main() {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: GraphEventsL10n.supportedLocales,
-        home: AlloyAppScope(
+        home: CobaltAppScope(
           root: const AppScope(),
           bootstrap: () => [WarmUp()],
           rootName: 'app',
@@ -58,11 +58,11 @@ void main() {
     );
     await settle(tester);
     await settle(tester);
-    // Below MaterialApp now: AlloyAppScope.builder publishes the scope inside
+    // Below MaterialApp now: CobaltAppScope.builder publishes the scope inside
     // it, so loading and error screens are rendered with the app's theme.
     // Below the Navigator now, not above it: the screen is mounted inside a
     // route, so the provider sits with the screen rather than with the app.
-    app = AlloyScopeProvider.of(tester.element(find.byType(Scaffold).first));
+    app = CobaltScopeProvider.of(tester.element(find.byType(Scaffold).first));
   }
 
   List<String> titles() => [
@@ -73,14 +73,14 @@ void main() {
 
   group('startup reports itself', () {
     test('the bootstrap step and the init graph are both in the log', () async {
-      await alloyTestScope(
+      await cobaltTestScope(
         root: const AppScope(),
         bootstrap: [WarmUp()],
         rootName: 'app',
-        observers: [AlloyTalkerObserver(talker, verbose: true)],
+        observers: [CobaltTalkerObserver(talker, verbose: true)],
       );
 
-      expect(titles(), contains('alloy-startup'));
+      expect(titles(), contains('cobalt-startup'));
       expect(
         messages(),
         allOf(
@@ -99,7 +99,7 @@ void main() {
       expect(
         audit.lines,
         contains(startsWith('info scope "app" ready')),
-        reason: 'AlloyLogSink.from is the whole integration — no package',
+        reason: 'CobaltLogSink.from is the whole integration — no package',
       );
     });
   });
@@ -112,7 +112,7 @@ void main() {
       await settle(tester);
 
       expect(messages(), contains('scope "app/session" pushed'));
-      expect(titles(), contains('alloy-instance'));
+      expect(titles(), contains('cobalt-instance'));
       expect(app.children.single.name, 'session');
     });
 
@@ -138,7 +138,7 @@ void main() {
       await tester.tap(find.byKey(const Key('close-session')));
       await settle(tester);
 
-      expect(titles(), contains('alloy-failure'));
+      expect(titles(), contains('cobalt-failure'));
       expect(
         messages(),
         contains('could not release StubbornResource.dispose'),
@@ -161,11 +161,11 @@ void main() {
 
       expect(reports.reports, hasLength(1));
       final report = reports.reports.single;
-      expect(report.failure.kind, AlloyEventKind.scopeDisposeFailed);
+      expect(report.failure.kind, CobaltEventKind.scopeDisposeFailed);
       expect(report.error, isA<StateError>());
       expect(
         report.breadcrumbs.map((c) => c.kind),
-        contains(AlloyEventKind.scopePushed),
+        contains(CobaltEventKind.scopePushed),
         reason: 'the session being opened is what led to the failure',
       );
       expect(find.byKey(const Key('last-report')), findsOneWidget);

@@ -103,7 +103,7 @@ abstract class GraphEventsL10n {
   /// Title of the graph-events example.
   ///
   /// In en, this message translates to:
-  /// **'Alloy · observability'**
+  /// **'Cobalt · observability'**
   String get appTitle;
 
   /// Action that opens talker's screen.
@@ -121,7 +121,7 @@ abstract class GraphEventsL10n {
   /// Why the entries are colour-coded and filterable.
   ///
   /// In en, this message translates to:
-  /// **'AlloyTalkerObserver files each kind under its own title, so the log screen can filter them apart.'**
+  /// **'CobaltTalkerObserver files each kind under its own title, so the log screen can filter them apart.'**
   String get everyEventDetail;
 
   /// Action that pushes a child scope.

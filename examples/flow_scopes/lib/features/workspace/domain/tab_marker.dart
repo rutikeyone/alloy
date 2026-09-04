@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/core/event_log.dart';
 import 'package:flow_scopes/core/flow_event.dart';
 
@@ -18,12 +18,12 @@ class TabMarker implements Disposable {
   void dispose() => _log.record(FlowEvent(FlowEventKind.scopeDisposed, label));
 }
 
-final class TabMarkerFactory implements AlloyFactory<TabMarker> {
+final class TabMarkerFactory implements CobaltFactory<TabMarker> {
   const TabMarkerFactory(this.label);
 
   final String label;
 
   @override
-  TabMarker create(AlloyResolver resolver) =>
+  TabMarker create(CobaltResolver resolver) =>
       TabMarker(label, resolver.get<EventLog>());
 }

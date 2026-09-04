@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/app/app_routes.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +27,7 @@ class WorkspaceChrome extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              l10n.shellScope(context.alloyScope.name),
+              l10n.shellScope(context.cobaltScope.name),
               key: const Key('workspace-scope-name'),
             ),
           ),

@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/app/app_router.dart';
 import 'package:flow_scopes/app/app_scope.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
@@ -38,7 +38,7 @@ class _FlowScopesAppState extends State<FlowScopesApp> {
       GlobalCupertinoLocalizations.delegate,
     ],
     supportedLocales: FlowScopesL10n.supportedLocales,
-    builder: AlloyAppScope.builder(
+    builder: CobaltAppScope.builder(
       root: const AppScope(),
       rootName: 'app',
       loading: const Scaffold(body: Center(child: CircularProgressIndicator())),

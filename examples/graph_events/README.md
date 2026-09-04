@@ -1,6 +1,6 @@
 # graph_events
 
-An Alloy example about one thing: watching the graph report itself, through
+An Cobalt example about one thing: watching the graph report itself, through
 [talker](https://pub.dev/packages/talker).
 
 > **Not a runnable app.** This package is a library the gallery mounts — it has no `main.dart`
@@ -21,11 +21,11 @@ flutter pub get
 | launch | `bootstrap "warm-up" started/done`, then `scope "app" ready in …ms` |
 | Open a session scope | `scope "app/session" pushed`, an init level, the instances it built |
 | Close the session | `scope "app/session" disposing`, each release, then `disposed` |
-| Open one that will not close | same, until teardown — then an `alloy-failure` entry naming `StubbornResource.dispose` |
+| Open one that will not close | same, until teardown — then an `cobalt-failure` entry naming `StubbornResource.dispose` |
 | The log button (app bar) | `TalkerScreen`, where the four titles can be filtered apart |
 
 The last row is the point. A teardown that cannot release something used to be visible only as a
-thrown `AlloyDisposeError` that somebody had to catch and print; now it is a log line with the
+thrown `CobaltDisposeError` that somebody had to catch and print; now it is a log line with the
 failing label, the original error and its stack trace.
 
 ## The whole integration
@@ -33,15 +33,15 @@ failing label, the original error and its stack trace.
 ```dart
 final talker = Talker();
 
-await AlloyApplication.start(
+await CobaltApplication.start(
   root: const AppScope(),
   bootstrap: [WarmUp()],
-  observers: [AlloyTalkerObserver(talker, verbose: true)],
+  observers: [CobaltTalkerObserver(talker, verbose: true)],
 );
 ```
 
 `verbose: true` here because the example is small and per-instance lines are the interesting part.
-In a real app leave it off — see the `alloy_talker` README.
+In a real app leave it off — see the `cobalt_talker` README.
 
 ## Layout
 

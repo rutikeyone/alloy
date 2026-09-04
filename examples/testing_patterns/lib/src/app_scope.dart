@@ -1,4 +1,4 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:testing_patterns/src/clock.dart';
 import 'package:testing_patterns/src/greeter.dart';
 import 'package:testing_patterns/src/greeting_store.dart';
@@ -7,11 +7,11 @@ import 'package:testing_patterns/src/greeting_store.dart';
 ///
 /// That is the point: a test that builds a different graph proves the test
 /// graph works, which is not the thing anybody wanted to know.
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope
       ..registerLazySingleton<Clock>(const _SystemClockFactory())
       ..registerLazySingleton<GreetingStore>(const _HttpGreetingStoreFactory())
@@ -19,26 +19,26 @@ class AppScope implements AlloyScopeBuilder {
   }
 }
 
-final class _SystemClockFactory implements AlloyFactory<Clock> {
+final class _SystemClockFactory implements CobaltFactory<Clock> {
   const _SystemClockFactory();
 
   @override
-  Clock create(AlloyResolver resolver) => const SystemClock();
+  Clock create(CobaltResolver resolver) => const SystemClock();
 }
 
-final class _HttpGreetingStoreFactory implements AlloyFactory<GreetingStore> {
+final class _HttpGreetingStoreFactory implements CobaltFactory<GreetingStore> {
   const _HttpGreetingStoreFactory();
 
   @override
-  GreetingStore create(AlloyResolver resolver) => const HttpGreetingStore();
+  GreetingStore create(CobaltResolver resolver) => const HttpGreetingStore();
 }
 
 /// Public because overriding a consumer in a child scope needs to re-register
 /// it, and re-registering means naming its factory.
-final class GreeterFactory implements AlloyFactory<Greeter> {
+final class GreeterFactory implements CobaltFactory<Greeter> {
   const GreeterFactory();
 
   @override
-  Greeter create(AlloyResolver resolver) =>
+  Greeter create(CobaltResolver resolver) =>
       Greeter(resolver.get<Clock>(), resolver.get<GreetingStore>());
 }

@@ -9,7 +9,7 @@ class CodegenBasicsL10nZh extends CodegenBasicsL10n {
   CodegenBasicsL10nZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy 代码生成基础';
+  String get appTitle => 'Cobalt 代码生成基础';
 
   @override
   String environment(String name) {

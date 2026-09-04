@@ -1,5 +1,5 @@
 name: graph_events
-description: Alloy example — the DI graph's own events, streamed into talker.
+description: Cobalt example — the DI graph's own events, streamed into talker.
 publish_to: none
 version: 0.1.0
 
@@ -10,20 +10,20 @@ environment:
 resolution: workspace
 
 dependencies:
-  alloy_flutter: ^0.1.0
-  alloy_talker: ^0.1.0
+  cobalt_flutter: ^0.1.0
+  cobalt_talker: ^0.1.0
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
   talker: ^5.1.0
-  alloy_talker_flutter: ^0.1.0
+  cobalt_talker_flutter: ^0.1.0
   talker_flutter: ^5.1.0
 
 dev_dependencies:
-  alloy_test_flutter: ^0.1.0
-  alloy_test: ^0.1.0
+  cobalt_test_flutter: ^0.1.0
+  cobalt_test: ^0.1.0
   flutter_test:
     sdk: flutter
 

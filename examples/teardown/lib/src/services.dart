@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:teardown/src/trace.dart';
 
 /// Opened first, closed last — the ordering claim this example exists to show.

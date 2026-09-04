@@ -1,15 +1,15 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/app/app_router.dart';
 import 'package:flow_scopes/app/flow_scopes_app.dart';
 import 'package:flow_scopes/core/event_log.dart';
 import 'package:flow_scopes/core/flow_event.dart';
-import 'package:alloy_test_flutter/alloy_test_flutter.dart';
+import 'package:cobalt_test_flutter/cobalt_test_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  late AlloyScope app;
+  late CobaltScope app;
   late GoRouter router;
 
   setUp(() => router = buildAppRouter());

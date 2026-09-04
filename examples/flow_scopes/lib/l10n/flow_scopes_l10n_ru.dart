@@ -9,7 +9,7 @@ class FlowScopesL10nRu extends FlowScopesL10n {
   FlowScopesL10nRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy · скоупы флоу';
+  String get appTitle => 'Cobalt · скоупы флоу';
 
   @override
   String get whatIsAlive => 'что живо прямо сейчас';

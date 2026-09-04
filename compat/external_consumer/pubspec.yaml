@@ -1,6 +1,6 @@
-name: alloy_external_consumer
+name: cobalt_external_consumer
 description: >-
-  Compatibility stand: consumes Alloy from outside the pub workspace, the way a
+  Compatibility stand: consumes Cobalt from outside the pub workspace, the way a
   third-party project does.
 publish_to: none
 version: 0.1.0
@@ -9,26 +9,26 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  alloy: ^0.1.0
+  cobalt: ^0.1.0
 
 dev_dependencies:
-  alloy_generator: ^0.1.0
-  alloy_lint: ^0.1.0
-  alloy_test: ^0.1.0
+  cobalt_generator: ^0.1.0
+  cobalt_lint: ^0.1.0
+  cobalt_test: ^0.1.0
   build_runner: ^2.15.0
   lints: ^6.0.0
   test: ^1.28.0
 
 dependency_overrides:
-  alloy:
-    path: ../../packages/alloy
-  alloy_annotations:
-    path: ../../packages/alloy_annotations
-  alloy_analyzer:
-    path: ../../packages/alloy_analyzer
-  alloy_generator:
-    path: ../../packages/alloy_generator
-  alloy_lint:
-    path: ../../packages/alloy_lint
-  alloy_test:
-    path: ../../packages/alloy_test
+  cobalt:
+    path: ../../packages/cobalt
+  cobalt_annotations:
+    path: ../../packages/cobalt_annotations
+  cobalt_analyzer:
+    path: ../../packages/cobalt_analyzer
+  cobalt_generator:
+    path: ../../packages/cobalt_generator
+  cobalt_lint:
+    path: ../../packages/cobalt_lint
+  cobalt_test:
+    path: ../../packages/cobalt_test

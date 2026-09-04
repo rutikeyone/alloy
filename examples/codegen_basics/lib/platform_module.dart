@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
 /// Closes a [StreamController] the graph handed out.
 ///
@@ -11,17 +11,17 @@ Future<void> closeEvents(StreamController<String> events) => events.close();
 
 /// Registers types this package did not write.
 ///
-/// `@AlloyInject` goes on a class, so it only reaches classes you own. Whatever
+/// `@CobaltInject` goes on a class, so it only reaches classes you own. Whatever
 /// comes from the SDK or another package arrives through a module instead.
-@alloyModule
+@cobaltModule
 class PlatformModule {
   const PlatformModule();
 
   /// A seeded [Random] so the example is reproducible.
-  @alloyInject
+  @cobaltInject
   Random get random => Random(7);
 
   /// Something with a real teardown: the scope closes it on the way down.
-  @AlloyInject(dispose: closeEvents)
+  @CobaltInject(dispose: closeEvents)
   StreamController<String> events() => StreamController<String>.broadcast();
 }

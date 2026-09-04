@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/features/workspace/domain/tab_marker.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +9,7 @@ class TabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = FlowScopesL10n.of(context);
-    final marker = context.alloy<TabMarker>();
+    final marker = context.cobalt<TabMarker>();
 
     return ListView(
       children: [
@@ -17,7 +17,7 @@ class TabScreen extends StatelessWidget {
           key: Key('tab-${marker.label}'),
           title: const Text('get<TabMarker>()'),
           subtitle: Text(
-            l10n.markerLine(marker.label, context.alloyScope.name),
+            l10n.markerLine(marker.label, context.cobaltScope.name),
           ),
         ),
         Padding(

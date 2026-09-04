@@ -1,4 +1,4 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/features/formatting/domain/note_formatter.dart';
 
 class NoteTitleCard {
@@ -10,10 +10,11 @@ class NoteTitleCard {
   String get rendered => _formatter.format(title);
 }
 
-class NoteTitleCardFactory implements AlloyParamFactory<NoteTitleCard, String> {
+class NoteTitleCardFactory
+    implements CobaltParamFactory<NoteTitleCard, String> {
   const NoteTitleCardFactory();
 
   @override
-  NoteTitleCard create(AlloyResolver resolver, String param) =>
+  NoteTitleCard create(CobaltResolver resolver, String param) =>
       NoteTitleCard(resolver.get<NoteFormatter>(name: 'markdown'), param);
 }

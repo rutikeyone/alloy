@@ -1,6 +1,6 @@
 include: analysis_options.yaml
 
-# Turns on the alloy_lint plugin, which is off by default.
+# Turns on the cobalt_lint plugin, which is off by default.
 #
 # Copy this over `analysis_options.yaml` when you want the rules in your
 # editor, and do not commit the result. It is separate for a reason that goes
@@ -18,7 +18,7 @@ include: analysis_options.yaml
 # single file is read. That is not a failure of the code being analysed, which
 # is why it must not gate a build.
 #
-# There is a third thing to know, which publication does not fix. `alloy_lint`
+# There is a third thing to know, which publication does not fix. `cobalt_lint`
 # declares `analyzer: ">=10.0.1 <13.0.0"`, and `analysis_server_plugin` pins the
 # analyzer exactly, so the plugin resolves to 0.3.7 or 0.3.14 depending on what
 # the SDK asks for — `^0.3.0` on Dart 3.10, `^0.3.8` on 3.13. Both are inside
@@ -30,14 +30,14 @@ include: analysis_options.yaml
 # After publication the first two problems are gone: this file's contents
 # become three lines in `analysis_options.yaml` and this one is deleted.
 plugins:
-  alloy_lint:
-    path: packages/alloy_lint
+  cobalt_lint:
+    path: packages/cobalt_lint
   dependency_overrides:
-    alloy_lint:
-      path: packages/alloy_lint
-    alloy_analyzer:
-      path: packages/alloy_analyzer
-    alloy:
-      path: packages/alloy
-    alloy_annotations:
-      path: packages/alloy_annotations
+    cobalt_lint:
+      path: packages/cobalt_lint
+    cobalt_analyzer:
+      path: packages/cobalt_analyzer
+    cobalt:
+      path: packages/cobalt
+    cobalt_annotations:
+      path: packages/cobalt_annotations

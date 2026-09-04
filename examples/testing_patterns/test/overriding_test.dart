@@ -1,5 +1,5 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_test/alloy_test.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_test/cobalt_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:testing_patterns/testing_patterns.dart';
 
@@ -9,13 +9,13 @@ import 'package:testing_patterns/testing_patterns.dart';
 /// Shadowing from a child is the supported way, and it is the same mechanism
 /// production code uses for session and flow scopes. Tests get no special path.
 void main() {
-  late AlloyScope app;
+  late CobaltScope app;
 
   setUp(() async {
-    app = await alloyTestScope(root: const AppScope(), rootName: 'app');
+    app = await cobaltTestScope(root: const AppScope(), rootName: 'app');
   });
 
-  AlloyScope underTest() => app.pushForTest();
+  CobaltScope underTest() => app.pushForTest();
 
   group('what shadowing does and does not reach', () {
     test('a child registration wins for whoever asks the child', () {
@@ -80,7 +80,7 @@ void main() {
 
     expect(
       () => scope.registerSingleton<Clock>(FixedClock(DateTime.utc(2027))),
-      throwsA(isA<AlloyDuplicateRegistrationError>()),
+      throwsA(isA<CobaltDuplicateRegistrationError>()),
       reason: 'two registrations of one key in one scope is always a mistake',
     );
   });
@@ -88,8 +88,8 @@ void main() {
   test(
     'each test builds its own graph, so nothing leaks between them',
     () async {
-      final first = await alloyTestScope(root: const AppScope());
-      final second = await alloyTestScope(root: const AppScope());
+      final first = await cobaltTestScope(root: const AppScope());
+      final second = await cobaltTestScope(root: const AppScope());
 
       expect(
         identical(first.get<Greeter>(), second.get<Greeter>()),

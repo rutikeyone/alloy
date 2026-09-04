@@ -1,12 +1,12 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:manual_mode/counter.dart';
 
 Future<void> main() async {
-  // Pure Dart: no Flutter binding, no widget tree. AlloyPrintLogSink writes to
-  // stdout, which is the right default outside an app — AlloyDeveloperLogSink
+  // Pure Dart: no Flutter binding, no widget tree. CobaltPrintLogSink writes to
+  // stdout, which is the right default outside an app — CobaltDeveloperLogSink
   // would need a debugger attached to be worth anything.
   final app = await startApp(
-    observers: [AlloyLogObserver(const AlloyPrintLogSink())],
+    observers: [CobaltLogObserver(const CobaltPrintLogSink())],
   );
 
   final session = openSession(app, 'alice');
@@ -26,5 +26,5 @@ Future<void> main() async {
   );
 
   await app.dispose();
-  print('app disposed: ${app.state == AlloyScopeState.disposed}');
+  print('app disposed: ${app.state == CobaltScopeState.disposed}');
 }

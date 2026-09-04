@@ -6,12 +6,12 @@
 
 # Code-Gen Mode
 
-Alloy с генератором: вы размечаете классы, `build_runner` пишет контейнер, и граф проверяется до
-того, как соберётся. На выходе — обычный Dart, не использующий ничего, кроме публичного API `alloy`:
+Cobalt с генератором: вы размечаете классы, `build_runner` пишет контейнер, и граф проверяется до
+того, как соберётся. На выходе — обычный Dart, не использующий ничего, кроме публичного API `cobalt`:
 его можно прочитать, и всё в нём можно было бы написать руками.
 
 Это стоящий инвариант проекта, и у него есть практическое следствие, которым вы будете
-пользоваться: сгенерированный контейнер — такой же `AlloyScopeBuilder`, как любой другой, поэтому
+пользоваться: сгенерированный контейнер — такой же `CobaltScopeBuilder`, как любой другой, поэтому
 рукописные регистрации композируются с ним в одном графе. Ничего здесь не «всё или ничего».
 
 Что покупает шаг сборки и о чём в основном этот документ:
@@ -61,15 +61,15 @@ environment:
   flutter: ">=3.38.0"
 
 dependencies:
-  alloy: ^0.1.0
-  alloy_flutter: ^0.1.0
+  cobalt: ^0.1.0
+  cobalt_flutter: ^0.1.0
 
 dev_dependencies:
-  alloy_generator: ^0.1.0
+  cobalt_generator: ^0.1.0
   build_runner: ^2.15.0
-  alloy_lint: ^0.1.0
-  alloy_test: ^0.1.0
-  alloy_test_flutter: ^0.1.0
+  cobalt_lint: ^0.1.0
+  cobalt_test: ^0.1.0
+  cobalt_test_flutter: ^0.1.0
 ```
 
 **Пол здесь тот же, что и в другом режиме**, поэтому приложение на Flutter 3.38 может начинать
@@ -80,17 +80,17 @@ dev_dependencies:
 `^1.18.0`. На свежем Flutter резолвится 12.1.0, и сгенерированный код в обоих случаях один и тот же.
 Вся строка — в разделе **Требования** в [README.ru.md](README.ru.md).
 
-Пакет на чистом Dart — CLI, сервер, пакет без виджетов — выбрасывает `alloy_flutter` и
-`alloy_test_flutter`. Рантайму Flutter не нужен нигде.
+Пакет на чистом Dart — CLI, сервер, пакет без виджетов — выбрасывает `cobalt_flutter` и
+`cobalt_test_flutter`. Рантайму Flutter не нужен нигде.
 
-Аннотации приезжают вместе с `alloy`, который их реэкспортирует, поэтому одного импорта достаточно:
+Аннотации приезжают вместе с `cobalt`, который их реэкспортирует, поэтому одного импорта достаточно:
 
 ```dart
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 ```
 
-Опционально и только если нужно: `alloy_go_router`, `alloy_bloc`, `alloy_inspector` и один из
-`alloy_talker` / `alloy_logging` / `alloy_logger`.
+Опционально и только если нужно: `cobalt_go_router`, `cobalt_bloc`, `cobalt_inspector` и один из
+`cobalt_talker` / `cobalt_logging` / `cobalt_logger`.
 
 ---
 
@@ -100,23 +100,23 @@ import 'package:alloy/alloy.dart';
 генератор.
 
 ```dart
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
-@alloyInject
+@cobaltInject
 class Config {
   Config();
 
   final String environment = 'test';
 }
 
-@alloyInject
+@cobaltInject
 class Repository {
   Repository(this.config);
 
   final Config config;
 }
 
-@alloyInject
+@cobaltInject
 class Telemetry implements Disposable {
   Telemetry();
 
@@ -129,17 +129,17 @@ class Telemetry implements Disposable {
 }
 ```
 
-`@alloyInject` — ленивый синглтон: строится при первом резолве, удерживается скоупом. У остальных
+`@cobaltInject` — ленивый синглтон: строится при первом резолве, удерживается скоупом. У остальных
 времён жизни свои константы, а полная форма принимает всё прочее:
 
 | Аннотация | Время жизни |
 |---|---|
-| `@alloyInject` | ленивый синглтон |
-| `@alloySingleton` | eager-синглтон, строится вместе с графом |
-| `@alloyTransient` | новый инстанс на каждый резолв, не удерживается никем |
+| `@cobaltInject` | ленивый синглтон |
+| `@cobaltSingleton` | eager-синглтон, строится вместе с графом |
+| `@cobaltTransient` | новый инстанс на каждый резолв, не удерживается никем |
 
 ```dart
-@AlloyInject(exposeAs: ApiClient, name: 'live', dispose: closeClient)
+@CobaltInject(exposeAs: ApiClient, name: 'live', dispose: closeClient)
 class LiveApiClient implements ApiClient { ... }
 ```
 
@@ -150,7 +150,7 @@ class LiveApiClient implements ApiClient { ... }
 Корень называется один раз, в любом месте пакета:
 
 ```dart
-@AlloyScopeRoot(name: 'app')
+@CobaltScopeRoot(name: 'app')
 class AppScope {
   const AppScope();
 }
@@ -165,49 +165,49 @@ dart run build_runner build
 Во время работы — `dart run build_runner watch`. Вывод коммитьте: CI перегенерирует и падает на
 диффе, и так устаревший сгенерированный код ловится, а не уезжает в релиз.
 
-**Один корень на пакет.** `alloy_container` агрегирует весь пакет в единственный `$AlloyRootScope`;
-два `@AlloyScopeRoot` в одном пакете — ошибка генерации. Значит два независимых сгенерированных
+**Один корень на пакет.** `cobalt_container` агрегирует весь пакет в единственный `$CobaltRootScope`;
+два `@CobaltScopeRoot` в одном пакете — ошибка генерации. Значит два независимых сгенерированных
 графа требуют двух пакетов — ровно поэтому примеры в этом репозитории отдельные пакеты, а не папки.
 
 ---
 
 ## 3. Что выходит на выходе
 
-`lib/alloy.g.dart`, и его стоит прочитать один раз, чтобы режим перестал быть чёрным ящиком:
+`lib/cobalt.g.dart`, и его стоит прочитать один раз, чтобы режим перестал быть чёрным ящиком:
 
 ```dart
-final class _RepositoryFactory implements AlloyFactory<Repository> {
+final class _RepositoryFactory implements CobaltFactory<Repository> {
   const _RepositoryFactory();
 
   @override
-  Repository create(AlloyResolver resolver) => Repository(resolver.get<Config>());
+  Repository create(CobaltResolver resolver) => Repository(resolver.get<Config>());
 }
 
-final class $AlloyRootScope implements AlloyScopeBuilder {
-  const $AlloyRootScope();
+final class $CobaltRootScope implements CobaltScopeBuilder {
+  const $CobaltRootScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope.registerLazySingleton<Config>(const _ConfigFactory());
     scope.registerLazySingleton<Telemetry>(const _TelemetryFactory());
     scope.registerLazySingleton<Repository>(const _RepositoryFactory());
   }
 }
 
-const String $alloyRootScopeName = 'app';
+const String $cobaltRootScopeName = 'app';
 
-Future<AlloyScope> $startAlloy() => AlloyApplication.start(
-  root: const $AlloyRootScope(),
-  rootName: $alloyRootScopeName,
+Future<CobaltScope> $startCobalt() => CobaltApplication.start(
+  root: const $CobaltRootScope(),
+  rootName: $cobaltRootScopeName,
 );
 ```
 
 ```dart
-final scope = await $startAlloy();
+final scope = await $startCobalt();
 ```
 
 Здесь они для читаемости опущены, но в настоящем файле каждое импортированное имя носит префикс,
-выведенный из хеша URL библиотеки: `_i178.AlloyFactory`. Именно хеш, а не счётчик, — чтобы
+выведенный из хеша URL библиотеки: `_i178.CobaltFactory`. Именно хеш, а не счётчик, — чтобы
 добавление одного импорта не перенумеровало все остальные и не превратило правку в одну строку в
 дифф на весь файл.
 
@@ -218,7 +218,7 @@ final scope = await $startAlloy();
 - **Регистрации в топологическом порядке**, вычисленном на сборке. Инъектируемые поля тоже рёбра,
   поэтому блок всегда регистрируется после того, что он инъектирует.
 - **Ни рефлексии, ни сканирования в рантайме.** Что лежит в файле — то и есть весь граф.
-- **`$alloyBootstrap` — геттер**, а не хранимый список, поэтому рестарт получает свежие шаги — см.
+- **`$cobaltBootstrap` — геттер**, а не хранимый список, поэтому рестарт получает свежие шаги — см.
   [§11](#11-работа-которая-обязана-завершиться-до-старта).
 
 Генератор форматирует свой вывод той же версией `dart_style`, которой пользуется ваша проверка
@@ -234,7 +234,7 @@ final scope = await $startAlloy();
 ```dart
 part 'counter_bloc.g.dart';
 
-@alloyTransient
+@cobaltTransient
 class CounterBloc with _$CounterBloc {
   CounterBloc();
 
@@ -256,9 +256,9 @@ class CounterBloc with _$CounterBloc {
 - Они — **рёбра графа** наравне с остальными, поэтому участвуют и в упорядочивании, и в проверке
   полноты.
 
-Директиву `part` и `with _$ClassName` пишете вы. Забудете миксин — `alloy_missing_injection_mixin`
+Директиву `part` и `with _$ClassName` пишете вы. Забудете миксин — `cobalt_missing_injection_mixin`
 скажет об этом в редакторе; поставите `@injected` на класс, который контейнер не регистрирует, —
-скажет уже `alloy_injected_field_needs_an_injectable`, потому что чинятся эти две ошибки по-разному.
+скажет уже `cobalt_injected_field_needs_an_injectable`, потому что чинятся эти две ошибки по-разному.
 
 ---
 
@@ -271,28 +271,28 @@ class CounterBloc with _$CounterBloc {
 The graph is missing 2 registrations.
   CatalogService requires Repository<User>
   ApiGateway requires HttpClient in dev, test
-Annotate the classes that provide them with @AlloyInject, or name them in
-@AlloyScopeRoot(provides: [...]) when something outside the generated container
+Annotate the classes that provide them with @CobaltInject, or name them in
+@CobaltScopeRoot(provides: [...]) when something outside the generated container
 registers them.
 ```
 
-Зависимостями считается всё: параметры конструктора, `@injected`-поля и `@AlloyInit(dependsOn:)`.
+Зависимостями считается всё: параметры конструктора, `@injected`-поля и `@CobaltInit(dependsOn:)`.
 Квалификатор `@Named` входит в ключ, поэтому запрос `@Named('audit') Logger` там, где есть только
 безымянный `Logger`, — это пробел. Каждое окружение проверяется отдельно, поэтому `dev`-регистрация
 не удовлетворит зависимого, который работает и в `prod`.
 
 Отвергается на сборке и остальное: дубликаты одного ключа, циклы зависимостей (с указанием цикла),
-два `@AlloyScopeRoot` в пакете, `@AlloyInject` на абстрактном классе или на классе без публичного
-генеративного конструктора, и `@AlloyInject` на **generic-классе** — генератору никто не говорит,
+два `@CobaltScopeRoot` в пакете, `@CobaltInject` на абстрактном классе или на классе без публичного
+генеративного конструктора, и `@CobaltInject` на **generic-классе** — генератору никто не говорит,
 какие инстанциации регистрировать, поэтому разметьте конкретный подтип или выставьте его через
 `exposeAs`.
 
 Во всём остальном дженерики работают. `Repository<User>` и `Repository<Order>` — две отдельные
-регистрации, потому что `AlloyKey` строится из `Type`, а это разные типы.
+регистрации, потому что `CobaltKey` строится из `Type`, а это разные типы.
 
 Границу стоит назвать честно: проверка покрывает то, что генератор сгенерировал. Рукописная фабрика
 резолвит внутри `create`, поэтому статически не видно, что она попросит, — для таких проверкой
-служит `expectGraphResolves` из `alloy_test`, см. [§18](#18-тесты).
+служит `expectGraphResolves` из `cobalt_test`, см. [§18](#18-тесты).
 
 ---
 
@@ -303,42 +303,42 @@ registers them.
 сгенерированный:
 
 ```dart
-class NotesScope implements AlloyScopeBuilder {
+class NotesScope implements CobaltScopeBuilder {
   const NotesScope(this.environment);
 
-  final AlloyEnvironment environment;
+  final CobaltEnvironment environment;
 
   @override
-  void build(AlloyScope scope) {
-    $AlloyRootScope(environment: environment).build(scope);
+  void build(CobaltScope scope) {
+    $CobaltRootScope(environment: environment).build(scope);
     scope
-      ..registerSingleton<AlloyEnvironment>(environment)
+      ..registerSingleton<CobaltEnvironment>(environment)
       ..registerSingleton<SessionManager>(SessionManager(scope));
   }
 }
 ```
 
-Обёртка, а не регистрация после возврата из `$startAlloy()`, — это то, что держит их внутри фазы 1:
+Обёртка, а не регистрация после возврата из `$startCobalt()`, — это то, что держит их внутри фазы 1:
 зарегистрированы до запуска async-инициализаторов, а не приколочены после того, как граф уже поднят.
 
 Теперь скажите об этом проверке полноты, иначе она сочтёт их отсутствующими:
 
 ```dart
-@AlloyScopeRoot(name: 'app', provides: [SessionManager, AlloyEnvironment])
+@CobaltScopeRoot(name: 'app', provides: [SessionManager, CobaltEnvironment])
 class AppScope {
   const AppScope();
 }
 ```
 
 Обещание ничего не регистрирует — оно только говорит, что это сделает кто-то другой.
-`AlloyProvided(Logger, name: 'audit')` обещает именованную. Пообещать и не зарегистрировать — значит
+`CobaltProvided(Logger, name: 'audit')` обещает именованную. Пообещать и не зарегистрировать — значит
 вернуться к отказу в рантайме: этот список ваше утверждение, а не то, что генератор может проверить.
 
 ---
 
 ## 7. Запуск Flutter-приложения
 
-Корнем владеет `AlloyAppScope`: строит граф, публикует его в дерево, разбирает при размонтировании и
+Корнем владеет `CobaltAppScope`: строит граф, публикует его в дерево, разбирает при размонтировании и
 превращает упавший старт в экран с повтором вместо приложения, которое умерло до первого кадра.
 
 Ставьте его в `MaterialApp.builder`, а не над `MaterialApp`. Там он оказывается ниже `Theme`,
@@ -349,10 +349,10 @@ class AppScope {
 void main() => runApp(
   MaterialApp(
     theme: appTheme,
-    builder: AlloyAppScope.builder(
+    builder: CobaltAppScope.builder(
       root: const NotesScope(notesEnvironment),
-      bootstrap: () => $alloyBootstrap(notesEnvironment),
-      rootName: $alloyRootScopeName,
+      bootstrap: () => $cobaltBootstrap(notesEnvironment),
+      rootName: $cobaltRootScopeName,
       loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
       errorBuilder: (context, error, retry) => StartupFailed(error: error, retry: retry),
     ),
@@ -361,22 +361,22 @@ void main() => runApp(
 );
 ```
 
-`bootstrap` — функция, а не список, и генератор эмитит `$alloyBootstrap` геттером по той же причине:
+`bootstrap` — функция, а не список, и генератор эмитит `$cobaltBootstrap` геттером по той же причине:
 шаги держат ресурсы, и рестарт обязан получить новые.
 
-`AlloyAppScope.of(context).restart()` пересобирает граф — тот же вызов повторяет упавший старт.
+`CobaltAppScope.of(context).restart()` пересобирает граф — тот же вызов повторяет упавший старт.
 
-Вне Flutter всё сводится к `await $startAlloy()`.
+Вне Flutter всё сводится к `await $startCobalt()`.
 
 ---
 
 ## 8. Чтение из графа в виджете
 
 ```dart
-final repository = context.alloy<Repository>();
-final formatters = context.alloyAll<NoteFormatter>();
-final editor = context.alloyWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
-final scope = context.alloyScope;
+final repository = context.cobalt<Repository>();
+final formatters = context.cobaltAll<NoteFormatter>();
+final editor = context.cobaltWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
+final scope = context.cobaltScope;
 ```
 
 Каждый резолвит из **ближайшего** скоупа над виджетом и дальше идёт вверх, поэтому регистрация во
@@ -384,7 +384,7 @@ final scope = context.alloyScope;
 
 Об одном стоит знать до того, как оно случится: `Navigator.push` строит новый маршрут из контекста
 навигатора, а не из виджета, который его толкнул. Экран, прекрасно резолвящий на своём месте,
-бросит `AlloyNoScopeError`, если тот же виджет открыть пушем, а провайдер, из которого он читал,
+бросит `CobaltNoScopeError`, если тот же виджет открыть пушем, а провайдер, из которого он читал,
 живёт **внутри** толкающего экрана. Передавайте скоуп явно или пушьте ниже провайдера.
 
 ---
@@ -392,7 +392,7 @@ final scope = context.alloyScope;
 ## 9. Скоупы, которые кончаются раньше приложения
 
 Генератор пишет **корень**. Скоупы короче приложения — сессия, флоу, экран — это
-`AlloyScopeBuilder`'ы, которые пишете вы, и регистрируют они через тот же публичный API, которым
+`CobaltScopeBuilder`'ы, которые пишете вы, и регистрируют они через тот же публичный API, которым
 пользуется сгенерированный файл. Это не пробел генератора: что положить в сессионный скоуп — решение
 о времени жизни, а никакая аннотация не говорит, когда сессия кончается.
 
@@ -402,8 +402,8 @@ final scope = context.alloyScope;
 class SessionManager {
   SessionManager(this._root);
 
-  final AlloyScope _root;
-  AlloyScope? _session;
+  final CobaltScope _root;
+  CobaltScope? _session;
 
   Future<void> signIn(User user) async {
     _session = _root.push('session:${user.id}')
@@ -424,7 +424,7 @@ class SessionManager {
 ### Экран
 
 ```dart
-AlloyScopeWidget(
+CobaltScopeWidget(
   name: 'counter-screen',
   builder: const ScreenScope(),
   child: const Counter(),
@@ -434,15 +434,15 @@ AlloyScopeWidget(
 Создаётся при монтировании, разбирается при размонтировании. Скоуп публикуется только после
 `init()`, поэтому даже полностью синхронный граф даёт один кадр `loading`.
 
-Здесь `@alloyTransient` и оправдывает своё существование: транзиент пересоздаётся на каждый резолв и
+Здесь `@cobaltTransient` и оправдывает своё существование: транзиент пересоздаётся на каждый резолв и
 не удерживается никем, поэтому собственный скоуп — это то, что даёт ему время жизни и точку разбора.
 
 ### Навигационный флоу
 
-С `alloy_go_router` время жизни задаёт флоу, а не виджет, который вы не забыли поставить:
+С `cobalt_go_router` время жизни задаёт флоу, а не виджет, который вы не забыли поставить:
 
 ```dart
-class OrderFlowRoute extends AlloyShellRoute {
+class OrderFlowRoute extends CobaltShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',
@@ -468,11 +468,11 @@ class OrderFlowRoute extends AlloyShellRoute {
 отвечает на единственный вопрос, который роутер решить не может: одно ли это флоу — `/orders/1` и
 `/orders/2`.
 
-Таблицу роутов стройте **один раз**, вместе с роутером. Новый экземпляр `AlloyShellRoute` — это
+Таблицу роутов стройте **один раз**, вместе с роутером. Новый экземпляр `CobaltShellRoute` — это
 другой флоу с точки зрения go_router, поэтому пересборка списка на каждом кадре разбирала бы скоуп
 на каждом кадре.
 
-Вкладки устроены так же — `AlloyStatefulShellRoute` и `AlloyStatefulShellBranch`, — с одной
+Вкладки устроены так же — `CobaltStatefulShellRoute` и `CobaltStatefulShellBranch`, — с одной
 особенностью: ветка держится **живой**, а не **видимой**. go_router сохраняет навигаторы веток за
 экраном, поэтому скоуп вкладки живёт до закрытия шелла, а не до переключения с неё.
 
@@ -485,13 +485,13 @@ class OrderFlowRoute extends AlloyShellRoute {
 `dispose()` самого по себе недостаточно:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Cache implements Disposable {
   @override
   void dispose() { ... }
 }
 
-@alloyInit
+@cobaltInit
 class Database implements AsyncInitializable, AsyncDisposable {
   @override
   Future<void> init() async { ... }
@@ -508,12 +508,12 @@ teardown в аннотации. Она принимает top-level-функци
 ```dart
 Future<void> closeClient(http.Client client) => client.close();
 
-@AlloyInject(dispose: closeClient)
+@CobaltInject(dispose: closeClient)
 class ApiClientHolder { ... }
 ```
 
-`dispose:` что-то значит только у регистрации, которую скоуп удерживает. На `@alloyTransient` или на
-классе с `@AlloyParam` это ошибка сборки, а не колбэк, который никогда не вызовут: транзиент
+`dispose:` что-то значит только у регистрации, которую скоуп удерживает. На `@cobaltTransient` или на
+классе с `@CobaltParam` это ошибка сборки, а не колбэк, который никогда не вызовут: транзиент
 закрывать не скоупу.
 
 ### Flutter-типы, которые выглядят закрываемыми и не являются
@@ -522,32 +522,32 @@ class ApiClientHolder { ... }
 Скажите об этом:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Filters extends ChangeNotifier implements Disposable {}
 ```
 
-Для блоков `alloy_bloc` — это одна строка:
+Для блоков `cobalt_bloc` — это одна строка:
 
 ```dart
-@alloyInject
-class CounterCubit extends Cubit<int> with AlloyBloc {
+@cobaltInject
+class CounterCubit extends Cubit<int> with CobaltBloc {
   CounterCubit() : super(0);
 }
 ```
 
-или, где миксин не достанет, `@AlloyInject(dispose: closeBloc)`.
+или, где миксин не достанет, `@CobaltInject(dispose: closeBloc)`.
 
 Дальше отдавайте блок в дерево виджетов через `BlocProvider.value` и никогда через
 `BlocProvider(create:)`: второй закрывает то, что ему передали, при размонтировании, тогда как скоуп
 всё ещё держит объект и на следующем резолве отдаст мёртвый.
 
-`alloy_registration_is_never_released` ловит всё это в редакторе: зарегистрированный класс с
+`cobalt_registration_is_never_released` ловит всё это в редакторе: зарегистрированный класс с
 `dispose()` или `close()`, которых скоуп не видит.
 
 ### Когда разбор идёт не так
 
 Он best-effort по замыслу. Упавший шаг записывается, остальные всё равно выполняются; у всего дерева
-один дедлайн; скоуп всегда доходит до `disposed`. Несделанное перечисляется в `AlloyDisposeError` —
+один дедлайн; скоуп всегда доходит до `disposed`. Несделанное перечисляется в `CobaltDisposeError` —
 `failures`, `timeouts`, `hasTimeout`.
 
 `adopt` привязывает к жизни скоупа объект, не являющийся зависимостью:
@@ -562,15 +562,15 @@ scope.adopt(subscription, dispose: (it) => it.cancel());
 
 Две фазы, отвечают на разные вопросы.
 
-**Фаза 0 — `@AlloyBootstrap`.** До того, как контейнер существует: платформенные биндинги, удалённый
+**Фаза 0 — `@CobaltBootstrap`.** До того, как контейнер существует: платформенные биндинги, удалённый
 конфиг, всё, что нужно самому графу. Шаги идут строго по порядку — сначала `order`, затем имя, чтобы
 вывод был стабильным — и не могут ничего инъектировать: инъектировать пока неоткуда. Bootstrap-шаг,
-чей конструктор берёт обязательные параметры, — ошибка сборки, а `alloy_bootstrap_step_cannot_inject`
+чей конструктор берёт обязательные параметры, — ошибка сборки, а `cobalt_bootstrap_step_cannot_inject`
 скажет об этом раньше.
 
 ```dart
-@AlloyBootstrap(order: 0)
-class BindPlatform implements AlloyBootstrapStep {
+@CobaltBootstrap(order: 0)
+class BindPlatform implements CobaltBootstrapStep {
   const BindPlatform();
 
   @override
@@ -585,10 +585,10 @@ class BindPlatform implements AlloyBootstrapStep {
 — последним, после всего, что построено поверх. Если шаг падает, уже отработавшие освобождаются в
 обратном порядке до того, как ошибка будет переброшена.
 
-**Фаза 1 — `@AlloyInit`.** Внутри контейнера: асинхронные синглтоны в порядке зависимостей.
+**Фаза 1 — `@CobaltInit`.** Внутри контейнера: асинхронные синглтоны в порядке зависимостей.
 
 ```dart
-@AlloyInit(dependsOn: [Database])
+@CobaltInit(dependsOn: [Database])
 class SearchIndex implements AsyncInitializable {
   SearchIndex(this._database);
 
@@ -605,14 +605,14 @@ class SearchIndex implements AsyncInitializable {
 видимым читателю, и именно это советует каждое сообщение об отсутствующем `init()`.
 
 Сгенерированная фабрика конструирует объект, дожидается `init()` и регистрирует его async-синглтоном
-с `dependsOn`, переведённым в `AlloyKey`. Независимые инициализаторы одного уровня едут вместе через
+с `dependsOn`, переведённым в `CobaltKey`. Независимые инициализаторы одного уровня едут вместе через
 `Future.wait`; ждёт только тот, кто действительно зависит.
 
 `dependsOn` — ребро порядка, а не инъекция: зависимость вы берёте в конструктор как обычно. Указание
 ключа, который зарегистрирован, но **не** async, — ошибка сборки, а не тихий no-op, на который это
 похоже: ждать нечего.
 
-`AlloyApplication.start` возвращается, когда обе фазы закончены, поэтому нет ни `allReady()`, ни
+`CobaltApplication.start` возвращается, когда обе фазы закончены, поэтому нет ни `allReady()`, ни
 состояния «зарегистрировано, но не готово».
 
 ---
@@ -623,9 +623,9 @@ class SearchIndex implements AsyncInitializable {
 которой контейнер знать не может:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Greeting {
-  Greeting(this._config, {@alloyParam required this.name, @alloyParam required this.loud});
+  Greeting(this._config, {@cobaltParam required this.name, @cobaltParam required this.loud});
 
   final Config _config;
   final String name;
@@ -638,7 +638,7 @@ class Greeting {
 
 ```dart
 // typedef $GreetingArgs = ({String name, bool loud});
-final greeting = context.alloyWithParam<Greeting, $GreetingArgs>((name: 'Alloy', loud: false));
+final greeting = context.cobaltWithParam<Greeting, $GreetingArgs>((name: 'Cobalt', loud: false));
 ```
 
 Именованная запись, а не позиционная, даже для одного аргумента: добавление второго меняет
@@ -649,11 +649,11 @@ final greeting = context.alloyWithParam<Greeting, $GreetingArgs>((name: 'Alloy',
 - Помеченные параметры **не участвуют** ни в проверке полноты, ни в упорядочивании. `String` никто
   не регистрирует, и не должен пытаться.
 - Они обязаны быть **required или нуллабельными**. У записи нет значений по умолчанию, поэтому
-  `@alloyParam this.draft = false` оставил бы вызывающего обязанным передать `draft`, а написанный
+  `@cobaltParam this.draft = false` оставил бы вызывающего обязанным передать `draft`, а написанный
   дефолт — мёртвым. Это ошибка сборки, а не сюрприз.
 
-Резолв такой регистрации обычным `get<T>()` бросает `AlloyParamRequiredError`; неверный тип —
-`AlloyParamTypeError` с ключом и обоими типами.
+Резолв такой регистрации обычным `get<T>()` бросает `CobaltParamRequiredError`; неверный тип —
+`CobaltParamTypeError` с ключом и обоими типами.
 
 ---
 
@@ -663,7 +663,7 @@ final greeting = context.alloyWithParam<Greeting, $GreetingArgs>((name: 'Alloy',
 null:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Reporter {
   Reporter(this.clock, this.telemetry);
 
@@ -671,7 +671,7 @@ class Reporter {
   final Telemetry? telemetry;
 }
 
-@alloyInject
+@cobaltInject
 class Dashboard with _$Dashboard {
   Dashboard();
 
@@ -692,23 +692,23 @@ null вместо падения сборки.
 
 ## 14. Типы, которые написали не вы
 
-`@AlloyInject` вешается на класс, поэтому достаёт только до ваших классов. Для всего остального вход
+`@CobaltInject` вешается на класс, поэтому достаёт только до ваших классов. Для всего остального вход
 — модуль: клиент из чужого пакета, значение, которое отдаёт SDK.
 
 ```dart
 Future<void> closeClient(http.Client client) => client.close();
 
-@alloyModule
+@cobaltModule
 class NetworkModule {
   const NetworkModule();
 
-  @alloyInject
+  @cobaltInject
   Dio dio(AppConfig config) => Dio(BaseOptions(baseUrl: config.apiBase));
 
-  @AlloyInject(dispose: closeClient)
+  @CobaltInject(dispose: closeClient)
   http.Client client() => http.Client();
 
-  @alloySingleton
+  @cobaltSingleton
   Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 }
 ```
@@ -724,8 +724,8 @@ class NetworkModule {
 - Возврат **`Future<T>` — единственный признак асинхронности.** Такой член становится
   async-синглтоном, а порядок между async-членами вычисляет генератор, а не вы руками.
 - Члены **не могут быть абстрактными.** «Собрать класс из его же конструктора» — это то, что уже
-  значит `@AlloyInject`; второго способа сказать то же самое не нужно.
-- `@AlloyParam` на члене **запрещён.** Модуль регистрирует типы, которые написали не вы, а значение
+  значит `@CobaltInject`; второго способа сказать то же самое не нужно.
+- `@CobaltParam` на члене **запрещён.** Модуль регистрирует типы, которые написали не вы, а значение
   с места вызова принадлежит классу, который написали вы.
 
 Члены участвуют во всём, в чём участвует класс: в детекте дубликатов, в топологической сортировке и
@@ -736,28 +736,28 @@ class NetworkModule {
 ## 15. Один граф, несколько сборок
 
 Пропустите это, пока одной сборке действительно не понадобится другая реализация, чем другой.
-Проект, никогда не пишущий `@AlloyEnvironment`, имеет один граф, все регистрации принадлежат ему, а
-`$startAlloy()` не берёт аргументов вовсе.
+Проект, никогда не пишущий `@CobaltEnvironment`, имеет один граф, все регистрации принадлежат ему, а
+`$startCobalt()` не берёт аргументов вовсе.
 
 ```dart
-@AlloyInject(exposeAs: ApiClient)
-@AlloyEnvironment.prod
-@AlloyEnvironment.stage
+@CobaltInject(exposeAs: ApiClient)
+@CobaltEnvironment.prod
+@CobaltEnvironment.stage
 class LiveApiClient implements ApiClient { ... }
 
-@AlloyInject(exposeAs: ApiClient)
-@AlloyEnvironment.dev
-@AlloyEnvironment.test
+@CobaltInject(exposeAs: ApiClient)
+@CobaltEnvironment.dev
+@CobaltEnvironment.test
 class FakeApiClient implements ApiClient { ... }
 ```
 
 ```dart
-final scope = await $startAlloy(environment: AlloyEnvironment.prod);
+final scope = await $startCobalt(environment: CobaltEnvironment.prod);
 ```
 
 Аннотация повторяется, а не принимает список: регистрация принадлежит *множеству* окружений, а старт
 выбирает ровно *одно*. `dev`, `stage`, `prod` и `test` — константы, а не закрытое множество:
-`@AlloyEnvironment('canary')` ведёт себя точно так же.
+`@CobaltEnvironment('canary')` ведёт себя точно так же.
 
 Сгенерированный контейнер принимает выбор полем и оборачивает `if` только ограниченные регистрации —
 ровно то, что вы написали бы руками:
@@ -771,7 +771,7 @@ if (environment.matches(const <String>{'dev', 'test'})) {
 Отсюда три следствия:
 
 - **Это остаётся опциональным до конца.** Параметр появляется, только когда что-то называет
-  окружение, и даже тогда у него дефолт `AlloyEnvironment.defaultEnvironment` — то единственное
+  окружение, и даже тогда у него дефолт `CobaltEnvironment.defaultEnvironment` — то единственное
   окружение, в котором живёт неразделённый граф. Этот дефолт матчит только неограниченные
   регистрации, поэтому старт разделённого графа без выбора оставляет разделённые типы
   незарегистрированными, и первый же резолв падает, сообщая об этом, а не отдаёт молча не тот класс.
@@ -781,10 +781,10 @@ if (environment.matches(const <String>{'dev', 'test'})) {
 - **Полнота проверяется по каждому окружению отдельно**, поэтому `dev`-регистрация не удовлетворит
   зависимого, который работает и в `prod`.
 
-Bootstrap-шаги тоже принимают окружения. Когда хоть один это делает, `$alloyBootstrap` становится
+Bootstrap-шаги тоже принимают окружения. Когда хоть один это делает, `$cobaltBootstrap` становится
 функцией выбранного окружения, а пропущенные шаги не запускаются и не усыновляются.
 
-`alloy_environment_needs_a_registration` ловит случай, когда `@AlloyEnvironment` стоит на классе,
+`cobalt_environment_needs_a_registration` ловит случай, когда `@CobaltEnvironment` стоит на классе,
 который никто не регистрирует, — там она молча ничего не делает.
 
 ---
@@ -797,23 +797,23 @@ Bootstrap-шаги тоже принимают окружения. Когда х
 ```yaml
 # analysis_options.yaml
 plugins:
-  alloy_lint: ^0.1.0
+  cobalt_lint: ^0.1.0
 ```
 
 | Правило | Что ловит |
 |---|---|
-| `alloy_missing_injection_mixin` | `@injected`-поля без `with _$ClassName` на классе, который контейнер регистрирует |
-| `alloy_injected_field_needs_an_injectable` | `@injected`-поля на классе, который контейнер не регистрирует вовсе |
-| `alloy_param_needs_an_injectable` | `@AlloyParam` на классе, который контейнер не регистрирует вовсе |
-| `alloy_injected_field_must_be_late_final` | `@injected` на изменяемом, не-late или статическом поле |
-| `alloy_injectable_must_be_constructible` | `@AlloyInject` на абстрактном классе или классе без публичного генеративного конструктора |
-| `alloy_init_requires_init_method` | `@AlloyInit` на классе без `init()` |
-| `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` на классе без `run()` |
-| `alloy_bootstrap_step_cannot_inject` | bootstrap-шаг, чей конструктор берёт обязательные параметры |
-| `alloy_environment_needs_a_registration` | `@AlloyEnvironment` на классе, который никто не регистрирует |
-| `alloy_dependency_is_not_registered` | инъектируемая зависимость, которую ничто в пакете не регистрирует |
-| `alloy_dependency_cycle` | инъектируемый класс, который в итоге зависит от самого себя |
-| `alloy_registration_is_never_released` | зарегистрированный класс с `dispose()` или `close()`, которых скоуп не видит |
+| `cobalt_missing_injection_mixin` | `@injected`-поля без `with _$ClassName` на классе, который контейнер регистрирует |
+| `cobalt_injected_field_needs_an_injectable` | `@injected`-поля на классе, который контейнер не регистрирует вовсе |
+| `cobalt_param_needs_an_injectable` | `@CobaltParam` на классе, который контейнер не регистрирует вовсе |
+| `cobalt_injected_field_must_be_late_final` | `@injected` на изменяемом, не-late или статическом поле |
+| `cobalt_injectable_must_be_constructible` | `@CobaltInject` на абстрактном классе или классе без публичного генеративного конструктора |
+| `cobalt_init_requires_init_method` | `@CobaltInit` на классе без `init()` |
+| `cobalt_bootstrap_requires_run_method` | `@CobaltBootstrap` на классе без `run()` |
+| `cobalt_bootstrap_step_cannot_inject` | bootstrap-шаг, чей конструктор берёт обязательные параметры |
+| `cobalt_environment_needs_a_registration` | `@CobaltEnvironment` на классе, который никто не регистрирует |
+| `cobalt_dependency_is_not_registered` | инъектируемая зависимость, которую ничто в пакете не регистрирует |
+| `cobalt_dependency_cycle` | инъектируемый класс, который в итоге зависит от самого себя |
+| `cobalt_registration_is_never_released` | зарегистрированный класс с `dispose()` или `close()`, которых скоуп не видит |
 
 Две вещи про подключение стоят реального времени:
 
@@ -835,39 +835,39 @@ plugins:
 Наблюдатели видят появление скоупов, построение инстансов, завершение старта, падение разбора.
 Передавайте их туда, где создаётся граф; каждый скоуп, поднятый ниже, их наследует.
 
-`$startAlloy()` наблюдателей не принимает — это короткий путь. Как только они понадобились,
+`$startCobalt()` наблюдателей не принимает — это короткий путь. Как только они понадобились,
 идите через билдер, который вы и так композируете:
 
 ```dart
-final scope = await AlloyApplication.start(
+final scope = await CobaltApplication.start(
   root: const NotesScope(notesEnvironment),
-  bootstrap: $alloyBootstrap(notesEnvironment),
-  rootName: $alloyRootScopeName,
-  observers: [AlloyLogObserver(const AlloyDeveloperLogSink())],
+  bootstrap: $cobaltBootstrap(notesEnvironment),
+  rootName: $cobaltRootScopeName,
+  observers: [CobaltLogObserver(const CobaltDeveloperLogSink())],
 );
 ```
 
-Во Flutter-приложении это параметр `observers:` у `AlloyAppScope.builder`.
+Во Flutter-приложении это параметр `observers:` у `CobaltAppScope.builder`.
 
-В колбэки приходят `AlloyScopeRef` и `AlloyKey` — описатели, а не живые объекты, — и исключение из
+В колбэки приходят `CobaltScopeRef` и `CobaltKey` — описатели, а не живые объекты, — и исключение из
 колбэка проглатывается: наблюдение не должно ломать наблюдаемое. Резолв не логируется: попадание в
 кэш — горячий путь, а видеть стоит **построение** инстанса.
 
 | Пакет | Форма |
 |---|---|
-| `alloy_talker` | наблюдатель, свой цветной тип лога на семейство событий |
-| `alloy_logging` | sink поверх `logging` с dart.dev |
-| `alloy_logger` | sink поверх `logger` |
+| `cobalt_talker` | наблюдатель, свой цветной тип лога на семейство событий |
+| `cobalt_logging` | sink поверх `logging` с dart.dev |
+| `cobalt_logger` | sink поверх `logger` |
 
 Всё остальное — один колбэк, поэтому ни один логгер не остаётся за бортом из-за отсутствия пакета:
 
 ```dart
-AlloyLogObserver(AlloyLogSink.from((r) => myLogger.debug(r.message)))
-AlloyLogObserver(AlloyLogSink.from((r) => gelf.send(r.toStructured())))
+CobaltLogObserver(CobaltLogSink.from((r) => myLogger.debug(r.message)))
+CobaltLogObserver(CobaltLogSink.from((r) => gelf.send(r.toStructured())))
 ```
 
 Запись — не просто строка: в ней `level`, `scope`, `key`, `error`, `stackTrace` и `kind`, причём
-`kind` — значение (`AlloyEventKind.scopeInitFailed`), а не предложение, которое пришлось бы
+`kind` — значение (`CobaltEventKind.scopeInitFailed`), а не предложение, которое пришлось бы
 разбирать.
 
 ### Крашрепортинг — другая форма
@@ -876,11 +876,11 @@ AlloyLogObserver(AlloyLogSink.from((r) => gelf.send(r.toStructured())))
 
 ```dart
 observers: [
-  AlloyErrorObserver(
-    AlloyErrorSink.from((report) => Sentry.captureException(
+  CobaltErrorObserver(
+    CobaltErrorSink.from((report) => Sentry.captureException(
       report.error,
       stackTrace: report.stackTrace,
-      withScope: (scope) => scope.setContexts('alloy', report.toStructured()),
+      withScope: (scope) => scope.setContexts('cobalt', report.toStructured()),
     )),
   ),
 ],
@@ -894,11 +894,11 @@ observers: [
 ### На экране, пока приложение работает
 
 ```dart
-final log = AlloyInspectorLog();
+final log = CobaltInspectorLog();
 
 // observers: [log]
 
-AlloyInspectorScreen(log: log, scope: context.alloyScope)
+CobaltInspectorScreen(log: log, scope: context.cobaltScope)
 ```
 
 Три вкладки: живое дерево скоупов с временем жизни каждой регистрации и её владельцем; то, что
@@ -915,15 +915,15 @@ AlloyInspectorScreen(log: log, scope: context.alloyScope)
 утверждения обо всём графе держите в обычном `test`.
 
 ```dart
-late AlloyScope scope;
+late CobaltScope scope;
 
 setUp(() async {
-  scope = await alloyTestScope(root: const $AlloyRootScope());
+  scope = await cobaltTestScope(root: const $CobaltRootScope());
 });
 ```
 
 Сгенерированный билдер идёт туда напрямую — ровно так же, как им пользуется приложение.
-`alloyTestScope` и `alloyTestRoot` разбираются вместе с тестом: это как раз та часть, которую легко
+`cobaltTestScope` и `cobaltTestRoot` разбираются вместе с тестом: это как раз та часть, которую легко
 забыть, а забытая она не падает, а протекает в следующий тест.
 
 ### Подмена
@@ -961,13 +961,13 @@ await expectGraphResolves(scope);
 отчёт поимённо как `unchecked`, а не пропускается молча, — дайте ей образец, чтобы покрыть:
 
 ```dart
-await expectGraphResolves(scope, params: {AlloyKey(Greeting): (name: 'x', loud: false)});
+await expectGraphResolves(scope, params: {CobaltKey(Greeting): (name: 'x', loud: false)});
 ```
 
 ### Фикстуры
 
 ```dart
-final scope = alloyTestRoot()
+final scope = cobaltTestRoot()
   ..registerLazySingleton<Clock>(FnFactory((_) => FixedClock(DateTime(2026))))
   ..registerSingleton<Config>(const Config())
   ..registerAsyncSingleton<Db>(AsyncFnFactory((_) async => Db()));
@@ -985,7 +985,7 @@ await scope.init();
 
 ### Виджет-тесты
 
-`alloy_test_flutter` несёт два хелпера, у которых очевидное написание — неверное:
+`cobalt_test_flutter` несёт два хелпера, у которых очевидное написание — неверное:
 
 ```dart
 await settle(tester);                    // не pumpAndSettle: он крутится вечно на индикаторе загрузки
@@ -1010,11 +1010,11 @@ git diff --exit-code
 
 Каждая найдена дорого — в этом репозитории или в приложениях, ради которых он писался.
 
-- **Не закоммитить `alloy.g.dart` или закоммитить устаревший.** Перегенерируйте в CI и сверяйте
+- **Не закоммитить `cobalt.g.dart` или закоммитить устаревший.** Перегенерируйте в CI и сверяйте
   диффом. Это единственная реальная обязанность по обслуживанию в этом режиме.
-- **Два `@AlloyScopeRoot` в одном пакете.** Ошибка сборки, и лечится она двумя пакетами:
-  `alloy_container` агрегирует весь пакет в один корень.
-- **`@AlloyInject` на generic-классе.** Отвергается: генератору никто не говорит, какие
+- **Два `@CobaltScopeRoot` в одном пакете.** Ошибка сборки, и лечится она двумя пакетами:
+  `cobalt_container` агрегирует весь пакет в один корень.
+- **`@CobaltInject` на generic-классе.** Отвергается: генератору никто не говорит, какие
   инстанциации регистрировать. Разметьте конкретный подтип или выставьте его через `exposeAs`.
   Дженерики прекрасно работают как зависимости и как цели `exposeAs`.
 - **`@injected` без `with _$ClassName`.** Поля остаются незаполненными, и первое же чтение даёт
@@ -1028,7 +1028,7 @@ git diff --exit-code
 - **`BlocProvider(create:)` для блока, которым владеет скоуп.** Два владельца, и виджет успевает
   первым. `BlocProvider.value`.
 - **`ChangeNotifier` или `Cubit`, зарегистрированный без объявления закрываемости.** Построен,
-  использован, никогда не закрыт, молча. `implements Disposable`, `with AlloyBloc` или `dispose:`.
+  использован, никогда не закрыт, молча. `implements Disposable`, `with CobaltBloc` или `dispose:`.
 - **Старый `dart` первым в PATH.** Ломается негромко и не там: `dart analyze` выдаёт фантомные issue
   против чужого анализатора, а вывод генератора смещается между версиями форматтера. Проверяйте
   `dart --version`, прежде чем верить прогону.
@@ -1039,7 +1039,7 @@ git diff --exit-code
 
 - [GUIDE_MANUAL.ru.md](GUIDE_MANUAL.ru.md) — тот же рантайм без шага сборки и что с чем
   композируется.
-- [README.ru.md](README.ru.md) — что такое Alloy и почему каждое решение принято именно так.
+- [README.ru.md](README.ru.md) — что такое Cobalt и почему каждое решение принято именно так.
 - [MIGRATION.ru.md](MIGRATION.ru.md) — с `get_it` и `injectable`, включая то, что не переводится.
 - `examples/codegen_basics` — наименьшая генерируемая обвязка, `examples/notes_app` — наибольшая.
   Оба запускаются из галереи: `cd examples/gallery && flutter run`.

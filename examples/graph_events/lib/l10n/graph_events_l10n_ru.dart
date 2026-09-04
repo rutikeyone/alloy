@@ -9,7 +9,7 @@ class GraphEventsL10nRu extends GraphEventsL10n {
   GraphEventsL10nRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy · наблюдаемость';
+  String get appTitle => 'Cobalt · наблюдаемость';
 
   @override
   String get liveLog => 'живой журнал';
@@ -20,7 +20,7 @@ class GraphEventsL10nRu extends GraphEventsL10n {
 
   @override
   String get everyEventDetail =>
-      'AlloyTalkerObserver кладёт каждый вид под свой заголовок, поэтому экран журнала умеет их разделять.';
+      'CobaltTalkerObserver кладёт каждый вид под свой заголовок, поэтому экран журнала умеет их разделять.';
 
   @override
   String get openSession => 'Открыть сессионный скоуп';

@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/features/session/data/session_activity_log.dart';
 import 'package:notes_app/features/session/domain/session_user.dart';
@@ -18,7 +18,7 @@ class _SessionScreenState extends State<SessionScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final session = context.alloy<SessionManager>();
+    final session = context.cobalt<SessionManager>();
     if (identical(session, _session)) return;
     _session?.removeListener(_onChanged);
     _session = session;

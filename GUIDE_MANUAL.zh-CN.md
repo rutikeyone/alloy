@@ -6,7 +6,7 @@
 
 # Manual Mode（手写模式）
 
-不带代码生成的 Alloy：没有注解，没有 `build_runner`，什么都不生成，也没有什么要提交。
+不带代码生成的 Cobalt：没有注解，没有 `build_runner`，什么都不生成，也没有什么要提交。
 注册由你来写，而运行时就是生成器所面向的那一套。
 
 这是完整的框架，不是它的删减版。生成器产出的一切，都是用本文所描述的东西表达的——
@@ -49,7 +49,7 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  alloy: ^0.1.0
+  cobalt: ^0.1.0
 ```
 
 Flutter 应用再加上绑定包，它会重新导出整个运行时，所以你永远不需要同时导入两个：
@@ -60,23 +60,23 @@ environment:
   flutter: ">=3.38.0"
 
 dependencies:
-  alloy: ^0.1.0
-  alloy_flutter: ^0.1.0
+  cobalt: ^0.1.0
+  cobalt_flutter: ^0.1.0
 
 dev_dependencies:
-  alloy_test: ^0.1.0
-  alloy_test_flutter: ^0.1.0
+  cobalt_test: ^0.1.0
+  cobalt_test_flutter: ^0.1.0
 ```
 
 **从这里出发不会走进死胡同。** 下限是 Dart `^3.10.0` / Flutter `>=3.38.0`，
 和 [GUIDE_CODEGEN.zh-CN.md](GUIDE_CODEGEN.zh-CN.md) 要求的完全一样，
 所以之后要不要加生成器是一个选择，而不是一次升级——两者如何叠加，见 [§15](#15-什么时候该加上生成器)。
 
-可选，且只在你需要时才加：`alloy_go_router` 为每段导航流程提供一个作用域，
-`alloy_bloc` 让作用域能关闭 bloc，`alloy_inspector` 让你在运行时看这张图，
-以及 `alloy_talker` / `alloy_logging` / `alloy_logger` 之一用于可观测性。
+可选，且只在你需要时才加：`cobalt_go_router` 为每段导航流程提供一个作用域，
+`cobalt_bloc` 让作用域能关闭 bloc，`cobalt_inspector` 让你在运行时看这张图，
+以及 `cobalt_talker` / `cobalt_logging` / `cobalt_logger` 之一用于可观测性。
 
-这里没有任何东西需要 `alloy_generator`、`build_runner` 或 `alloy_lint`——它们属于另一个模式。
+这里没有任何东西需要 `cobalt_generator`、`build_runner` 或 `cobalt_lint`——它们属于另一个模式。
 
 ---
 
@@ -85,7 +85,7 @@ dev_dependencies:
 三块东西：类、每个类一个工厂，以及一个把它们注册进去的构建器。
 
 ```dart
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
 class Clock {
   DateTime now() => DateTime.now();
@@ -106,29 +106,29 @@ class EventLog implements Disposable {
 而那正是让第二次启动复用第一次的对象的那个 bug。
 
 ```dart
-class ClockFactory implements AlloyFactory<Clock> {
+class ClockFactory implements CobaltFactory<Clock> {
   const ClockFactory();
 
   @override
-  Clock create(AlloyResolver resolver) => Clock();
+  Clock create(CobaltResolver resolver) => Clock();
 }
 
-class EventLogFactory implements AlloyFactory<EventLog> {
+class EventLogFactory implements CobaltFactory<EventLog> {
   const EventLogFactory();
 
   @override
-  EventLog create(AlloyResolver resolver) => EventLog();
+  EventLog create(CobaltResolver resolver) => EventLog();
 }
 ```
 
 依赖在 `create` 内部解析，来自交给你的那个 resolver：
 
 ```dart
-class ReportFactory implements AlloyFactory<Report> {
+class ReportFactory implements CobaltFactory<Report> {
   const ReportFactory();
 
   @override
-  Report create(AlloyResolver resolver) =>
+  Report create(CobaltResolver resolver) =>
       Report(resolver.get<Clock>(), resolver.get<EventLog>());
 }
 ```
@@ -137,11 +137,11 @@ class ReportFactory implements AlloyFactory<Report> {
 在 `build` 期间解析，读到的会是一张还在被描述的图。
 
 ```dart
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope
       ..registerLazySingleton<Clock>(const ClockFactory())
       ..registerLazySingleton<EventLog>(const EventLogFactory())
@@ -150,7 +150,7 @@ class AppScope implements AlloyScopeBuilder {
 }
 
 Future<void> main() async {
-  final app = await AlloyApplication.start(root: const AppScope(), rootName: 'app');
+  final app = await CobaltApplication.start(root: const AppScope(), rootName: 'app');
 
   app.get<EventLog>().add('started at ${app.get<Clock>().now()}');
 
@@ -161,7 +161,7 @@ Future<void> main() async {
 注册顺序无关紧要。`Report` 可以注册在 `Clock` 之前：`build` 期间什么都不构建，
 等到任何东西开始解析时，所有注册都已存在。
 
-没有全局容器。`AlloyApplication.start` 把根交给你，没有任何东西是环境隐式的，
+没有全局容器。`CobaltApplication.start` 把根交给你，没有任何东西是环境隐式的，
 所以同一进程里的两张图互不相关，测试也能并行。
 
 `examples/manual_mode` 就是这些，完整且可运行：
@@ -231,7 +231,7 @@ scope.debugDescribeTree();   // 以文本形式呈现的树
 
 ## 4. 启动 Flutter 应用
 
-根作用域由 `AlloyAppScope` 持有：构建图、发布到 widget 树、卸载时销毁，
+根作用域由 `CobaltAppScope` 持有：构建图、发布到 widget 树、卸载时销毁，
 并把启动失败变成一个带重试的界面，而不是一个还没画出第一帧就死掉的应用。
 
 把它放进 `MaterialApp.builder`，不要放在 `MaterialApp` 之上。在那里它位于 `Theme`、
@@ -242,7 +242,7 @@ scope.debugDescribeTree();   // 以文本形式呈现的树
 void main() => runApp(
   MaterialApp(
     theme: appTheme,
-    builder: AlloyAppScope.builder(
+    builder: CobaltAppScope.builder(
       root: const AppScope(),
       bootstrap: () => [const BindPlatform()],
       rootName: 'app',
@@ -257,12 +257,12 @@ void main() => runApp(
 `bootstrap` 是函数而不是列表，这是有意的：步骤持有资源，重启必须拿到新的。
 存成列表会悄悄把同一批对象交给第二次启动。
 
-`AlloyAppScope.of(context).restart()` 重建整张图——同一个调用也用于重试失败的启动。
+`CobaltAppScope.of(context).restart()` 重建整张图——同一个调用也用于重试失败的启动。
 
 如果应用已经有自己的 `builder`，请自己组合，不要指望框架去合并两个：
 
 ```dart
-builder: (context, child) => AlloyAppScope(
+builder: (context, child) => CobaltAppScope(
   root: const AppScope(),
   child: myWrapper(child!),
 ),
@@ -273,10 +273,10 @@ builder: (context, child) => AlloyAppScope(
 ## 5. 在 widget 中读取依赖
 
 ```dart
-final repository = context.alloy<Repository>();
-final formatters = context.alloyAll<NoteFormatter>();
-final counter = context.alloyWithParam<Counter, String>('alice');
-final scope = context.alloyScope;
+final repository = context.cobalt<Repository>();
+final formatters = context.cobaltAll<NoteFormatter>();
+final counter = context.cobaltWithParam<Counter, String>('alice');
+final scope = context.cobaltScope;
 ```
 
 每一个都从 widget 之上**最近**的作用域开始解析，然后逐级向上；
@@ -284,7 +284,7 @@ final scope = context.alloyScope;
 
 有一件事最好在被它咬到之前知道：`Navigator.push` 用的是 navigator 的 context，
 而不是发起 push 的那个 widget 的 context。如果一个界面读取的 provider 位于发起 push 的界面**内部**，
-那么它就地挂载时解析正常，被 push 打开时就会抛 `AlloyNoScopeError`。
+那么它就地挂载时解析正常，被 push 打开时就会抛 `CobaltNoScopeError`。
 这种情况下请显式传入作用域，或者在 provider 之下 push。
 
 ---
@@ -300,8 +300,8 @@ final scope = context.alloyScope;
 class SessionManager {
   SessionManager(this._root);
 
-  final AlloyScope _root;
-  AlloyScope? _session;
+  final CobaltScope _root;
+  CobaltScope? _session;
 
   Future<void> signIn(User user) async {
     _session = _root.push('session:${user.id}')
@@ -327,7 +327,7 @@ class SessionManager {
 ### 界面
 
 ```dart
-AlloyScopeWidget(
+CobaltScopeWidget(
   name: 'editor',
   builder: const EditorScope(),
   child: const EditorBody(),
@@ -339,10 +339,10 @@ AlloyScopeWidget(
 
 ### 导航流程
 
-用 `alloy_go_router`，生命周期由流程决定，而不是由「你记得放上去的那个 widget」决定：
+用 `cobalt_go_router`，生命周期由流程决定，而不是由「你记得放上去的那个 widget」决定：
 
 ```dart
-class OrderFlowRoute extends AlloyShellRoute {
+class OrderFlowRoute extends CobaltShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',
@@ -363,13 +363,13 @@ class OrderFlowRoute extends AlloyShellRoute {
   static String _orderId(GoRouterState state) => state.pathParameters['orderId']!;
 }
 
-class OrderFlowScope implements AlloyScopeBuilder {
+class OrderFlowScope implements CobaltScopeBuilder {
   const OrderFlowScope(this.orderId);
 
   final String orderId;
 
   @override
-  void build(AlloyScope scope) =>
+  void build(CobaltScope scope) =>
       scope.registerLazySingleton<OrderDraft>(OrderDraftFactory(orderId));
 }
 ```
@@ -380,10 +380,10 @@ class OrderFlowScope implements AlloyScopeBuilder {
 在 `summary` 与 `payment` 之间导航共用同一个作用域，离开流程则销毁它。
 `identity` 回答的是路由自己判断不了的那个问题：`/orders/1` 和 `/orders/2` 算不算同一个流程。
 
-路由表**只构建一次**，和 router 一起。对 go_router 来说，新的 `AlloyShellRoute` 实例就是另一个流程，
+路由表**只构建一次**，和 router 一起。对 go_router 来说，新的 `CobaltShellRoute` 实例就是另一个流程，
 所以每帧重建这个列表就等于每帧重建作用域。
 
-标签页是同样的做法——`AlloyStatefulShellRoute` 和 `AlloyStatefulShellBranch`——
+标签页是同样的做法——`CobaltStatefulShellRoute` 和 `CobaltStatefulShellBranch`——
 但有一点值得直说：分支是被保持**存活**，不是被保持**可见**。
 go_router 会在屏幕外保留分支的 navigator，所以标签页的作用域活到 shell 关闭为止，
 而不是活到你切走为止。
@@ -436,10 +436,10 @@ scope.registerAsyncSingleton<Isar>(
 class Filters extends ChangeNotifier implements Disposable {}
 ```
 
-对 bloc 来说，`alloy_bloc` 就是那一行：
+对 bloc 来说，`cobalt_bloc` 就是那一行：
 
 ```dart
-class CounterCubit extends Cubit<int> with AlloyBloc {
+class CounterCubit extends Cubit<int> with CobaltBloc {
   CounterCubit() : super(0);
 }
 ```
@@ -452,7 +452,7 @@ mixin 够不着的地方，在注册处写 `dispose: closeBloc`。
 ### 当销毁出错时
 
 它按设计是尽力而为的。抛异常的步骤会被记录，其余的照常执行；整棵树共用一个截止时间；
-作用域最终一定会到达 `disposed`。没做完的事列在 `AlloyDisposeError` 里——
+作用域最终一定会到达 `disposed`。没做完的事列在 `CobaltDisposeError` 里——
 `failures`、`timeouts`、`hasTimeout`——而不是让第一个错误盖住其余九个。
 
 `adopt` 把「不是依赖、但生命周期绑在作用域上」的对象挂上去——
@@ -473,7 +473,7 @@ scope.adopt(subscription, dispose: (it) => it.cancel());
 因为还没有可注入的来源。
 
 ```dart
-class BindPlatform implements AlloyBootstrapStep {
+class BindPlatform implements CobaltBootstrapStep {
   const BindPlatform();
 
   @override
@@ -483,7 +483,7 @@ class BindPlatform implements AlloyBootstrapStep {
   Future<void> run() async => WidgetsFlutterBinding.ensureInitialized();
 }
 
-final app = await AlloyApplication.start(
+final app = await CobaltApplication.start(
   root: const AppScope(),
   bootstrap: const [BindPlatform(), LoadRemoteConfig()],
   rootName: 'app',
@@ -497,11 +497,11 @@ final app = await AlloyApplication.start(
 **阶段 1 —— 异步单例。** 在容器内部，按依赖顺序构建：
 
 ```dart
-class DatabaseFactory implements AlloyAsyncFactory<Database> {
+class DatabaseFactory implements CobaltAsyncFactory<Database> {
   const DatabaseFactory();
 
   @override
-  Future<Database> create(AlloyResolver resolver) async {
+  Future<Database> create(CobaltResolver resolver) async {
     final database = Database(resolver.get<Config>());
     await database.open();
     return database;
@@ -512,19 +512,19 @@ scope
   ..registerAsyncSingleton<Database>(const DatabaseFactory())
   ..registerAsyncSingleton<SearchIndex>(
     const SearchIndexFactory(),
-    dependsOn: {AlloyKey(Database)},
+    dependsOn: {CobaltKey(Database)},
   );
 ```
 
 `dependsOn` 是排序的边，不是注入——`Database` 你仍然要在 `SearchIndexFactory.create` 内部解析。
 同一层上互不相关的初始化器通过 `Future.wait` 一起跑，只有真正存在依赖的才会等待。
-出现环会抛 `AlloyCycleError` 并指出路径，而不是一直挂着。
+出现环会抛 `CobaltCycleError` 并指出路径，而不是一直挂着。
 
 指向一个已注册但**不是**异步的键是错误，而不是空操作：没有构建可等。
 指向**祖先**作用域里的异步注册则是允许的，并会被忽略——
 祖先在这个作用域存在之前就跑完了它自己的阶段 1。
 
-`AlloyApplication.start` 在两个阶段都完成后才返回，
+`CobaltApplication.start` 在两个阶段都完成后才返回，
 所以没有 `allReady()` 要调用，也没有「已注册但尚未就绪」这种状态需要你去推理。
 
 异步注册必须在 `init()` 运行之前就存在。它只取启动那一刻找到的那些，且只运行一次，
@@ -538,11 +538,11 @@ scope
 对象的一半来自图，另一半来自构建它的人：
 
 ```dart
-class CounterFactory implements AlloyParamFactory<Counter, String> {
+class CounterFactory implements CobaltParamFactory<Counter, String> {
   const CounterFactory();
 
   @override
-  Counter create(AlloyResolver resolver, String sessionId) =>
+  Counter create(CobaltResolver resolver, String sessionId) =>
       Counter(resolver.get<CounterStorage>(), sessionId);
 }
 
@@ -556,32 +556,32 @@ final counter = scope.getWithParam<Counter, String>('alice');
 ```dart
 typedef EditorArgs = ({int id, String title, bool draft});
 
-class EditorFactory implements AlloyParamFactory<Editor, EditorArgs> {
+class EditorFactory implements CobaltParamFactory<Editor, EditorArgs> {
   const EditorFactory();
 
   @override
-  Editor create(AlloyResolver resolver, EditorArgs args) =>
+  Editor create(CobaltResolver resolver, EditorArgs args) =>
       Editor(resolver.get<Notes>(), id: args.id, title: args.title, draft: args.draft);
 }
 
 scope.getWithParam<Editor, EditorArgs>((id: 7, title: 'draft', draft: true));
 ```
 
-参数类型是在调用处检查的，而不是在你的工厂内部：传错类型会抛 `AlloyParamTypeError`，
+参数类型是在调用处检查的，而不是在你的工厂内部：传错类型会抛 `CobaltParamTypeError`，
 并点明键、期望的类型和实际传来的东西。合法的子类型会被接受，因为检查的是值而不是类型字面量。
 
-用普通的 `get<T>()` 去解析一个参数化注册会抛 `AlloyParamRequiredError`——参数无处可来。
+用普通的 `get<T>()` 去解析一个参数化注册会抛 `CobaltParamRequiredError`——参数无处可来。
 
 ---
 
 ## 10. 可选依赖
 
 ```dart
-class ReportFactory implements AlloyFactory<Report> {
+class ReportFactory implements CobaltFactory<Report> {
   const ReportFactory();
 
   @override
-  Report create(AlloyResolver resolver) =>
+  Report create(CobaltResolver resolver) =>
       Report(resolver.get<Clock>(), resolver.getOrNull<Telemetry>());
 }
 ```
@@ -597,16 +597,16 @@ class ReportFactory implements AlloyFactory<Report> {
 在确实需要「这次构建要换一个实现」之前，可以跳过本节。在那之前你的图只有一个环境，
 这里的内容都用不上。
 
-`AlloyEnvironment.matches` 就是普通的公开 API，所以选择就是一个 `if`：
+`CobaltEnvironment.matches` 就是普通的公开 API，所以选择就是一个 `if`：
 
 ```dart
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope(this.environment);
 
-  final AlloyEnvironment environment;
+  final CobaltEnvironment environment;
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope.registerLazySingleton<EventLog>(const EventLogFactory());
 
     if (environment.matches(const {'dev', 'test'})) {
@@ -619,7 +619,7 @@ class AppScope implements AlloyScopeBuilder {
 }
 ```
 
-`dev`、`stage`、`prod`、`test` 是常量，不是封闭集合——`AlloyEnvironment('canary')` 行为完全一样。
+`dev`、`stage`、`prod`、`test` 是常量，不是封闭集合——`CobaltEnvironment('canary')` 行为完全一样。
 继承它并重写 `matches`，就能一次激活多个，或者按名字以外的东西来匹配。
 
 在这个模式下，没有任何东西替你检查这些分支。两个 `if` 同时为真会把同一个键注册两次并在启动时抛异常；
@@ -634,17 +634,17 @@ class AppScope implements AlloyScopeBuilder {
 在创建图的地方传入它们；之后压入的每个作用域都会继承。
 
 ```dart
-final app = await AlloyApplication.start(
+final app = await CobaltApplication.start(
   root: const AppScope(),
-  observers: [AlloyLogObserver(const AlloyPrintLogSink())],
+  observers: [CobaltLogObserver(const CobaltPrintLogSink())],
 );
 ```
 
-`AlloyPrintLogSink` 写到 stdout，这是应用之外的正确默认值；
-`AlloyDeveloperLogSink`（`dart:developer`）才是 Flutter 应用里该用的那个。
+`CobaltPrintLogSink` 写到 stdout，这是应用之外的正确默认值；
+`CobaltDeveloperLogSink`（`dart:developer`）才是 Flutter 应用里该用的那个。
 `push(name, observers: [...])` 给某一棵子树追加观察者。
 
-回调收到的是 `AlloyScopeRef` 和 `AlloyKey`——描述符，不是活对象——
+回调收到的是 `CobaltScopeRef` 和 `CobaltKey`——描述符，不是活对象——
 而回调里抛出的异常会被吞掉：观察不能有能力破坏被观察者。
 解析不会被上报：命中缓存是热路径，值得看见的是实例**被构建**这件事。
 
@@ -652,19 +652,19 @@ final app = await AlloyApplication.start(
 
 | 包 | 形态 |
 |---|---|
-| `alloy_talker` | 观察者，每个事件家族一种带颜色的日志类型 |
-| `alloy_logging` | 基于 dart.dev `logging` 的 sink |
-| `alloy_logger` | 基于 `logger` 的 sink |
+| `cobalt_talker` | 观察者，每个事件家族一种带颜色的日志类型 |
+| `cobalt_logging` | 基于 dart.dev `logging` 的 sink |
+| `cobalt_logger` | 基于 `logger` 的 sink |
 
 其余都是一个回调的事，所以不会有哪个日志库因为没人写适配包而被挡在外面：
 
 ```dart
-AlloyLogObserver(AlloyLogSink.from((r) => myLogger.debug(r.message)))
-AlloyLogObserver(AlloyLogSink.from((r) => gelf.send(r.toStructured())))
+CobaltLogObserver(CobaltLogSink.from((r) => myLogger.debug(r.message)))
+CobaltLogObserver(CobaltLogSink.from((r) => gelf.send(r.toStructured())))
 ```
 
 记录不只是一个字符串：`level`、`scope`、`key`、`error`、`stackTrace` 和 `kind` 都在里面，
-而 `kind` 是一个值——`AlloyEventKind.scopeInitFailed`，而不是一句还得你去解析的话。
+而 `kind` 是一个值——`CobaltEventKind.scopeInitFailed`，而不是一句还得你去解析的话。
 
 ### 崩溃上报是另一种形态
 
@@ -672,11 +672,11 @@ AlloyLogObserver(AlloyLogSink.from((r) => gelf.send(r.toStructured())))
 
 ```dart
 observers: [
-  AlloyErrorObserver(
-    AlloyErrorSink.from((report) => Sentry.captureException(
+  CobaltErrorObserver(
+    CobaltErrorSink.from((report) => Sentry.captureException(
       report.error,
       stackTrace: report.stackTrace,
-      withScope: (scope) => scope.setContexts('alloy', report.toStructured()),
+      withScope: (scope) => scope.setContexts('cobalt', report.toStructured()),
     )),
   ),
 ],
@@ -689,11 +689,11 @@ observers: [
 ### 运行时，直接在屏幕上
 
 ```dart
-final log = AlloyInspectorLog();
+final log = CobaltInspectorLog();
 
 // observers: [log]
 
-AlloyInspectorScreen(log: log, scope: context.alloyScope)
+CobaltInspectorScreen(log: log, scope: context.cobaltScope)
 ```
 
 三个标签页：带生命周期与归属的实时作用域树；实际已经构建出来的东西；
@@ -709,14 +709,14 @@ AlloyInspectorScreen(log: log, scope: context.alloyScope)
 把针对整张图的断言放在普通的 `test` 里。
 
 ```dart
-late AlloyScope scope;
+late CobaltScope scope;
 
 setUp(() async {
-  scope = await alloyTestScope(root: const AppScope());
+  scope = await cobaltTestScope(root: const AppScope());
 });
 ```
 
-`alloyTestScope` 和 `alloyTestRoot` 会随测试一起销毁——这恰恰是最容易漏掉的一步，
+`cobaltTestScope` 和 `cobaltTestRoot` 会随测试一起销毁——这恰恰是最容易漏掉的一步，
 而漏掉它不会报错，只会泄漏到下一个测试里。
 
 ### 检查图是否完整
@@ -736,7 +736,7 @@ await expectGraphResolves(scope);
 给它一个样例值，就能真正覆盖到：
 
 ```dart
-await expectGraphResolves(scope, params: {AlloyKey(Counter): 'alice'});
+await expectGraphResolves(scope, params: {CobaltKey(Counter): 'alice'});
 ```
 
 从 Manual Mode 图的第一天起就把这个测试放进测试集。它就是另一个模式从编译器那里免费得到的东西。
@@ -762,7 +762,7 @@ expect(scope.ownerOf<Greeter>(), same(scope.root));   // 注册在根上，就�
 ### 测试替身
 
 ```dart
-final scope = alloyTestRoot()
+final scope = cobaltTestRoot()
   ..registerLazySingleton<Clock>(FnFactory((_) => FixedClock(DateTime(2026))))
   ..registerSingleton<Config>(const Config())
   ..registerAsyncSingleton<Db>(AsyncFnFactory((_) async => Db()))
@@ -790,7 +790,7 @@ expect(recorder.entries, ['cache']);
 
 ### widget 测试
 
-`alloy_test_flutter` 提供了两个「显而易见的写法恰好是错的」的辅助函数：
+`cobalt_test_flutter` 提供了两个「显而易见的写法恰好是错的」的辅助函数：
 
 ```dart
 await settle(tester);                    // 不是 pumpAndSettle：它在加载指示器上会一直转下去
@@ -811,13 +811,13 @@ final scope = mountedRootScope(tester);  // 应用的图，取自 MaterialApp bu
 - **在消费者之下做覆盖。** 工厂运行在持有该注册的作用域上。`ownerOf<T>()` 比断言更早告诉你。
 - **工厂去捕获而不是去解析。** 请从传给 `create` 的 `resolver` 读取协作对象，
   而不是从书写工厂处周围的变量读取，否则第二次启动会复用第一张图的对象。
-- **在 `AlloyScopeBuilder.build` 里解析。** 它运行时作用域还在被描述。那里只注册，稍后再解析。
-- **用 `AlloyAppScope` 持有根时，把 `bootstrap` 写成存下来的列表。** 步骤持有资源，
+- **在 `CobaltScopeBuilder.build` 里解析。** 它运行时作用域还在被描述。那里只注册，稍后再解析。
+- **用 `CobaltAppScope` 持有根时，把 `bootstrap` 写成存下来的列表。** 步骤持有资源，
   重启必须拿到新的。传一个函数。
 - **对作用域持有的 bloc 使用 `BlocProvider(create:)`。** 两个所有者，而 widget 先动手。
   用 `BlocProvider.value`。
 - **注册了 `ChangeNotifier` 或 `Cubit` 却没声明它可关闭。** 被构建、被使用、永不关闭，且悄无声息。
-  用 `implements Disposable`、`with AlloyBloc` 或 `dispose:`。
+  用 `implements Disposable`、`with CobaltBloc` 或 `dispose:`。
 - **PATH 里旧版 `dart` 排在前面。** 它出错时既不响亮也不在正确的位置。
   在相信一次运行结果之前先看 `dart --version`。
 
@@ -825,16 +825,16 @@ final scope = mountedRootScope(tester);  // 应用的图，取自 MaterialApp bu
 
 ## 15. 什么时候该加上生成器
 
-这里写的任何东西都不必扔掉。生成的容器就是一个和上面那些一样的 `AlloyScopeBuilder`，
+这里写的任何东西都不必扔掉。生成的容器就是一个和上面那些一样的 `CobaltScopeBuilder`，
 所以它能和你已经写好的东西组合：
 
 ```dart
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope();
 
   @override
-  void build(AlloyScope scope) {
-    $AlloyRootScope().build(scope);          // 生成器找到的部分
+  void build(CobaltScope scope) {
+    $CobaltRootScope().build(scope);          // 生成器找到的部分
     scope.registerSingleton<Config>(config); // 它无从知晓的部分
   }
 }

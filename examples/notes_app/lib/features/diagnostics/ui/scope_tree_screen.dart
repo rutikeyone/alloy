@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/l10n/notes_app_l10n.dart';
 import 'package:notes_app/features/session/session_manager.dart';
@@ -16,7 +16,7 @@ class _ScopeTreeScreenState extends State<ScopeTreeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final session = context.alloy<SessionManager>();
+    final session = context.cobalt<SessionManager>();
     if (identical(session, _session)) return;
     _session?.removeListener(_onChanged);
     _session = session;
@@ -33,7 +33,7 @@ class _ScopeTreeScreenState extends State<ScopeTreeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final root = context.alloyScope;
+    final root = context.cobaltScope;
 
     return Scaffold(
       appBar: AppBar(title: Text(NotesL10n.of(context).scopeTree)),

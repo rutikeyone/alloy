@@ -2,7 +2,7 @@
   "@@locale": "ru",
   "twoPhaseStartup": "Двухфазный старт",
   "restartGraph": "разобрать скоуп приложения и поднять новый",
-  "phaseZero": "Фаза 0 — @AlloyBootstrap",
+  "phaseZero": "Фаза 0 — @CobaltBootstrap",
   "phaseZeroNote": "усыновлены скоупом «{scope}», освобождаются вместе с ним",
   "@phaseZeroNote": {
     "placeholders": {
@@ -11,7 +11,7 @@
       }
     }
   },
-  "phaseOne": "Фаза 1 — @AlloyInit",
+  "phaseOne": "Фаза 1 — @CobaltInit",
   "databaseOpen": "база данных открыта",
   "searchIndexBuilt": "поисковый индекс построен",
   "telemetryStarted": "телеметрия запущена",

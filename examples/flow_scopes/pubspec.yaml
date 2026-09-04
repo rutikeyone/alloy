@@ -1,5 +1,5 @@
 name: flow_scopes
-description: Alloy example — a navigation flow that owns its dependencies, wired with go_router.
+description: Cobalt example — a navigation flow that owns its dependencies, wired with go_router.
 publish_to: none
 version: 0.1.0
 
@@ -10,7 +10,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  alloy_go_router: ^0.1.0
+  cobalt_go_router: ^0.1.0
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -19,7 +19,7 @@ dependencies:
   go_router: ^17.0.0
 
 dev_dependencies:
-  alloy_test_flutter: ^0.1.0
+  cobalt_test_flutter: ^0.1.0
   flutter_test:
     sdk: flutter
 

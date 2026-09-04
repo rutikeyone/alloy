@@ -1,4 +1,4 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/core/app_config.dart';
@@ -13,7 +13,7 @@ import 'package:notes_app/features/notes/ui/notes_controller.dart';
 import 'support.dart';
 
 void main() {
-  late AlloyScope app;
+  late CobaltScope app;
 
   setUp(() async {
     BootLog.reset();
@@ -48,7 +48,7 @@ void main() {
       () {
         final controller = app.get<NotesController>();
 
-        expect(controller, isA<AlloyInjectable>());
+        expect(controller, isA<CobaltInjectable>());
         expect(controller.notes, isEmpty);
 
         controller.add('groceries');
@@ -117,7 +117,7 @@ void main() {
   });
 }
 
-extension on AlloyScope {
+extension on CobaltScope {
   void registerScope() =>
       registerLazySingleton<NoteDraft>(const NoteDraftFactory());
 }

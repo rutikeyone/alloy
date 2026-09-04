@@ -4,7 +4,7 @@
 
 > 本文档译自 [MIGRATION.md](MIGRATION.md)。英文版为准：若有出入，以英文为准。
 
-# 迁移到 Alloy
+# 迁移到 Cobalt
 
 没有人会先做一个完全不用依赖注入的 Flutter 应用，然后再去挑框架。你会读到这里，是因为你已经在用
 `get_it`，或者 `get_it` + `injectable`，而它在某个地方不再撑得住了。
@@ -13,32 +13,32 @@
 
 ## 让迁移能活下来的唯一原则
 
-**从叶子往里走。** 先注册那些没有任何东西依赖的对象，让 Alloy 和你原有的容器共存，等根节点下面的一切
-都已经属于 Alloy 之后，最后才动根节点。
+**从叶子往里走。** 先注册那些没有任何东西依赖的对象，让 Cobalt 和你原有的容器共存，等根节点下面的一切
+都已经属于 Cobalt 之后，最后才动根节点。
 
 Manual Mode 存在的意义正在于此。生成的容器和手写的容器是同一套运行时，所以"迁移到一半"是一种正常状态，
 而不是坏掉的状态：
 
 ```dart
-final app = await AlloyApplication.start(root: const AppScope());
+final app = await CobaltApplication.start(root: const AppScope());
 
 // 还没搬走的一切仍然来自 get_it。只有一行，而且最后才删。
 GetIt.I.registerSingleton<Database>(app.get<Database>());
 ```
 
-请抵挡住先迁移根组件的诱惑。它的边最多，而在它的依赖还不属于 Alloy 之前，你什么也得不到。
+请抵挡住先迁移根组件的诱惑。它的边最多，而在它的依赖还不属于 Cobalt 之前，你什么也得不到。
 
-## get_it → Alloy
+## get_it → Cobalt
 
 ### 注册
 
-| get_it | Alloy |
+| get_it | Cobalt |
 |---|---|
 | `registerFactory<T>(() => T())` | `registerFactory<T>(const TFactory())` |
 | `registerSingleton<T>(instance)` | `registerSingleton<T>(instance)` |
 | `registerLazySingleton<T>(() => T())` | `registerLazySingleton<T>(const TFactory())` |
 | `registerSingletonAsync<T>(() async => …)` | `registerAsyncSingleton<T>(const TFactory())` |
-| `registerSingletonWithDependencies<T>(…, dependsOn: [A])` | `registerAsyncSingleton<T>(…, dependsOn: {AlloyKey(A)})` |
+| `registerSingletonWithDependencies<T>(…, dependsOn: [A])` | `registerAsyncSingleton<T>(…, dependsOn: {CobaltKey(A)})` |
 | `registerFactoryParam<T, P, void>((p, _) => …)` | `registerParamFactory<T, P>(const TFactory())` |
 | `getIt<T>()` / `getIt.get<T>()` | `scope.get<T>()` |
 | `getIt<T>(instanceName: 'a')` | `scope.get<T>(name: 'a')` |
@@ -52,7 +52,7 @@ GetIt.I.registerSingleton<Database>(app.get<Database>());
 
 ### 生命周期
 
-`allReady()` 和 `isReady<T>()` 没有对应物，也不需要。`AlloyApplication.start` 只有在整张异步图都起来之后
+`allReady()` 和 `isReady<T>()` 没有对应物，也不需要。`CobaltApplication.start` 只有在整张异步图都起来之后
 才返回，所以既没有东西需要轮询，也没有超时需要调：
 
 ```dart
@@ -60,11 +60,11 @@ GetIt.I.registerSingleton<Database>(app.get<Database>());
 GetIt.I.registerSingletonAsync<Database>(() => Database.open());
 await GetIt.I.allReady(timeout: const Duration(seconds: 30));
 
-// Alloy
-final app = await AlloyApplication.start(root: const AppScope());
+// Cobalt
+final app = await CobaltApplication.start(root: const AppScope());
 ```
 
-`signalReady` 和手动发信号的模式同样没有对应物。Alloy 从图本身推导就绪状态，而不是等你来宣布。
+`signalReady` 和手动发信号的模式同样没有对应物。Cobalt 从图本身推导就绪状态，而不是等你来宣布。
 
 ### 作用域是树，不是栈
 
@@ -73,7 +73,7 @@ final app = await AlloyApplication.start(root: const AppScope());
 get_it 的作用域是一个**扁平的 LIFO 栈**：`pushNewScope` 永远压入同一个栈，`get<T>()` 从栈顶往下找。
 两棵互不相干的子树——比如两个各有会话的标签页——根本无法表达。
 
-Alloy 的作用域构成一棵**树**。`push` 创建的是*该*作用域的子节点，解析则沿着父链向上直到根。也就是说：
+Cobalt 的作用域构成一棵**树**。`push` 创建的是*该*作用域的子节点，解析则沿着父链向上直到根。也就是说：
 
 ```dart
 final tabA = app.push('tab:a');
@@ -87,44 +87,44 @@ final tabB = app.push('tab:b');   // 是兄弟，而不是压在 tabA 上面
 - 释放按**创建顺序**倒序进行，而不是按声明顺序。如果你原来的 teardown 依赖字段的声明顺序，它本来就是脆弱的。
 - 谁创建作用域，谁负责释放。不存在环境中隐含的"当前作用域"。
 
-### Alloy 没有的东西
+### Cobalt 没有的东西
 
 在决定迁移之前请先知道这些：
 
-- **`registerFactoryParam<T, P1, P2>`** —— Alloy 的 `registerParamFactory<T, P>` 只接受一个参数，
+- **`registerFactoryParam<T, P1, P2>`** —— Cobalt 的 `registerParamFactory<T, P>` 只接受一个参数，
   多个参数合并成一个 record。请用**具名**形式 `({int id, String title})`：它在调用处和工厂里都保留
   参数名，位置式 record 做不到。只有容器无法知道的值才进 record —— 依赖仍从 resolver 取，
   所以 record 通常比它替换掉的参数列表更短。在 Code-Gen Mode 下这些都不用手写：给参数加上
-  `@AlloyParam`，生成器会写出 record 类型、工厂和注册。
+  `@CobaltParam`，生成器会写出 record 类型、工厂和注册。
 - **`registerFactoryAsync`、`registerLazySingletonAsync`** —— 异步构造属于 `registerAsyncSingleton`，
   它参与第一阶段，因此没有按注册项的惰性异步构建，也没有 `getAsync`。推迟工作的是生命周期：把昂贵的东西
-  放进子作用域，在进入该功能时压入它，`AlloyScopeWidget` 会在其 `init()` 运行期间显示 `loading`。
+  放进子作用域，在进入该功能时压入它，`CobaltScopeWidget` 会在其 `init()` 运行期间显示 `loading`。
   未覆盖的情形是：某个昂贵对象必须与应用同寿，却只有少数界面需要它。
 - **`resetLazySingletons`** —— 请改为释放作用域。在活着的持有者脚下重置实例，正是作用域要防止的那类 bug。
-- **全局实例。** 没有 `GetIt.I`。作用域要么被传递、要么被注入、要么通过 `context.alloy<T>()` 从 widget 树
+- **全局实例。** 没有 `GetIt.I`。作用域要么被传递、要么被注入、要么通过 `context.cobalt<T>()` 从 widget 树
   里读取。这是有意为之：正是那个全局变量让 get_it 的图无法并行测试。
 
-## injectable → Alloy
+## injectable → Cobalt
 
 ### 注解
 
-| injectable | Alloy |
+| injectable | Cobalt |
 |---|---|
-| `@injectable` | `@alloyTransient` —— 每次解析都是新实例 |
-| `@singleton` | `@alloySingleton` —— eager，在容器装配时构建 |
-| `@lazySingleton` | `@alloyInject` —— 默认值，也是你大多数时候想要的 |
-| `@Injectable(as: Foo)` | `@AlloyInject(exposeAs: Foo)` |
+| `@injectable` | `@cobaltTransient` —— 每次解析都是新实例 |
+| `@singleton` | `@cobaltSingleton` —— eager，在容器装配时构建 |
+| `@lazySingleton` | `@cobaltInject` —— 默认值，也是你大多数时候想要的 |
+| `@Injectable(as: Foo)` | `@CobaltInject(exposeAs: Foo)` |
 | `@Named('a')` | `@Named('a')` |
-| `@Environment(Environment.dev)` | `@AlloyEnvironment.dev` —— 需要多个时重复该注解 |
-| `@preResolve` | `@AlloyInit()` |
+| `@Environment(Environment.dev)` | `@CobaltEnvironment.dev` —— 需要多个时重复该注解 |
+| `@preResolve` | `@CobaltInit()` |
 | `@disposeMethod` | `implements Disposable` / `AsyncDisposable` |
-| `@factoryMethod` | 第一个公开的生成式构造函数；若需要的不是它，则用 `@AlloyModule` 成员 |
-| `@factoryParam` | 构造函数参数上的 `@AlloyParam` |
-| `@InjectableInit()` + `configureDependencies()` | `@AlloyScopeRoot()` + 生成的 `$startAlloy()` |
+| `@factoryMethod` | 第一个公开的生成式构造函数；若需要的不是它，则用 `@CobaltModule` 成员 |
+| `@factoryParam` | 构造函数参数上的 `@CobaltParam` |
+| `@InjectableInit()` + `configureDependencies()` | `@CobaltScopeRoot()` + 生成的 `$startCobalt()` |
 
 ### 形态发生变化的部分
 
-**`@module` 变成 `@AlloyModule`，形态几乎不变。** 依然是一个类，其成员提供你并未编写的类型：
+**`@module` 变成 `@CobaltModule`，形态几乎不变。** 依然是一个类，其成员提供你并未编写的类型：
 
 ```dart
 // injectable
@@ -134,28 +134,28 @@ abstract class AppModule {
   Dio get dio => Dio();
 }
 
-// Alloy
-@alloyModule
+// Cobalt
+@cobaltModule
 class AppModule {
   const AppModule();
 
-  @alloyInject
+  @cobaltInject
   Dio get dio => Dio();
 }
 ```
 
-三点不同。该类是**带 `const` 构造函数的具体类**而非抽象类，因为 Alloy 在 `const AppModule()` 上调用
+三点不同。该类是**带 `const` 构造函数的具体类**而非抽象类，因为 Cobalt 在 `const AppModule()` 上调用
 成员，而不是生成子类。**抽象成员会被拒绝**：injectable 用它表示「用类自己的构造函数来构建」，而这正是
-`@AlloyInject` 已有的含义，绑定到接口则是 `exposeAs`。异步只由 `Future<T>` 标记，没有 `@preResolve`。
+`@CobaltInject` 已有的含义，绑定到接口则是 `exposeAs`。异步只由 `Future<T>` 标记，没有 `@preResolve`。
 
 **`dispose:` 取代外来类型的 `@disposeMethod`。** 你自己的类实现 `Disposable`；`Dio` 做不到，
-因此由注册来说明如何关闭：`@AlloyInject(dispose: closeClient)`。
+因此由注册来说明如何关闭：`@CobaltInject(dispose: closeClient)`。
 
-**`@Order` 消失了。** injectable 要你声明顺序；Alloy 自己算。注册由编译期拓扑排序决定顺序，其中属性注入
+**`@Order` 消失了。** injectable 要你声明顺序；Cobalt 自己算。注册由编译期拓扑排序决定顺序，其中属性注入
 的字段也算依赖边；出现环时构建失败并指出环本身，而不是一路递归到栈溢出。
 
-**泛型类会被拒绝。** `@AlloyInject class Cache<T>` 是构建错误，因为没有任何信息告诉生成器该注册哪些具体化。
-请注解一个具体子类型，或者暴露一个：`@AlloyInject(exposeAs: Cache<Note>)`。泛型*依赖*则完全正常——
+**泛型类会被拒绝。** `@CobaltInject class Cache<T>` 是构建错误，因为没有任何信息告诉生成器该注册哪些具体化。
+请注解一个具体子类型，或者暴露一个：`@CobaltInject(exposeAs: Cache<Note>)`。泛型*依赖*则完全正常——
 `Repository<User>` 和 `Repository<Order>` 是两个独立的注册。
 
 ### 你得到的东西
@@ -176,7 +176,7 @@ class NotesCubit extends Cubit<NotesState> {
 }
 
 // 之后
-@alloyTransient
+@cobaltTransient
 class NotesCubit extends Cubit<NotesState> with _$NotesCubit {
   NotesCubit() : super(const NotesState());
 
@@ -194,21 +194,21 @@ mixin 会生成在类的旁边，并在构造完成后立即填充这些字段�
 **真正的释放。** 作用域拥有它创建的东西，并按创建的相反顺序拆解它们。登出变成
 `await sessionScope.dispose()`——不需要在任何地方监听会话，也不需要把 `reset()` 硬塞进领域接口。
 
-## flutter_bloc 与 provider → Alloy
+## flutter_bloc 与 provider → Cobalt
 
 两者都不是要整体替换的竞品，而且方向不同。
 
-**`provider` 正是 `AlloyScopeProvider` 已经在做的事。** 如果你只用它把容器往控件树下传递 —— 手写
-DI 做的就是这件事 —— 这种用法会消失：`AlloyAppScope` 发布根作用域，`context.alloy<T>()` 读取它。
-如果你用 `ChangeNotifierProvider` 给某个子树一个有生命周期的对象，那就是 `AlloyScopeWidget`，
+**`provider` 正是 `CobaltScopeProvider` 已经在做的事。** 如果你只用它把容器往控件树下传递 —— 手写
+DI 做的就是这件事 —— 这种用法会消失：`CobaltAppScope` 发布根作用域，`context.cobalt<T>()` 读取它。
+如果你用 `ChangeNotifierProvider` 给某个子树一个有生命周期的对象，那就是 `CobaltScopeWidget`，
 生命周期归作用域管，而不再是控件的手工记账。
 
-**`flutter_bloc` 完全不会被替换。** bloc 由 Alloy 构建，仍然由 `BlocBuilder` 渲染。在原本创建它
+**`flutter_bloc` 完全不会被替换。** bloc 由 Cobalt 构建，仍然由 `BlocBuilder` 渲染。在原本创建它
 的地方改为解析：
 
 ```dart
 BlocProvider.value(
-  value: context.alloy<CounterCubit>(),
+  value: context.cobalt<CounterCubit>(),
   child: const CounterView(),
 )
 ```
@@ -217,26 +217,26 @@ BlocProvider.value(
 `Future<void> close()` 关闭 —— 两者都不是。每个类桥接一次即可：
 
 ```dart
-class CounterCubit extends Cubit<int> with AlloyBloc {}
+class CounterCubit extends Cubit<int> with CobaltBloc {}
 ```
 
-这个 mixin 就是 [`alloy_bloc`](https://pub.dev/packages/alloy_bloc)，整个包就是为了这一句话而存在；
+这个 mixin 就是 [`cobalt_bloc`](https://pub.dev/packages/cobalt_bloc)，整个包就是为了这一句话而存在；
 手写 `implements AsyncDisposable` 和 `Future<void> dispose() => close();` 效果相同。对于无法混入的
-bloc，改为指定函数：`@AlloyInject(dispose: closeBloc)`。另外要用 `BlocProvider.value` 而不是
+bloc，改为指定函数：`@CobaltInject(dispose: closeBloc)`。另外要用 `BlocProvider.value` 而不是
 `BlocProvider(create: ...)`——后者会关闭交给它的对象，而所有权在作用域手里。
 
 `ChangeNotifier` 需要的更少：它的 `dispose` 签名本来就匹配，所以 `implements Disposable` 就是全部
 改动。漏掉其中任何一个，对象都会被构建、被使用，然后永远不会关闭，而且悄无声息。完整对照表见
-[`alloy_flutter` README](packages/alloy_flutter/README.md)。
+[`cobalt_flutter` README](packages/cobalt_flutter/README.md)。
 
 ## 一份可照做的顺序
 
-1. 添加 `alloy` 和 `alloy_annotations`；原有容器原地不动。
-2. 写一个根 `AlloyScopeBuilder`，放进两三个没有任何东西依赖的叶子服务。在 `main` 中与旧容器并排启动它。
+1. 添加 `cobalt` 和 `cobalt_annotations`；原有容器原地不动。
+2. 写一个根 `CobaltScopeBuilder`，放进两三个没有任何东西依赖的叶子服务。在 `main` 中与旧容器并排启动它。
 3. 搭桥：把这些实例注册回旧容器，让现有调用点继续工作。
 4. 迁移这些叶子的消费者。每迁一个，桥上就少一行。
 5. 向内重复。这座桥会单调缩短——如果它不再缩短，剩下的那些边正在告诉你一些关于设计的事。
-6. 当桥空了，删掉旧容器，把应用切换到 `AlloyAppScope`。
-7. 到这时才考虑代码生成：加入 `alloy_generator`，一次一个文件地把手写注册换成注解。
+6. 当桥空了，删掉旧容器，把应用切换到 `CobaltAppScope`。
+7. 到这时才考虑代码生成：加入 `cobalt_generator`，一次一个文件地把手写注册换成注解。
 
 第 7 步排在最后是有意的。生成只是运行时之上的便利，而那套运行时你应该早已信任。

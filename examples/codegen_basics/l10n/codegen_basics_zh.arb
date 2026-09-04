@@ -1,7 +1,7 @@
 {
   "@@locale": "zh",
 
-  "appTitle": "Alloy 代码生成基础",
+  "appTitle": "Cobalt 代码生成基础",
 
   "environment": "运行环境：{name}",
   "@environment": { "placeholders": { "name": { "type": "String" } } },

@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/core/app_config.dart';
@@ -13,10 +13,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = NotesL10n.of(context);
-    final config = context.alloy<AppConfig>();
-    final database = context.alloy<NoteDatabase>();
-    final index = context.alloy<SearchIndex>();
-    final telemetry = context.alloy<Telemetry>();
+    final config = context.cobalt<AppConfig>();
+    final database = context.cobalt<NoteDatabase>();
+    final index = context.cobalt<SearchIndex>();
+    final telemetry = context.cobalt<Telemetry>();
 
     return Scaffold(
       appBar: AppBar(
@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
             key: const Key('restart-graph'),
             tooltip: l10n.restartGraph,
             icon: const Icon(Icons.restart_alt),
-            onPressed: () => AlloyAppScope.of(context).restart(),
+            onPressed: () => CobaltAppScope.of(context).restart(),
           ),
         ],
       ),
@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           _SectionTitle(
             l10n.phaseZero,
-            note: l10n.phaseZeroNote(context.alloyScope.name),
+            note: l10n.phaseZeroNote(context.cobaltScope.name),
           ),
           // The step names are identifiers — they are how you find the code
           // that ran — so they read the same in every language.

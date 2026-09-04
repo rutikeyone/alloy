@@ -7,21 +7,21 @@ version solving fails.
 ## Order
 
 ```
-1. alloy_annotations          (depends on nothing of ours)
-2. alloy                      (alloy_annotations)
-3. alloy_analyzer             (alloy, alloy_annotations)
-   alloy_flutter              (alloy)
-   alloy_logger               (alloy)
-   alloy_logging              (alloy)
-   alloy_talker               (alloy)
-   alloy_test                 (alloy)
-   alloy_bloc                 (alloy)
-4. alloy_generator            (alloy_analyzer, alloy_annotations)
-   alloy_lint                 (alloy_analyzer)
-   alloy_go_router            (alloy_flutter)
-   alloy_inspector            (alloy_flutter)
-   alloy_test_flutter         (alloy_flutter)
-5. alloy_talker_flutter       (alloy_inspector, alloy_talker)
+1. cobalt_annotations          (depends on nothing of ours)
+2. cobalt                      (cobalt_annotations)
+3. cobalt_analyzer             (cobalt, cobalt_annotations)
+   cobalt_flutter              (cobalt)
+   cobalt_logger               (cobalt)
+   cobalt_logging              (cobalt)
+   cobalt_talker               (cobalt)
+   cobalt_test                 (cobalt)
+   cobalt_bloc                 (cobalt)
+4. cobalt_generator            (cobalt_analyzer, cobalt_annotations)
+   cobalt_lint                 (cobalt_analyzer)
+   cobalt_go_router            (cobalt_flutter)
+   cobalt_inspector            (cobalt_flutter)
+   cobalt_test_flutter         (cobalt_flutter)
+5. cobalt_talker_flutter       (cobalt_inspector, cobalt_talker)
 ```
 
 Steps within a numbered group are independent of each other. Between groups,
@@ -32,7 +32,7 @@ wait for the previous group to appear on pub.dev — the index is not instant.
 - [ ] Working copy is under git and clean. Without it `pub publish` ignores
       `.gitignore` and puts `build/` — tens of megabytes — into the archive.
 - [ ] `dart pub publish --dry-run` in every package. Expect **0 warnings**
-      everywhere except `alloy_lint`, which reports one for `lib/main.dart`;
+      everywhere except `cobalt_lint`, which reports one for `lib/main.dart`;
       that name is required by the plugin API and `riverpod_lint` carries the
       same warning.
 - [ ] Archives are kilobytes, not megabytes. Anything larger means the previous
@@ -49,21 +49,21 @@ wait for the previous group to appear on pub.dev — the index is not instant.
       authoritative: if a translation is stale, fix it or say so in it.
 - [ ] Code in both guides still compiles against the API it describes. It is the
       document a new reader copies from, and the two defects this repository has
-      already shipped in prose — `AlloyInspectorScreen` without its required
-      `scope:`, `AlloyLoggerSink` called positionally — were both in example
+      already shipped in prose — `CobaltInspectorScreen` without its required
+      `scope:`, `CobaltLoggerSink` called positionally — were both in example
       snippets, which no compiler reads. Check the API of anything you changed
       this release.
-- [ ] After publishing, put the plugin back where it belongs. `alloy_lint` is
+- [ ] After publishing, put the plugin back where it belongs. `cobalt_lint` is
       enabled from `analysis_options.plugin.yaml` rather than from
       `analysis_options.yaml`, in the repository root and in
       `compat/external_consumer`, because the analysis server resolves a
       synthetic plugin package against pub.dev and that fails while ours are
       unpublished. Once they are not, delete both `*.plugin.yaml`, put a plain
-      `plugins: alloy_lint: ^x.y.z` in each `analysis_options.yaml`, and drop
+      `plugins: cobalt_lint: ^x.y.z` in each `analysis_options.yaml`, and drop
       the `dependency_overrides`. Only then does the stand prove the ordinary
       installation, which today cannot be checked at all.
 - [ ] **Shipped strings** translated too, which is a different job from the
-      documents above: `packages/alloy_inspector/l10n/*.arb` and the examples'
+      documents above: `packages/cobalt_inspector/l10n/*.arb` and the examples'
       — `gallery`, `notes_app`, `flow_scopes`, `graph_events` and
       `codegen_basics` each carry their own. A test in each package fails when a key is
       missing from a translation, so a *gap* cannot slip through — but a key
@@ -80,10 +80,10 @@ constraint between them (`^0.1.0`) is deliberately tight.
 
 Lockstep is the whole policy, including the awkward cases:
 
-- **A breaking change anywhere majors everything.** `alloy_talker` gets a new
+- **A breaking change anywhere majors everything.** `cobalt_talker` gets a new
   major even if not one line of it changed. The cost is a meaningless version
-  bump; the alternative cost is a user resolving `alloy 2.x` against
-  `alloy_talker 1.x` and reading a generator error that names neither.
+  bump; the alternative cost is a user resolving `cobalt 2.x` against
+  `cobalt_talker 1.x` and reading a generator error that names neither.
 - **A fix in one package still ships as a patch for all fifteen.** Publishing a
   subset is what lets the set drift.
 - **The dependency constraint between our own packages stays exact-major**
@@ -123,7 +123,7 @@ all do. So the constraint does not permit a span, it selects a row:
 | everywhere else | 12.1.0 | 0.14.8 | 0.3.14 | 0.2.5 | 3.1.8 |
 
 The three toolchain packages therefore declare `analyzer: ">=10.0.1 <13.0.0"`
-and `alloy_generator` declares `dart_style: ">=3.1.6 <3.1.9"` — two rows, both
+and `cobalt_generator` declares `dart_style: ">=3.1.6 <3.1.9"` — two rows, both
 tested, which is the same shape `injectable_generator` uses and the reason it
 works on 3.38 while we did not.
 
@@ -146,9 +146,9 @@ Two things worth knowing about the row that were measured rather than assumed:
   ever asked to emit anything. Only `*.g.dart` is compared: `flutter gen-l10n`
   also writes into `lib/`, and its output differs by a blank line between
   Flutter releases, which is Flutter disagreeing with itself.
-- **Only `alloy_lint` ever touched an analyzer-version-specific API**, in
-  `registration_index.dart`. `alloy_analyzer` reads the element model, which
-  does not change across this range, and `alloy_generator` does not import the
+- **Only `cobalt_lint` ever touched an analyzer-version-specific API**, in
+  `registration_index.dart`. `cobalt_analyzer` reads the element model, which
+  does not change across this range, and `cobalt_generator` does not import the
   analyzer at all.
 
 `tool/floor_check.sh` proves the floor. It copies each member out of the
@@ -171,7 +171,7 @@ is why this was settled before the first publish rather than after.
 
 ## After publishing
 
-`alloy_lint` becomes installable the normal way — just the `plugins:` entry.
+`cobalt_lint` becomes installable the normal way — just the `plugins:` entry.
 Until then the analysis server cannot find it, because it resolves plugins from
 pub.dev rather than from the consumer's pubspec, which is why
 `compat/external_consumer/analysis_options.yaml` names local paths. Drop that
@@ -182,15 +182,15 @@ installation path too.
 
 `pana` resolves against pub.dev and strips `dependency_overrides`, so it scores a package only once
 everything it depends on is published. Before the first release that means exactly one package can
-be measured — `alloy_annotations`, whose only dependency is `meta` — and each later one becomes
+be measured — `cobalt_annotations`, whose only dependency is `meta` — and each later one becomes
 measurable as the one below it lands. Run it as you go rather than saving it for the end:
 
 ```bash
 dart pub global activate pana
-(cd packages/alloy_annotations && dart pub global run pana --no-warning .)
+(cd packages/cobalt_annotations && dart pub global run pana --no-warning .)
 ```
 
-Measured 2026-09-01: `alloy_annotations` scores **160/160**, with all six platforms detected and
+Measured 2026-09-01: `cobalt_annotations` scores **160/160**, with all six platforms detected and
 `is:wasm-ready`, without declaring a `platforms:` key. Two things follow, and both save work:
 declaring platforms by hand buys nothing here and can only contradict what the analysis finds; and
 the documentation criterion is *20% or more* of the public API, not all of it, so chasing complete
@@ -207,7 +207,7 @@ flutter pub upgrade
 ```
 
 Measured 2026-09-01: clean, with 92 packages moved — including `bloc` at its floor of 9.0.0, which
-`alloy_bloc` is the only thing to constrain and which nothing had resolved before.
+`cobalt_bloc` is the only thing to constrain and which nothing had resolved before.
 
 Restore with `pub upgrade`, never `pub get`: `get` honours the existing lockfile and leaves
 `frontend_server_client` downgraded, and that version invokes a `frontend_server.dart.snapshot` Dart
@@ -218,9 +218,9 @@ That same downgraded package is why the test *runner* cannot run at the lower bo
 transitive dev dependency nothing here declares, invisible to consumers, who never run these tests —
 so `dart analyze` is the whole of the check, and it is also the whole of what `pana` scores.
 
-## `alloy` dev-depends on `alloy_test`
+## `cobalt` dev-depends on `cobalt_test`
 
 Its own tests use the helpers, which looks like a cycle and is not: dev dependencies are not
 transitive, so nothing a consumer resolves is affected, and `pub publish --dry-run` is clean. The
-publication order below is unchanged — `alloy` goes out before `alloy_test`, and the dev dependency
+publication order below is unchanged — `cobalt` goes out before `cobalt_test`, and the dev dependency
 plays no part in that.

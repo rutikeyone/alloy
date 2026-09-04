@@ -14,8 +14,8 @@
   <rect width="1200" height="360" rx="20" fill="url(#glow)"/>
 
   <!-- wordmark -->
-  <text x="80" y="150" fill="#EDEFF2" font-size="88" font-weight="700" letter-spacing="-2">Alloy</text>
-  <rect x="82" y="176" width="180" height="3" rx="1.5" fill="url(#rule)"/>
+  <text x="80" y="150" fill="#EDEFF2" font-size="88" font-weight="700" letter-spacing="-2">Cobalt</text>
+  <rect x="82" y="176" width="216" height="3" rx="1.5" fill="url(#rule)"/>
 
   <text x="80" y="228" fill="#A3A9B4" font-size="27" font-weight="500">Dependency injection for Dart and Flutter</text>
   <text x="80" y="272" fill="#5FD4C8" font-size="21" font-weight="600">Scopes that own what they build</text>

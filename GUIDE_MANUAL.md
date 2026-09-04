@@ -4,7 +4,7 @@
 
 # Manual Mode
 
-Alloy without code generation: no annotations, no `build_runner`, nothing generated and nothing to
+Cobalt without code generation: no annotations, no `build_runner`, nothing generated and nothing to
 commit. You write the registrations, and the runtime is the same one the generator targets.
 
 This is the whole framework, not a reduced version of it. Everything the generator emits is written
@@ -48,7 +48,7 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  alloy: ^0.1.0
+  cobalt: ^0.1.0
 ```
 
 A Flutter app adds the bindings, which re-export the whole runtime, so you never import both:
@@ -59,23 +59,23 @@ environment:
   flutter: ">=3.38.0"
 
 dependencies:
-  alloy: ^0.1.0
-  alloy_flutter: ^0.1.0
+  cobalt: ^0.1.0
+  cobalt_flutter: ^0.1.0
 
 dev_dependencies:
-  alloy_test: ^0.1.0
-  alloy_test_flutter: ^0.1.0
+  cobalt_test: ^0.1.0
+  cobalt_test_flutter: ^0.1.0
 ```
 
 **Nothing here is a dead end.** The floor is Dart `^3.10.0` / Flutter `>=3.38.0`, the same one
 [GUIDE_CODEGEN.md](GUIDE_CODEGEN.md) asks for, so adding the generator later is a choice rather
 than an upgrade — see [§15](#15-when-to-add-the-generator) for how the two compose.
 
-Optional, and only if you want them: `alloy_go_router` for a scope per navigation flow, `alloy_bloc`
-so a scope can close a bloc, `alloy_inspector` to see the graph while the app runs, and one of
-`alloy_talker` / `alloy_logging` / `alloy_logger` for observability.
+Optional, and only if you want them: `cobalt_go_router` for a scope per navigation flow, `cobalt_bloc`
+so a scope can close a bloc, `cobalt_inspector` to see the graph while the app runs, and one of
+`cobalt_talker` / `cobalt_logging` / `cobalt_logger` for observability.
 
-Nothing here needs `alloy_generator`, `build_runner` or `alloy_lint`. Those belong to the other mode.
+Nothing here needs `cobalt_generator`, `build_runner` or `cobalt_lint`. Those belong to the other mode.
 
 ---
 
@@ -84,7 +84,7 @@ Nothing here needs `alloy_generator`, `build_runner` or `alloy_lint`. Those belo
 Three pieces: the classes, a factory per class, and a builder that registers them.
 
 ```dart
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
 class Clock {
   DateTime now() => DateTime.now();
@@ -105,29 +105,29 @@ state, and be shared between every start of the graph — a closure would captur
 scope where you wrote it, which is the bug that makes a second start reuse the first one's objects.
 
 ```dart
-class ClockFactory implements AlloyFactory<Clock> {
+class ClockFactory implements CobaltFactory<Clock> {
   const ClockFactory();
 
   @override
-  Clock create(AlloyResolver resolver) => Clock();
+  Clock create(CobaltResolver resolver) => Clock();
 }
 
-class EventLogFactory implements AlloyFactory<EventLog> {
+class EventLogFactory implements CobaltFactory<EventLog> {
   const EventLogFactory();
 
   @override
-  EventLog create(AlloyResolver resolver) => EventLog();
+  EventLog create(CobaltResolver resolver) => EventLog();
 }
 ```
 
 Dependencies are resolved inside `create`, from the resolver you are handed:
 
 ```dart
-class ReportFactory implements AlloyFactory<Report> {
+class ReportFactory implements CobaltFactory<Report> {
   const ReportFactory();
 
   @override
-  Report create(AlloyResolver resolver) =>
+  Report create(CobaltResolver resolver) =>
       Report(resolver.get<Clock>(), resolver.get<EventLog>());
 }
 ```
@@ -136,11 +136,11 @@ A **scope builder** says what a scope holds. It only registers; it never resolve
 `build` would read a graph that is still being described.
 
 ```dart
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope
       ..registerLazySingleton<Clock>(const ClockFactory())
       ..registerLazySingleton<EventLog>(const EventLogFactory())
@@ -149,7 +149,7 @@ class AppScope implements AlloyScopeBuilder {
 }
 
 Future<void> main() async {
-  final app = await AlloyApplication.start(root: const AppScope(), rootName: 'app');
+  final app = await CobaltApplication.start(root: const AppScope(), rootName: 'app');
 
   app.get<EventLog>().add('started at ${app.get<Clock>().now()}');
 
@@ -160,7 +160,7 @@ Future<void> main() async {
 Registration order does not matter. `Report` may be registered before `Clock`: nothing is built
 during `build`, and by the time anything resolves, every registration exists.
 
-There is no global container. `AlloyApplication.start` hands you the root and nothing is ambient, so
+There is no global container. `CobaltApplication.start` hands you the root and nothing is ambient, so
 two graphs in one process are unrelated and tests can run in parallel.
 
 `examples/manual_mode` is this, complete and runnable:
@@ -232,7 +232,7 @@ is what tells you whether an override will be seen — see [§13](#13-tests).
 
 ## 4. Starting a Flutter app
 
-`AlloyAppScope` owns the root: it builds the graph, publishes it to the tree, disposes it on unmount,
+`CobaltAppScope` owns the root: it builds the graph, publishes it to the tree, disposes it on unmount,
 and turns a failed start into a screen with a retry rather than an app that dies before its first
 frame.
 
@@ -244,7 +244,7 @@ a second `MaterialApp`:
 void main() => runApp(
   MaterialApp(
     theme: appTheme,
-    builder: AlloyAppScope.builder(
+    builder: CobaltAppScope.builder(
       root: const AppScope(),
       bootstrap: () => [const BindPlatform()],
       rootName: 'app',
@@ -259,13 +259,13 @@ void main() => runApp(
 `bootstrap` is a function rather than a list on purpose: steps hold resources, and a restart has to
 get new ones. A stored list would quietly hand the same objects to the second start.
 
-`AlloyAppScope.of(context).restart()` rebuilds the graph — the same call retries a failed start.
+`CobaltAppScope.of(context).restart()` rebuilds the graph — the same call retries a failed start.
 
 If your app already has a `builder`, compose them yourself rather than expecting the framework to
 merge two:
 
 ```dart
-builder: (context, child) => AlloyAppScope(
+builder: (context, child) => CobaltAppScope(
   root: const AppScope(),
   child: myWrapper(child!),
 ),
@@ -276,10 +276,10 @@ builder: (context, child) => AlloyAppScope(
 ## 5. Reading from the graph in a widget
 
 ```dart
-final repository = context.alloy<Repository>();
-final formatters = context.alloyAll<NoteFormatter>();
-final counter = context.alloyWithParam<Counter, String>('alice');
-final scope = context.alloyScope;
+final repository = context.cobalt<Repository>();
+final formatters = context.cobaltAll<NoteFormatter>();
+final counter = context.cobaltWithParam<Counter, String>('alice');
+final scope = context.cobaltScope;
 ```
 
 Each resolves from the **nearest** scope above the widget and walks up from there, so a registration
@@ -287,7 +287,7 @@ in a flow or session scope shadows the root one for everything inside it.
 
 One thing to know before it bites: `Navigator.push` builds the new route from the navigator's
 context, not from the widget that pushed it. A screen that resolves fine when mounted in place will
-throw `AlloyNoScopeError` when the same widget is pushed, if the provider it was reading lives
+throw `CobaltNoScopeError` when the same widget is pushed, if the provider it was reading lives
 *inside* the pushing screen. Pass the scope explicitly in that case, or push below the provider.
 
 ---
@@ -303,8 +303,8 @@ it takes everything below it with it.
 class SessionManager {
   SessionManager(this._root);
 
-  final AlloyScope _root;
-  AlloyScope? _session;
+  final CobaltScope _root;
+  CobaltScope? _session;
 
   Future<void> signIn(User user) async {
     _session = _root.push('session:${user.id}')
@@ -330,7 +330,7 @@ change the call site.
 ### A screen
 
 ```dart
-AlloyScopeWidget(
+CobaltScopeWidget(
   name: 'editor',
   builder: const EditorScope(),
   child: const EditorBody(),
@@ -342,10 +342,10 @@ after `init()` completes, so even a fully synchronous graph renders one `loading
 
 ### A navigation flow
 
-With `alloy_go_router`, the lifetime is the flow rather than a widget you remembered to place:
+With `cobalt_go_router`, the lifetime is the flow rather than a widget you remembered to place:
 
 ```dart
-class OrderFlowRoute extends AlloyShellRoute {
+class OrderFlowRoute extends CobaltShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',
@@ -366,13 +366,13 @@ class OrderFlowRoute extends AlloyShellRoute {
   static String _orderId(GoRouterState state) => state.pathParameters['orderId']!;
 }
 
-class OrderFlowScope implements AlloyScopeBuilder {
+class OrderFlowScope implements CobaltScopeBuilder {
   const OrderFlowScope(this.orderId);
 
   final String orderId;
 
   @override
-  void build(AlloyScope scope) =>
+  void build(CobaltScope scope) =>
       scope.registerLazySingleton<OrderDraft>(OrderDraftFactory(orderId));
 }
 ```
@@ -383,11 +383,11 @@ configuration is fine; what it must not do is capture the surrounding graph.
 Navigating between `summary` and `payment` keeps one scope. Leaving the flow disposes it. `identity`
 answers the one question the router cannot: whether `/orders/1` and `/orders/2` are the same flow.
 
-Build the route table **once**, alongside the router. A new `AlloyShellRoute` instance is a different
+Build the route table **once**, alongside the router. A new `CobaltShellRoute` instance is a different
 flow as far as go_router is concerned, so rebuilding the list every frame would rebuild the scope
 every frame.
 
-Tabs work the same way with `AlloyStatefulShellRoute` and `AlloyStatefulShellBranch`, with one
+Tabs work the same way with `CobaltStatefulShellRoute` and `CobaltStatefulShellBranch`, with one
 behaviour worth stating plainly: a branch is kept **alive**, not kept **visible**. go_router
 preserves branch navigators off-screen, so a tab's scope lives until the shell closes, not until you
 switch away.
@@ -443,10 +443,10 @@ because Dart matches interfaces by name and not by shape. Say so:
 class Filters extends ChangeNotifier implements Disposable {}
 ```
 
-For blocs, `alloy_bloc` is the one line:
+For blocs, `cobalt_bloc` is the one line:
 
 ```dart
-class CounterCubit extends Cubit<int> with AlloyBloc {
+class CounterCubit extends Cubit<int> with CobaltBloc {
   CounterCubit() : super(0);
 }
 ```
@@ -461,7 +461,7 @@ object on the next resolve.
 
 It is best-effort by design. A step that throws is recorded and the rest still run; the whole tree
 has one deadline; and the scope always reaches `disposed`. What did not finish is listed in
-`AlloyDisposeError` — `failures`, `timeouts`, `hasTimeout` — instead of the first failure hiding the
+`CobaltDisposeError` — `failures`, `timeouts`, `hasTimeout` — instead of the first failure hiding the
 other nine.
 
 `adopt` ties an object to a scope's life without it being a dependency — useful for a subscription or
@@ -482,7 +482,7 @@ anything the graph itself needs. Steps run strictly in the order you list them, 
 nothing, because there is nothing to inject from yet.
 
 ```dart
-class BindPlatform implements AlloyBootstrapStep {
+class BindPlatform implements CobaltBootstrapStep {
   const BindPlatform();
 
   @override
@@ -492,7 +492,7 @@ class BindPlatform implements AlloyBootstrapStep {
   Future<void> run() async => WidgetsFlutterBinding.ensureInitialized();
 }
 
-final app = await AlloyApplication.start(
+final app = await CobaltApplication.start(
   root: const AppScope(),
   bootstrap: const [BindPlatform(), LoadRemoteConfig()],
   rootName: 'app',
@@ -506,11 +506,11 @@ released in reverse before the error is rethrown, since there is no scope yet to
 **Phase 1 — async singletons.** Inside the container, built in dependency order:
 
 ```dart
-class DatabaseFactory implements AlloyAsyncFactory<Database> {
+class DatabaseFactory implements CobaltAsyncFactory<Database> {
   const DatabaseFactory();
 
   @override
-  Future<Database> create(AlloyResolver resolver) async {
+  Future<Database> create(CobaltResolver resolver) async {
     final database = Database(resolver.get<Config>());
     await database.open();
     return database;
@@ -521,20 +521,20 @@ scope
   ..registerAsyncSingleton<Database>(const DatabaseFactory())
   ..registerAsyncSingleton<SearchIndex>(
     const SearchIndexFactory(),
-    dependsOn: {AlloyKey(Database)},
+    dependsOn: {CobaltKey(Database)},
   );
 ```
 
 `dependsOn` is an ordering edge, not an injection — you still resolve `Database` inside
 `SearchIndexFactory.create`. Independent initializers on the same level run together through
-`Future.wait`; only what actually depends waits. A cycle throws `AlloyCycleError` naming the path
+`Future.wait`; only what actually depends waits. A cycle throws `CobaltCycleError` naming the path
 rather than hanging.
 
 Naming a key that is registered but **not** async is an error, not a no-op: there is no build to
 wait for. Naming one that is async in an **ancestor** scope is allowed and ignored — the ancestor ran
 its own phase 1 before this scope existed.
 
-`AlloyApplication.start` returns when both phases are done, so there is no `allReady()` to call and no
+`CobaltApplication.start` returns when both phases are done, so there is no `allReady()` to call and no
 "registered but not ready" state to reason about.
 
 Async registrations have to exist before `init()` runs. It takes the ones it finds when it starts and
@@ -548,11 +548,11 @@ something that quietly never gets built. Push a child scope and initialize that 
 Half of an object comes from the graph and half from whoever is building it:
 
 ```dart
-class CounterFactory implements AlloyParamFactory<Counter, String> {
+class CounterFactory implements CobaltParamFactory<Counter, String> {
   const CounterFactory();
 
   @override
-  Counter create(AlloyResolver resolver, String sessionId) =>
+  Counter create(CobaltResolver resolver, String sessionId) =>
       Counter(resolver.get<CounterStorage>(), sessionId);
 }
 
@@ -567,11 +567,11 @@ reads:
 ```dart
 typedef EditorArgs = ({int id, String title, bool draft});
 
-class EditorFactory implements AlloyParamFactory<Editor, EditorArgs> {
+class EditorFactory implements CobaltParamFactory<Editor, EditorArgs> {
   const EditorFactory();
 
   @override
-  Editor create(AlloyResolver resolver, EditorArgs args) =>
+  Editor create(CobaltResolver resolver, EditorArgs args) =>
       Editor(resolver.get<Notes>(), id: args.id, title: args.title, draft: args.draft);
 }
 
@@ -579,10 +579,10 @@ scope.getWithParam<Editor, EditorArgs>((id: 7, title: 'draft', draft: true));
 ```
 
 The parameter type is checked at the call, not inside your factory: passing the wrong type throws
-`AlloyParamTypeError` naming the key, the expected type and what arrived. A legal subtype is
+`CobaltParamTypeError` naming the key, the expected type and what arrived. A legal subtype is
 accepted, because what is checked is the value rather than the type literal.
 
-Resolving a parameterized registration with plain `get<T>()` throws `AlloyParamRequiredError` — the
+Resolving a parameterized registration with plain `get<T>()` throws `CobaltParamRequiredError` — the
 argument has nowhere to come from.
 
 ---
@@ -590,11 +590,11 @@ argument has nowhere to come from.
 ## 10. Optional dependencies
 
 ```dart
-class ReportFactory implements AlloyFactory<Report> {
+class ReportFactory implements CobaltFactory<Report> {
   const ReportFactory();
 
   @override
-  Report create(AlloyResolver resolver) =>
+  Report create(CobaltResolver resolver) =>
       Report(resolver.get<Clock>(), resolver.getOrNull<Telemetry>());
 }
 ```
@@ -611,16 +611,16 @@ into a value that reads as absence.
 Skip this until one build genuinely needs a different implementation than another. Until then your
 graph has exactly one environment and nothing here applies.
 
-`AlloyEnvironment.matches` is ordinary public API, so the choice is an `if`:
+`CobaltEnvironment.matches` is ordinary public API, so the choice is an `if`:
 
 ```dart
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope(this.environment);
 
-  final AlloyEnvironment environment;
+  final CobaltEnvironment environment;
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope.registerLazySingleton<EventLog>(const EventLogFactory());
 
     if (environment.matches(const {'dev', 'test'})) {
@@ -633,7 +633,7 @@ class AppScope implements AlloyScopeBuilder {
 }
 ```
 
-`dev`, `stage`, `prod` and `test` are constants, not a closed set — `AlloyEnvironment('canary')`
+`dev`, `stage`, `prod` and `test` are constants, not a closed set — `CobaltEnvironment('canary')`
 behaves identically. Subclass it and override `matches` to activate several at once, or to match on
 something other than the name.
 
@@ -649,17 +649,17 @@ Observers see scopes appearing, instances being built, startup finishing, teardo
 where the graph is created; every scope pushed below inherits them.
 
 ```dart
-final app = await AlloyApplication.start(
+final app = await CobaltApplication.start(
   root: const AppScope(),
-  observers: [AlloyLogObserver(const AlloyPrintLogSink())],
+  observers: [CobaltLogObserver(const CobaltPrintLogSink())],
 );
 ```
 
-`AlloyPrintLogSink` writes to stdout, which is the right default outside an app;
-`AlloyDeveloperLogSink` (`dart:developer`) is the one for a Flutter app. `push(name, observers: [...])`
+`CobaltPrintLogSink` writes to stdout, which is the right default outside an app;
+`CobaltDeveloperLogSink` (`dart:developer`) is the one for a Flutter app. `push(name, observers: [...])`
 adds more for one subtree.
 
-Callbacks get `AlloyScopeRef` and `AlloyKey` — descriptions, not live objects — and an exception
+Callbacks get `CobaltScopeRef` and `CobaltKey` — descriptions, not live objects — and an exception
 thrown from one is swallowed: watching must not be able to break what it watches. Resolution is not
 reported; a cache hit is the hot path, and what is worth seeing is an instance being *built*.
 
@@ -667,19 +667,19 @@ reported; a cache hit is the hot path, and what is worth seeing is an instance b
 
 | Package | Shape |
 |---|---|
-| `alloy_talker` | an observer, one coloured log type per event family |
-| `alloy_logging` | a sink over dart.dev `logging` |
-| `alloy_logger` | a sink over `logger` |
+| `cobalt_talker` | an observer, one coloured log type per event family |
+| `cobalt_logging` | a sink over dart.dev `logging` |
+| `cobalt_logger` | a sink over `logger` |
 
 Anything else is one callback, so no logger is locked out for want of a package:
 
 ```dart
-AlloyLogObserver(AlloyLogSink.from((r) => myLogger.debug(r.message)))
-AlloyLogObserver(AlloyLogSink.from((r) => gelf.send(r.toStructured())))
+CobaltLogObserver(CobaltLogSink.from((r) => myLogger.debug(r.message)))
+CobaltLogObserver(CobaltLogSink.from((r) => gelf.send(r.toStructured())))
 ```
 
 The record is not just a string: `level`, `scope`, `key`, `error`, `stackTrace` and `kind` are all
-there, and `kind` is a value — `AlloyEventKind.scopeInitFailed` rather than a sentence you would have
+there, and `kind` is a value — `CobaltEventKind.scopeInitFailed` rather than a sentence you would have
 to parse.
 
 ### Crash reports are a different shape
@@ -688,11 +688,11 @@ What makes a report actionable is not the exception; it is what the graph was do
 
 ```dart
 observers: [
-  AlloyErrorObserver(
-    AlloyErrorSink.from((report) => Sentry.captureException(
+  CobaltErrorObserver(
+    CobaltErrorSink.from((report) => Sentry.captureException(
       report.error,
       stackTrace: report.stackTrace,
-      withScope: (scope) => scope.setContexts('alloy', report.toStructured()),
+      withScope: (scope) => scope.setContexts('cobalt', report.toStructured()),
     )),
   ),
 ],
@@ -705,11 +705,11 @@ paid service on every hiccup is how reports stop being read. Lower it with `repo
 ### On screen, while the app runs
 
 ```dart
-final log = AlloyInspectorLog();
+final log = CobaltInspectorLog();
 
 // observers: [log]
 
-AlloyInspectorScreen(log: log, scope: context.alloyScope)
+CobaltInspectorScreen(log: log, scope: context.cobaltScope)
 ```
 
 Three tabs: the live scope tree with each registration's lifetime and who owns it, what has actually
@@ -725,14 +725,14 @@ where a `Future.delayed` in an initializer never completes. **Build the graph in
 whole-graph assertions in a plain `test`.
 
 ```dart
-late AlloyScope scope;
+late CobaltScope scope;
 
 setUp(() async {
-  scope = await alloyTestScope(root: const AppScope());
+  scope = await cobaltTestScope(root: const AppScope());
 });
 ```
 
-`alloyTestScope` and `alloyTestRoot` dispose with the test, which is the part that is easy to leave
+`cobaltTestScope` and `cobaltTestRoot` dispose with the test, which is the part that is easy to leave
 out — and leaving it out leaks into the next test rather than failing.
 
 ### Checking the graph is complete
@@ -753,7 +753,7 @@ A parameterized registration cannot be resolved without a value, so it is report
 `unchecked` rather than skipped in silence — hand it a sample to actually cover it:
 
 ```dart
-await expectGraphResolves(scope, params: {AlloyKey(Counter): 'alice'});
+await expectGraphResolves(scope, params: {CobaltKey(Counter): 'alice'});
 ```
 
 Make this test part of the suite from the first day of a Manual Mode graph. It is what the other mode
@@ -780,7 +780,7 @@ expect(scope.ownerOf<Greeter>(), same(scope.root));   // registered in the root,
 ### Fixtures
 
 ```dart
-final scope = alloyTestRoot()
+final scope = cobaltTestRoot()
   ..registerLazySingleton<Clock>(FnFactory((_) => FixedClock(DateTime(2026))))
   ..registerSingleton<Config>(const Config())
   ..registerAsyncSingleton<Db>(AsyncFnFactory((_) async => Db()))
@@ -809,7 +809,7 @@ expect(recorder.entries, ['cache']);
 
 ### Widget tests
 
-`alloy_test_flutter` carries the two helpers whose obvious spelling is wrong:
+`cobalt_test_flutter` carries the two helpers whose obvious spelling is wrong:
 
 ```dart
 await settle(tester);                    // not pumpAndSettle: it spins forever on a loading indicator
@@ -833,14 +833,14 @@ Each of these was found the hard way, in this repository or in the applications 
 - **A factory that captures instead of resolving.** Read collaborators from the `resolver` handed to
   `create`, not from variables in scope where the factory was written; otherwise a second start
   reuses the first graph's objects.
-- **Resolving inside `AlloyScopeBuilder.build`.** It runs while the scope is still being described.
+- **Resolving inside `CobaltScopeBuilder.build`.** It runs while the scope is still being described.
   Register there; resolve later.
-- **`bootstrap` as a stored list** when you own the root through `AlloyAppScope`. Steps hold
+- **`bootstrap` as a stored list** when you own the root through `CobaltAppScope`. Steps hold
   resources; a restart must get new ones. Pass a function.
 - **`BlocProvider(create:)` for a bloc the scope owns.** Two owners, and the widget wins first.
   `BlocProvider.value`.
 - **A `ChangeNotifier` or `Cubit` registered without saying it is closable.** Built, used, never
-  closed, silently. `implements Disposable`, `with AlloyBloc`, or `dispose:`.
+  closed, silently. `implements Disposable`, `with CobaltBloc`, or `dispose:`.
 - **An old `dart` first on PATH.** It fails quietly and in the wrong place. Check `dart --version`
   before believing a run.
 
@@ -848,16 +848,16 @@ Each of these was found the hard way, in this repository or in the applications 
 
 ## 15. When to add the generator
 
-Nothing here has to be thrown away to do it. The generated container is an `AlloyScopeBuilder` like
+Nothing here has to be thrown away to do it. The generated container is an `CobaltScopeBuilder` like
 the ones above, so it composes with what you already wrote:
 
 ```dart
-class AppScope implements AlloyScopeBuilder {
+class AppScope implements CobaltScopeBuilder {
   const AppScope();
 
   @override
-  void build(AlloyScope scope) {
-    $AlloyRootScope().build(scope);          // what the generator found
+  void build(CobaltScope scope) {
+    $CobaltRootScope().build(scope);          // what the generator found
     scope.registerSingleton<Config>(config); // what it cannot know about
   }
 }

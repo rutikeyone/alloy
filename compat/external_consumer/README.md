@@ -1,7 +1,7 @@
-# alloy_external_consumer
+# cobalt_external_consumer
 
 A compatibility stand, not an example. It exists to answer one question the five
-packages in `examples/` cannot: **does Alloy work for a project that is not a
+packages in `examples/` cannot: **does Cobalt work for a project that is not a
 member of this pub workspace?**
 
 Every example declares `resolution: workspace` and is listed in the root
@@ -16,14 +16,14 @@ application:
 
 | Surface | Where |
 |---|---|
-| `@AlloyScopeRoot` | `lib/src/app_scope.dart` |
-| `@AlloyBootstrap` + release on dispose | `lib/src/bind_platform.dart` |
-| `@AlloyInject(exposeAs:)` | `lib/src/system_clock.dart` |
-| `@AlloyInit` and `@AlloyInit(dependsOn:)` | `lib/src/database.dart`, `lib/src/search_index.dart` |
-| property injection (`alloy_property_injection` + `source_gen\|combining_builder`) | `lib/src/report.dart` |
+| `@CobaltScopeRoot` | `lib/src/app_scope.dart` |
+| `@CobaltBootstrap` + release on dispose | `lib/src/bind_platform.dart` |
+| `@CobaltInject(exposeAs:)` | `lib/src/system_clock.dart` |
+| `@CobaltInit` and `@CobaltInit(dependsOn:)` | `lib/src/database.dart`, `lib/src/search_index.dart` |
+| property injection (`cobalt_property_injection` + `source_gen\|combining_builder`) | `lib/src/report.dart` |
 | generic dependencies | `lib/src/repository.dart` |
 
-`lib/alloy.g.dart` is committed and verified by `git diff --exit-code` in CI,
+`lib/cobalt.g.dart` is committed and verified by `git diff --exit-code` in CI,
 the same way `examples/codegen_basics` is.
 
 ## What it does not prove
@@ -36,8 +36,8 @@ resolution from pub.dev. Only a real publish does that.
 ## Two findings from building it
 
 **1. The builders need nothing special.** All three are `auto_apply: dependents`,
-and `AlloyContainerBuilder` collects IR with a package-scoped
-`findAssets(Glob('lib/**.alloy.json'))`. Declaring `alloy_generator` in
+and `CobaltContainerBuilder` collects IR with a package-scoped
+`findAssets(Glob('lib/**.cobalt.json'))`. Declaring `cobalt_generator` in
 `dev_dependencies` is the whole setup. This worked on the first run.
 
 **2. The lint plugin does not read this package's pubspec.** The analysis server
@@ -46,12 +46,12 @@ against pub.dev; `dependency_overrides` in `pubspec.yaml` are invisible to it.
 Against unpublished packages that fails outright:
 
 ```
-Because plugin_entrypoint depends on alloy_lint any which doesn't exist
-(could not find package alloy_lint at https://pub.dev), version solving failed.
+Because plugin_entrypoint depends on cobalt_lint any which doesn't exist
+(could not find package cobalt_lint at https://pub.dev), version solving failed.
 ```
 
 Hence the `dependency_overrides` block inside `analysis_options.yaml` — the same
-scaffolding the repository root uses. A consumer of a *published* `alloy_lint`
+scaffolding the repository root uses. A consumer of a *published* `cobalt_lint`
 writes only the `plugins:` entry and needs none of it.
 
 ## Running it

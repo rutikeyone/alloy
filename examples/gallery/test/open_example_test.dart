@@ -19,14 +19,14 @@ void main() {
       await tester.pumpWidget(
         galleryHarness(
           // Keyed per entry, so each iteration builds a fresh element rather
-          // than updating the previous one. AlloyAppScope has no
+          // than updating the previous one. CobaltAppScope has no
           // didUpdateWidget — handed a new root in the same slot it keeps the
           // graph it already owns, and the next resolve looks in the wrong one.
           home: Builder(key: ValueKey(entry.id), builder: entry.open!),
         ),
       );
       // Two settles: the host shows its loading frame before the scope is
-      // published, exactly as AlloyAppScope does anywhere else.
+      // published, exactly as CobaltAppScope does anywhere else.
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 

@@ -1,11 +1,11 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/clock.dart';
 import 'package:notes_app/features/notes/data/note_database.dart';
 import 'package:notes_app/features/notes/data/search_index.dart';
 import 'package:notes_app/features/notes/domain/note.dart';
 import 'package:notes_app/features/notes/domain/note_store.dart';
 
-@AlloyInject(exposeAs: NoteStore)
+@CobaltInject(exposeAs: NoteStore)
 class NoteRepository implements NoteStore {
   NoteRepository(this._database, this._index, this._clock);
 

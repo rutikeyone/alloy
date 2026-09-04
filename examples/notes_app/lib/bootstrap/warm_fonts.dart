@@ -1,8 +1,8 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 
-@AlloyBootstrap(order: 10)
-class WarmFonts implements AlloyBootstrapStep {
+@CobaltBootstrap(order: 10)
+class WarmFonts implements CobaltBootstrapStep {
   WarmFonts();
 
   @override

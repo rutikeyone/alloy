@@ -1,6 +1,6 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:notes_app/alloy.g.dart';
+import 'package:notes_app/cobalt.g.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/core/event_log.dart';
 import 'package:notes_app/features/diagnostics/data/telemetry.dart';
@@ -48,21 +48,25 @@ void main() {
       );
     });
 
-    test('the root scope takes its name from @AlloyScopeRoot', () async {
+    test('the root scope takes its name from @CobaltScopeRoot', () async {
       final app = await startNotesGraph();
 
-      expect($alloyRootScopeName, 'app');
+      expect($cobaltRootScopeName, 'app');
       expect(app.name, 'app');
     });
 
     test('a failing step aborts the start and names itself', () async {
       await expectLater(
-        AlloyApplication.start(
-          root: const $AlloyRootScope(environment: AlloyEnvironment.test),
+        CobaltApplication.start(
+          root: const $CobaltRootScope(environment: CobaltEnvironment.test),
           bootstrap: [_ExplodingStep()],
         ),
         throwsA(
-          isA<AlloyBootstrapError>().having((e) => e.step, 'step', 'exploding'),
+          isA<CobaltBootstrapError>().having(
+            (e) => e.step,
+            'step',
+            'exploding',
+          ),
         ),
       );
     });
@@ -97,7 +101,7 @@ void main() {
   });
 
   group('generated async init graph', () {
-    test('every @AlloyInit service is ready when start returns', () async {
+    test('every @CobaltInit service is ready when start returns', () async {
       final app = await startNotesGraph();
 
       expect(app.get<NoteDatabase>().isOpen, isTrue);
@@ -132,18 +136,18 @@ void main() {
     );
 
     test('async services are unavailable before init', () {
-      final scope = AlloyScope.root();
-      const $AlloyRootScope(environment: AlloyEnvironment.test).build(scope);
+      final scope = CobaltScope.root();
+      const $CobaltRootScope(environment: CobaltEnvironment.test).build(scope);
 
       expect(
         () => scope.get<NoteDatabase>(),
-        throwsA(isA<AlloyNotReadyError>()),
+        throwsA(isA<CobaltNotReadyError>()),
       );
     });
   });
 }
 
-class _ExplodingStep implements AlloyBootstrapStep {
+class _ExplodingStep implements CobaltBootstrapStep {
   @override
   String get name => 'exploding';
 

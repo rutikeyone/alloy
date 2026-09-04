@@ -1,5 +1,5 @@
-import 'package:alloy/alloy.dart';
-import 'package:codegen_basics/alloy.g.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:codegen_basics/cobalt.g.dart';
 import 'package:codegen_basics/counter_bloc.dart';
 import 'package:codegen_basics/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,26 +8,26 @@ class LoudTelemetry extends Telemetry {
   LoudTelemetry();
 }
 
-class LoudTelemetryFactory implements AlloyFactory<Telemetry> {
+class LoudTelemetryFactory implements CobaltFactory<Telemetry> {
   const LoudTelemetryFactory();
 
   @override
-  Telemetry create(AlloyResolver resolver) => LoudTelemetry();
+  Telemetry create(CobaltResolver resolver) => LoudTelemetry();
 }
 
-class CounterBlocOverride implements AlloyFactory<CounterBloc> {
+class CounterBlocOverride implements CobaltFactory<CounterBloc> {
   const CounterBlocOverride();
 
   @override
-  CounterBloc create(AlloyResolver resolver) => CounterBloc();
+  CounterBloc create(CobaltResolver resolver) => CounterBloc();
 }
 
 void main() {
-  late AlloyScope app;
+  late CobaltScope app;
 
   setUp(() async {
-    app = await AlloyApplication.start(
-      root: const $AlloyRootScope(),
+    app = await CobaltApplication.start(
+      root: const $CobaltRootScope(),
       rootName: 'app',
     );
   });
@@ -52,7 +52,7 @@ void main() {
   test('the generated mixin injects private late final fields', () {
     final bloc = app.get<CounterBloc>();
 
-    expect(bloc, isA<AlloyInjectable>());
+    expect(bloc, isA<CobaltInjectable>());
     expect(bloc.environment, 'test');
   });
 

@@ -1,6 +1,6 @@
 include: package:lints/recommended.yaml
 
-# The alloy_lint plugin is enabled from `analysis_options.plugin.yaml` beside
+# The cobalt_lint plugin is enabled from `analysis_options.plugin.yaml` beside
 # this file, not from here, for the reason spelled out there: naming it makes
 # every analysis of this package resolve a synthetic plugin package against
 # pub.dev, and that resolution depends on things this repository does not

@@ -1,21 +1,21 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_external_consumer/alloy_external_consumer.dart';
-import 'package:alloy_test/alloy_test.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_external_consumer/cobalt_external_consumer.dart';
+import 'package:cobalt_test/cobalt_test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late AlloyScope scope;
+  late CobaltScope scope;
 
   setUp(() async {
     BootLog.clear();
-    scope = await $startAlloy();
+    scope = await $startCobalt();
   });
 
   // The closing form, because the tests below hand `scope` a different graph.
   // No guard on the state: dispose() returns early when it already ran.
   tearDown(() => scope.dispose());
 
-  test('the generated container is named by @AlloyScopeRoot', () {
+  test('the generated container is named by @CobaltScopeRoot', () {
     expect(scope.name, 'consumer');
   });
 
@@ -128,7 +128,7 @@ void main() {
 
     test('getOrNull says absent where get would throw', () {
       expect(scope.getOrNull<Telemetry>(), isNull);
-      expect(() => scope.get<Telemetry>(), throwsA(isA<AlloyError>()));
+      expect(() => scope.get<Telemetry>(), throwsA(isA<CobaltError>()));
     });
   });
 
@@ -176,12 +176,12 @@ void main() {
   group('a class taking values from the call site', () {
     test('is registered as a parameterized factory, not a plain one', () {
       expect(
-        scope.debugKindOf(const AlloyKey(NoteEditor)),
-        AlloyRegistrationKind.parameterized,
+        scope.debugKindOf(const CobaltKey(NoteEditor)),
+        CobaltRegistrationKind.parameterized,
       );
       expect(
         () => scope.get<NoteEditor>(),
-        throwsA(isA<AlloyParamRequiredError>()),
+        throwsA(isA<CobaltParamRequiredError>()),
       );
     });
 

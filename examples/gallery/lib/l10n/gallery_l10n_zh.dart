@@ -9,7 +9,7 @@ class GalleryL10nZh extends GalleryL10n {
   GalleryL10nZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy 示例';
+  String get appTitle => 'Cobalt 示例';
 
   @override
   String get tagline => '依赖注入 · 示例';
@@ -99,7 +99,7 @@ class GalleryL10nZh extends GalleryL10n {
   String get startupPoint2 => '打开了资源的步骤最后关闭 —— 在建立于其上的一切之后';
 
   @override
-  String get startupPoint3 => '阶段 1 把 @AlloyInit 当作图来等待，因此互不依赖的分支并行执行';
+  String get startupPoint3 => '阶段 1 把 @CobaltInit 当作图来等待，因此互不依赖的分支并行执行';
 
   @override
   String get startupPoint4 => '顺序由 dependsOn 决定 —— 你从不需要自己写出这个序列';
@@ -112,7 +112,7 @@ class GalleryL10nZh extends GalleryL10n {
 
   @override
   String get environmentsPoint1 =>
-      '@AlloyEnvironment 可以重复标注而不是接受一个列表 —— 注册属于一个集合，而启动只挑选其中一个';
+      '@CobaltEnvironment 可以重复标注而不是接受一个列表 —— 注册属于一个集合，而启动只挑选其中一个';
 
   @override
   String get environmentsPoint2 => '两个环境相互重叠的注册会让构建失败，而不是让应用失败';
@@ -163,7 +163,7 @@ class GalleryL10nZh extends GalleryL10n {
   String get widgetScopeTeaches => '生命周期正好等于一个界面的依赖图。';
 
   @override
-  String get widgetScopePoint1 => 'AlloyScopedStatefulWidget 把注册写进它自己持有的作用域';
+  String get widgetScopePoint1 => 'CobaltScopedStatefulWidget 把注册写进它自己持有的作用域';
 
   @override
   String get widgetScopePoint2 => '离开界面时，界面构建的一切都会被释放';
@@ -196,7 +196,7 @@ class GalleryL10nZh extends GalleryL10n {
   String get scopeTreeTeaches => '实时的层级结构，直接由作用域本身渲染。';
 
   @override
-  String get scopeTreePoint1 => 'AlloyScope.children 是公开的，因此这棵树在运行时可以被检查';
+  String get scopeTreePoint1 => 'CobaltScope.children 是公开的，因此这棵树在运行时可以被检查';
 
   @override
   String get scopeTreePoint2 => '同时打开两个示例，它们的树互不相干 —— 各有各的根';
@@ -211,7 +211,7 @@ class GalleryL10nZh extends GalleryL10n {
   String get flowTeaches => '生命周期正好等于一个导航流程打开时长的作用域。';
 
   @override
-  String get flowPoint1 => 'AlloyShellRoute —— 进入流程作用域就出现，离开就消失';
+  String get flowPoint1 => 'CobaltShellRoute —— 进入流程作用域就出现，离开就消失';
 
   @override
   String get flowPoint2 => '当流程的主体发生变化时，identity 会重建作用域';
@@ -247,7 +247,7 @@ class GalleryL10nZh extends GalleryL10n {
   String get codegenTeaches => '最小的代码生成配置，以及它写出了什么。';
 
   @override
-  String get codegenPoint1 => '给一个类加上 @alloyInject，lib/alloy.g.dart 就会出现';
+  String get codegenPoint1 => '给一个类加上 @cobaltInject，lib/cobalt.g.dart 就会出现';
 
   @override
   String get codegenPoint2 => '输出中是具名的 const 工厂类 —— 从不是闭包';
@@ -271,7 +271,7 @@ class GalleryL10nZh extends GalleryL10n {
   String get manualPoint2 => '纯 Dart —— 可运行在命令行、服务器和普通测试中';
 
   @override
-  String get manualPoint3 => 'AlloyScopeBuilder 可以组合，这正是模块的替代物';
+  String get manualPoint3 => 'CobaltScopeBuilder 可以组合，这正是模块的替代物';
 
   @override
   String get manualPoint4 => '如果代码生成需要这里无法表达的东西，那就是两个共用一个名字的框架';
@@ -283,13 +283,13 @@ class GalleryL10nZh extends GalleryL10n {
   String get eventsTeaches => '依赖图报告自身状态，并流向你已经在用的日志库。';
 
   @override
-  String get eventsPoint1 => 'AlloyObserver 事件 —— 作用域入栈、实例构建、释放失败';
+  String get eventsPoint1 => 'CobaltObserver 事件 —— 作用域入栈、实例构建、释放失败';
 
   @override
   String get eventsPoint2 => '一行代码即可接上 talker、logging、logger 或任何日志库';
 
   @override
-  String get eventsPoint3 => 'AlloyMultiSink 会把一条记录分发出去；某个接收端失败不会让其余的静音';
+  String get eventsPoint3 => 'CobaltMultiSink 会把一条记录分发出去；某个接收端失败不会让其余的静音';
 
   @override
   String get eventsPoint4 => '解析过程刻意不上报 —— 缓存命中是热路径';
@@ -331,7 +331,7 @@ class GalleryL10nZh extends GalleryL10n {
   String get testingPoint4 => '同一作用域内的重复是错误；从子作用域遮蔽才是受支持的做法';
 
   @override
-  String get demoTitle => 'Alloy · 检查器';
+  String get demoTitle => 'Cobalt · 检查器';
 
   @override
   String get demoInspect => '检查依赖图';

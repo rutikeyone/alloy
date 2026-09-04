@@ -4,12 +4,12 @@
 
 # Code-Gen Mode
 
-Alloy with the generator: you annotate the classes, `build_runner` writes the container, and the
+Cobalt with the generator: you annotate the classes, `build_runner` writes the container, and the
 graph is checked before it builds. What comes out is ordinary Dart that uses nothing but the public
-API of `alloy` — you can read it, and everything in it could have been written by hand.
+API of `cobalt` — you can read it, and everything in it could have been written by hand.
 
 That is the project's standing invariant, and it has a practical consequence you will use: the
-generated container is an `AlloyScopeBuilder` like any other, so hand-written registrations compose
+generated container is an `CobaltScopeBuilder` like any other, so hand-written registrations compose
 with it in one graph. Nothing here is all-or-nothing.
 
 What the build step buys you, and what this document is mostly about:
@@ -59,15 +59,15 @@ environment:
   flutter: ">=3.38.0"
 
 dependencies:
-  alloy: ^0.1.0
-  alloy_flutter: ^0.1.0
+  cobalt: ^0.1.0
+  cobalt_flutter: ^0.1.0
 
 dev_dependencies:
-  alloy_generator: ^0.1.0
+  cobalt_generator: ^0.1.0
   build_runner: ^2.15.0
-  alloy_lint: ^0.1.0
-  alloy_test: ^0.1.0
-  alloy_test_flutter: ^0.1.0
+  cobalt_lint: ^0.1.0
+  cobalt_test: ^0.1.0
+  cobalt_test_flutter: ^0.1.0
 ```
 
 **The floor is the same as the other mode's**, so an application on Flutter 3.38 can start here
@@ -78,17 +78,17 @@ One thing comes with it: on Flutter 3.38 your project resolves `analyzer 10.0.1`
 `^1.18.0`. On a newer Flutter it resolves 12.1.0 instead, and the generated code is the same either
 way. See **Requirements** in the [README](README.md) for the whole row.
 
-A pure-Dart package — a CLI, a server, a package with no widgets — drops `alloy_flutter` and
-`alloy_test_flutter`. Nothing in the runtime needs Flutter.
+A pure-Dart package — a CLI, a server, a package with no widgets — drops `cobalt_flutter` and
+`cobalt_test_flutter`. Nothing in the runtime needs Flutter.
 
-The annotations arrive with `alloy`, which re-exports them, so one import covers both:
+The annotations arrive with `cobalt`, which re-exports them, so one import covers both:
 
 ```dart
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 ```
 
-Optional, and only if you want them: `alloy_go_router`, `alloy_bloc`, `alloy_inspector`, and one of
-`alloy_talker` / `alloy_logging` / `alloy_logger`.
+Optional, and only if you want them: `cobalt_go_router`, `cobalt_bloc`, `cobalt_inspector`, and one of
+`cobalt_talker` / `cobalt_logging` / `cobalt_logger`.
 
 ---
 
@@ -98,23 +98,23 @@ Annotate the classes. Dependencies are constructor parameters, and the generator
 resolves what.
 
 ```dart
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
-@alloyInject
+@cobaltInject
 class Config {
   Config();
 
   final String environment = 'test';
 }
 
-@alloyInject
+@cobaltInject
 class Repository {
   Repository(this.config);
 
   final Config config;
 }
 
-@alloyInject
+@cobaltInject
 class Telemetry implements Disposable {
   Telemetry();
 
@@ -127,17 +127,17 @@ class Telemetry implements Disposable {
 }
 ```
 
-`@alloyInject` is a lazy singleton — built on first resolve, held by the scope. The other lifetimes
+`@cobaltInject` is a lazy singleton — built on first resolve, held by the scope. The other lifetimes
 have their own constants, and the long form takes everything else:
 
 | Annotation | Lifetime |
 |---|---|
-| `@alloyInject` | lazy singleton |
-| `@alloySingleton` | eager singleton, built when the graph is built |
-| `@alloyTransient` | a new instance on every resolve, held by nobody |
+| `@cobaltInject` | lazy singleton |
+| `@cobaltSingleton` | eager singleton, built when the graph is built |
+| `@cobaltTransient` | a new instance on every resolve, held by nobody |
 
 ```dart
-@AlloyInject(exposeAs: ApiClient, name: 'live', dispose: closeClient)
+@CobaltInject(exposeAs: ApiClient, name: 'live', dispose: closeClient)
 class LiveApiClient implements ApiClient { ... }
 ```
 
@@ -148,7 +148,7 @@ is legal and read with `get<Logger>(name: 'audit')`.
 Name the root once, anywhere in the package:
 
 ```dart
-@AlloyScopeRoot(name: 'app')
+@CobaltScopeRoot(name: 'app')
 class AppScope {
   const AppScope();
 }
@@ -163,8 +163,8 @@ dart run build_runner build
 `dart run build_runner watch` while you work. Commit the output: CI regenerates and fails on a diff,
 which is how stale generated code gets caught rather than shipped.
 
-**One root per package.** `alloy_container` aggregates the whole package into a single
-`$AlloyRootScope`; two `@AlloyScopeRoot` classes in one package is a generation error. Two
+**One root per package.** `cobalt_container` aggregates the whole package into a single
+`$CobaltRootScope`; two `@CobaltScopeRoot` classes in one package is a generation error. Two
 independent generated graphs therefore need two packages — which is exactly why the examples in this
 repository are separate packages rather than folders.
 
@@ -172,41 +172,41 @@ repository are separate packages rather than folders.
 
 ## 3. What comes out
 
-`lib/alloy.g.dart`, and it is worth reading once so the mode stops being a black box:
+`lib/cobalt.g.dart`, and it is worth reading once so the mode stops being a black box:
 
 ```dart
-final class _RepositoryFactory implements AlloyFactory<Repository> {
+final class _RepositoryFactory implements CobaltFactory<Repository> {
   const _RepositoryFactory();
 
   @override
-  Repository create(AlloyResolver resolver) => Repository(resolver.get<Config>());
+  Repository create(CobaltResolver resolver) => Repository(resolver.get<Config>());
 }
 
-final class $AlloyRootScope implements AlloyScopeBuilder {
-  const $AlloyRootScope();
+final class $CobaltRootScope implements CobaltScopeBuilder {
+  const $CobaltRootScope();
 
   @override
-  void build(AlloyScope scope) {
+  void build(CobaltScope scope) {
     scope.registerLazySingleton<Config>(const _ConfigFactory());
     scope.registerLazySingleton<Telemetry>(const _TelemetryFactory());
     scope.registerLazySingleton<Repository>(const _RepositoryFactory());
   }
 }
 
-const String $alloyRootScopeName = 'app';
+const String $cobaltRootScopeName = 'app';
 
-Future<AlloyScope> $startAlloy() => AlloyApplication.start(
-  root: const $AlloyRootScope(),
-  rootName: $alloyRootScopeName,
+Future<CobaltScope> $startCobalt() => CobaltApplication.start(
+  root: const $CobaltRootScope(),
+  rootName: $cobaltRootScopeName,
 );
 ```
 
 ```dart
-final scope = await $startAlloy();
+final scope = await $startCobalt();
 ```
 
 Shown without them here for readability, but the real file prefixes every imported name with an
-alias derived from a hash of its URL — `_i178.AlloyFactory`. It is a hash rather than a counter so
+alias derived from a hash of its URL — `_i178.CobaltFactory`. It is a hash rather than a counter so
 that adding one import does not renumber all the others and turn a one-line change into a whole-file
 diff.
 
@@ -217,7 +217,7 @@ Four things about that output are deliberate:
 - **Registrations in topological order**, worked out at build time. Property-injected fields count as
   edges too, so a bloc is always registered after what it injects.
 - **No reflection and no runtime scanning.** Whatever is in that file is the whole graph.
-- **`$alloyBootstrap` is a getter**, not a stored list, so a restart gets fresh steps — see
+- **`$cobaltBootstrap` is a getter**, not a stored list, so a restart gets fresh steps — see
   [§11](#11-work-that-has-to-finish-before-the-app-starts).
 
 The generator formats its output with the same `dart_style` your format check uses, so the two never
@@ -233,7 +233,7 @@ in what the generator writes beside them:
 ```dart
 part 'counter_bloc.g.dart';
 
-@alloyTransient
+@cobaltTransient
 class CounterBloc with _$CounterBloc {
   CounterBloc();
 
@@ -255,8 +255,8 @@ Three things make this safe rather than magic:
   them.
 
 The `part` directive and the `with _$ClassName` are yours to write. Forget the mixin and
-`alloy_missing_injection_mixin` says so in the editor; put `@injected` on a class the container never
-registers and `alloy_injected_field_needs_an_injectable` says that instead, because the two mistakes
+`cobalt_missing_injection_mixin` says so in the editor; put `@injected` on a class the container never
+registers and `cobalt_injected_field_needs_an_injectable` says that instead, because the two mistakes
 have different fixes.
 
 ---
@@ -270,28 +270,28 @@ gap at once rather than one per rebuild:
 The graph is missing 2 registrations.
   CatalogService requires Repository<User>
   ApiGateway requires HttpClient in dev, test
-Annotate the classes that provide them with @AlloyInject, or name them in
-@AlloyScopeRoot(provides: [...]) when something outside the generated container
+Annotate the classes that provide them with @CobaltInject, or name them in
+@CobaltScopeRoot(provides: [...]) when something outside the generated container
 registers them.
 ```
 
 Everything counts as a dependency: constructor parameters, `@injected` fields, and
-`@AlloyInit(dependsOn:)`. A `@Named` qualifier is part of the key, so asking for `@Named('audit')
+`@CobaltInit(dependsOn:)`. A `@Named` qualifier is part of the key, so asking for `@Named('audit')
 Logger` where only an unnamed `Logger` exists is a gap. Each environment is checked separately, so a
 `dev`-only registration cannot satisfy a dependent that also runs in `prod`.
 
 Rejected at build time as well: duplicate registrations of the same key, dependency cycles (naming
-the cycle), two `@AlloyScopeRoot` classes in a package, `@AlloyInject` on an abstract class or one
-with no public generative constructor, and `@AlloyInject` on a **generic class** — nothing tells the
+the cycle), two `@CobaltScopeRoot` classes in a package, `@CobaltInject` on an abstract class or one
+with no public generative constructor, and `@CobaltInject` on a **generic class** — nothing tells the
 generator which instantiations to register, so annotate a concrete subtype or expose one with
 `exposeAs`.
 
 Generics are fine everywhere else. `Repository<User>` and `Repository<Order>` are two separate
-registrations, because `AlloyKey` is built from `Type` and those are different types.
+registrations, because `CobaltKey` is built from `Type` and those are different types.
 
 The boundary is worth being honest about: this covers what the generator generated. A hand-written
 factory resolves inside `create`, so nothing static can see what it will ask for — for those,
-`alloy_test`'s `expectGraphResolves` is the check, see [§18](#18-tests).
+`cobalt_test`'s `expectGraphResolves` is the check, see [§18](#18-tests).
 
 ---
 
@@ -302,34 +302,34 @@ an object that needs the scope itself, a provider from another package — goes 
 wraps the generated one:
 
 ```dart
-class NotesScope implements AlloyScopeBuilder {
+class NotesScope implements CobaltScopeBuilder {
   const NotesScope(this.environment);
 
-  final AlloyEnvironment environment;
+  final CobaltEnvironment environment;
 
   @override
-  void build(AlloyScope scope) {
-    $AlloyRootScope(environment: environment).build(scope);
+  void build(CobaltScope scope) {
+    $CobaltRootScope(environment: environment).build(scope);
     scope
-      ..registerSingleton<AlloyEnvironment>(environment)
+      ..registerSingleton<CobaltEnvironment>(environment)
       ..registerSingleton<SessionManager>(SessionManager(scope));
   }
 }
 ```
 
-Wrapping rather than registering after `$startAlloy()` returns is what keeps these inside phase 1 —
+Wrapping rather than registering after `$startCobalt()` returns is what keeps these inside phase 1 —
 registered before async initializers run, not bolted on after the graph is already up.
 
 Now tell the completeness check about them, or it will report them as missing:
 
 ```dart
-@AlloyScopeRoot(name: 'app', provides: [SessionManager, AlloyEnvironment])
+@CobaltScopeRoot(name: 'app', provides: [SessionManager, CobaltEnvironment])
 class AppScope {
   const AppScope();
 }
 ```
 
-A promise registers nothing; it only says something else will. `AlloyProvided(Logger, name: 'audit')`
+A promise registers nothing; it only says something else will. `CobaltProvided(Logger, name: 'audit')`
 promises a named one. Promise something and then fail to register it and you are back to a runtime
 failure — the list is a statement you are making, not one the generator can verify.
 
@@ -337,7 +337,7 @@ failure — the list is a statement you are making, not one the generator can ve
 
 ## 7. Starting a Flutter app
 
-`AlloyAppScope` owns the root: it builds the graph, publishes it to the tree, disposes it on unmount,
+`CobaltAppScope` owns the root: it builds the graph, publishes it to the tree, disposes it on unmount,
 and turns a failed start into a screen with a retry rather than an app that dies before its first
 frame.
 
@@ -349,10 +349,10 @@ a second `MaterialApp`:
 void main() => runApp(
   MaterialApp(
     theme: appTheme,
-    builder: AlloyAppScope.builder(
+    builder: CobaltAppScope.builder(
       root: const NotesScope(notesEnvironment),
-      bootstrap: () => $alloyBootstrap(notesEnvironment),
-      rootName: $alloyRootScopeName,
+      bootstrap: () => $cobaltBootstrap(notesEnvironment),
+      rootName: $cobaltRootScopeName,
       loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
       errorBuilder: (context, error, retry) => StartupFailed(error: error, retry: retry),
     ),
@@ -361,22 +361,22 @@ void main() => runApp(
 );
 ```
 
-`bootstrap` is a function rather than a list on purpose, and the generator emits `$alloyBootstrap` as
+`bootstrap` is a function rather than a list on purpose, and the generator emits `$cobaltBootstrap` as
 a getter for the same reason: steps hold resources, and a restart has to get new ones.
 
-`AlloyAppScope.of(context).restart()` rebuilds the graph — the same call retries a failed start.
+`CobaltAppScope.of(context).restart()` rebuilds the graph — the same call retries a failed start.
 
-Outside Flutter, `await $startAlloy()` is the whole of it.
+Outside Flutter, `await $startCobalt()` is the whole of it.
 
 ---
 
 ## 8. Reading from the graph in a widget
 
 ```dart
-final repository = context.alloy<Repository>();
-final formatters = context.alloyAll<NoteFormatter>();
-final editor = context.alloyWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
-final scope = context.alloyScope;
+final repository = context.cobalt<Repository>();
+final formatters = context.cobaltAll<NoteFormatter>();
+final editor = context.cobaltWithParam<NoteEditor, $NoteEditorArgs>((id: 7, draft: true));
+final scope = context.cobaltScope;
 ```
 
 Each resolves from the **nearest** scope above the widget and walks up from there, so a registration
@@ -384,7 +384,7 @@ in a flow or session scope shadows the root one for everything inside it.
 
 One thing to know before it bites: `Navigator.push` builds the new route from the navigator's
 context, not from the widget that pushed it. A screen that resolves fine when mounted in place will
-throw `AlloyNoScopeError` when the same widget is pushed, if the provider it was reading lives
+throw `CobaltNoScopeError` when the same widget is pushed, if the provider it was reading lives
 *inside* the pushing screen. Pass the scope explicitly in that case, or push below the provider.
 
 ---
@@ -392,7 +392,7 @@ throw `AlloyNoScopeError` when the same widget is pushed, if the provider it was
 ## 9. Scopes that end before the app does
 
 The generator writes the **root**. Scopes shorter than the app — a session, a flow, a screen — are
-`AlloyScopeBuilder`s you write, and they register from the same public API the generated file uses.
+`CobaltScopeBuilder`s you write, and they register from the same public API the generated file uses.
 That is not a gap in the generator: what belongs in a session scope is a decision about lifetime, and
 nothing in an annotation says when a session ends.
 
@@ -402,8 +402,8 @@ nothing in an annotation says when a session ends.
 class SessionManager {
   SessionManager(this._root);
 
-  final AlloyScope _root;
-  AlloyScope? _session;
+  final CobaltScope _root;
+  CobaltScope? _session;
 
   Future<void> signIn(User user) async {
     _session = _root.push('session:${user.id}')
@@ -424,7 +424,7 @@ interface grows a `reset()` method it did not want.
 ### A screen
 
 ```dart
-AlloyScopeWidget(
+CobaltScopeWidget(
   name: 'counter-screen',
   builder: const ScreenScope(),
   child: const Counter(),
@@ -434,15 +434,15 @@ AlloyScopeWidget(
 Created when the widget mounts, disposed when it unmounts. The scope is published only after `init()`
 completes, so even a fully synchronous graph renders one `loading` frame.
 
-This is where `@alloyTransient` earns its place: a transient is rebuilt on every resolve and held by
+This is where `@cobaltTransient` earns its place: a transient is rebuilt on every resolve and held by
 nobody, so giving it a scope of its own is what gives it a lifetime and a disposal point.
 
 ### A navigation flow
 
-With `alloy_go_router`, the lifetime is the flow rather than a widget you remembered to place:
+With `cobalt_go_router`, the lifetime is the flow rather than a widget you remembered to place:
 
 ```dart
-class OrderFlowRoute extends AlloyShellRoute {
+class OrderFlowRoute extends CobaltShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',
@@ -467,11 +467,11 @@ class OrderFlowRoute extends AlloyShellRoute {
 Navigating between `summary` and `payment` keeps one scope. Leaving the flow disposes it. `identity`
 answers the one question the router cannot: whether `/orders/1` and `/orders/2` are the same flow.
 
-Build the route table **once**, alongside the router. A new `AlloyShellRoute` instance is a different
+Build the route table **once**, alongside the router. A new `CobaltShellRoute` instance is a different
 flow as far as go_router is concerned, so rebuilding the list every frame would rebuild the scope
 every frame.
 
-Tabs work the same way with `AlloyStatefulShellRoute` and `AlloyStatefulShellBranch`, with one
+Tabs work the same way with `CobaltStatefulShellRoute` and `CobaltStatefulShellBranch`, with one
 behaviour worth stating plainly: a branch is kept **alive**, not kept **visible**. go_router
 preserves branch navigators off-screen, so a tab's scope lives until the shell closes, not until you
 switch away.
@@ -485,13 +485,13 @@ bug hand-written containers have. Dart has no structural typing, so a matching `
 not enough on its own:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Cache implements Disposable {
   @override
   void dispose() { ... }
 }
 
-@alloyInit
+@cobaltInit
 class Database implements AsyncInitializable, AsyncDisposable {
   @override
   Future<void> init() async { ... }
@@ -508,12 +508,12 @@ a constant:
 ```dart
 Future<void> closeClient(http.Client client) => client.close();
 
-@AlloyInject(dispose: closeClient)
+@CobaltInject(dispose: closeClient)
 class ApiClientHolder { ... }
 ```
 
-`dispose:` only means anything on a registration the scope holds. On `@alloyTransient` or on a class
-with `@AlloyParam` it is a build error rather than a callback that never runs, because a transient is
+`dispose:` only means anything on a registration the scope holds. On `@cobaltTransient` or on a class
+with `@CobaltParam` it is a build error rather than a callback that never runs, because a transient is
 not the scope's to close.
 
 ### Flutter types that look closable and are not
@@ -522,33 +522,33 @@ not the scope's to close.
 Say so:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Filters extends ChangeNotifier implements Disposable {}
 ```
 
-For blocs, `alloy_bloc` is the one line:
+For blocs, `cobalt_bloc` is the one line:
 
 ```dart
-@alloyInject
-class CounterCubit extends Cubit<int> with AlloyBloc {
+@cobaltInject
+class CounterCubit extends Cubit<int> with CobaltBloc {
   CounterCubit() : super(0);
 }
 ```
 
-or, where a mixin will not reach, `@AlloyInject(dispose: closeBloc)`.
+or, where a mixin will not reach, `@CobaltInject(dispose: closeBloc)`.
 
 Then hand it to the widget tree with `BlocProvider.value`, never `BlocProvider(create:)` — the latter
 closes what it was given when it unmounts, while the scope still holds it and will hand out the dead
 object on the next resolve.
 
-`alloy_registration_is_never_released` catches all of this in the editor: a registered class with a
+`cobalt_registration_is_never_released` catches all of this in the editor: a registered class with a
 `dispose()` or `close()` the scope cannot see.
 
 ### When teardown goes wrong
 
 It is best-effort by design. A step that throws is recorded and the rest still run; the whole tree
 has one deadline; and the scope always reaches `disposed`. What did not finish is listed in
-`AlloyDisposeError` — `failures`, `timeouts`, `hasTimeout` — instead of the first failure hiding the
+`CobaltDisposeError` — `failures`, `timeouts`, `hasTimeout` — instead of the first failure hiding the
 other nine.
 
 `adopt` ties an object to a scope's life without it being a dependency:
@@ -563,15 +563,15 @@ scope.adopt(subscription, dispose: (it) => it.cancel());
 
 Two phases, answering different questions.
 
-**Phase 0 — `@AlloyBootstrap`.** Before the container exists: platform bindings, remote config,
+**Phase 0 — `@CobaltBootstrap`.** Before the container exists: platform bindings, remote config,
 anything the graph itself needs. Steps run strictly in order — `order` first, then name, so the
 output is stable — and can inject nothing, because there is nothing to inject from yet. A bootstrap
 step whose constructor takes required parameters is a build error, and
-`alloy_bootstrap_step_cannot_inject` says so before that.
+`cobalt_bootstrap_step_cannot_inject` says so before that.
 
 ```dart
-@AlloyBootstrap(order: 0)
-class BindPlatform implements AlloyBootstrapStep {
+@CobaltBootstrap(order: 0)
+class BindPlatform implements CobaltBootstrapStep {
   const BindPlatform();
 
   @override
@@ -586,10 +586,10 @@ Once they have run, the root scope adopts them, so a step that opened something 
 teardown — last, after everything built on top of it. If a step fails, the ones that already ran are
 released in reverse before the error is rethrown.
 
-**Phase 1 — `@AlloyInit`.** Inside the container: async singletons, built in dependency order.
+**Phase 1 — `@CobaltInit`.** Inside the container: async singletons, built in dependency order.
 
 ```dart
-@AlloyInit(dependsOn: [Database])
+@CobaltInit(dependsOn: [Database])
 class SearchIndex implements AsyncInitializable {
   SearchIndex(this._database);
 
@@ -607,14 +607,14 @@ the contract visible to a reader, and it is what every error message about a mis
 you to do.
 
 The generated factory constructs the object, awaits `init()`, and registers it as an async singleton
-with `dependsOn` translated into `AlloyKey`s. Independent initializers on the same level run together
+with `dependsOn` translated into `CobaltKey`s. Independent initializers on the same level run together
 through `Future.wait`; only what actually depends waits.
 
 `dependsOn` is an ordering edge, not an injection — you take the dependency in the constructor as
 usual. Naming a key that is registered but **not** async is a build error rather than the silent
 no-op it looks like: there is no build to wait for.
 
-`AlloyApplication.start` returns when both phases are done, so there is no `allReady()` to call and no
+`CobaltApplication.start` returns when both phases are done, so there is no `allReady()` to call and no
 "registered but not ready" state to reason about.
 
 ---
@@ -625,9 +625,9 @@ Half of an object comes from the graph and half from whoever is building it. Mar
 container cannot know:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Greeting {
-  Greeting(this._config, {@alloyParam required this.name, @alloyParam required this.loud});
+  Greeting(this._config, {@cobaltParam required this.name, @cobaltParam required this.loud});
 
   final Config _config;
   final String name;
@@ -640,7 +640,7 @@ parameterized factory:
 
 ```dart
 // typedef $GreetingArgs = ({String name, bool loud});
-final greeting = context.alloyWithParam<Greeting, $GreetingArgs>((name: 'Alloy', loud: false));
+final greeting = context.cobaltWithParam<Greeting, $GreetingArgs>((name: 'Cobalt', loud: false));
 ```
 
 A named record rather than positional even for a single argument: adding a second changes the
@@ -650,12 +650,12 @@ Two rules the generator enforces:
 
 - Marked parameters are **exempt** from the completeness check and from ordering. Nothing registers a
   `String`, and nothing should try.
-- They must be **required or nullable**. A record has no defaults, so `@alloyParam this.draft = false`
+- They must be **required or nullable**. A record has no defaults, so `@cobaltParam this.draft = false`
   would leave the caller obliged to pass `draft` while the default it was given is dead. That is a
   build error rather than a surprise.
 
-Resolving one with plain `get<T>()` throws `AlloyParamRequiredError`; passing the wrong type throws
-`AlloyParamTypeError` naming the key and both types.
+Resolving one with plain `get<T>()` throws `CobaltParamRequiredError`; passing the wrong type throws
+`CobaltParamTypeError` naming the key and both types.
 
 ---
 
@@ -665,7 +665,7 @@ A `?` on the type is the whole spelling — there is no annotation, because with
 could not hold null anyway:
 
 ```dart
-@alloyInject
+@cobaltInject
 class Reporter {
   Reporter(this.clock, this.telemetry);
 
@@ -673,7 +673,7 @@ class Reporter {
   final Telemetry? telemetry;
 }
 
-@alloyInject
+@cobaltInject
 class Dashboard with _$Dashboard {
   Dashboard();
 
@@ -694,23 +694,23 @@ because "not ready" and "not there" are different facts.
 
 ## 14. Types you did not write
 
-`@AlloyInject` goes on a class, so it only reaches classes you own. A module is the way in for
+`@CobaltInject` goes on a class, so it only reaches classes you own. A module is the way in for
 everything else — a client from another package, a value the SDK hands you:
 
 ```dart
 Future<void> closeClient(http.Client client) => client.close();
 
-@alloyModule
+@cobaltModule
 class NetworkModule {
   const NetworkModule();
 
-  @alloyInject
+  @cobaltInject
   Dio dio(AppConfig config) => Dio(BaseOptions(baseUrl: config.apiBase));
 
-  @AlloyInject(dispose: closeClient)
+  @CobaltInject(dispose: closeClient)
   http.Client client() => http.Client();
 
-  @alloySingleton
+  @cobaltSingleton
   Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 }
 ```
@@ -725,9 +725,9 @@ The rules, each with a reason:
   `const NetworkModule()` and carries no state.
 - Returning **`Future<T>` is the only async signal.** Such a member becomes an async singleton, and
   the order between async members is worked out by the generator rather than written by hand.
-- Members **cannot be abstract.** Building a class from its own constructor is what `@AlloyInject`
+- Members **cannot be abstract.** Building a class from its own constructor is what `@CobaltInject`
   already means; there is no second way to say it.
-- `@AlloyParam` is **not** allowed on a member. A module registers types you did not write; a value
+- `@CobaltParam` is **not** allowed on a member. A module registers types you did not write; a value
   from the call site belongs to a class you did.
 
 Members participate in everything a class does: duplicate detection, topological ordering, and the
@@ -738,28 +738,28 @@ completeness check.
 ## 15. One graph, several builds
 
 Skip this until one build genuinely needs a different implementation than another. A project that
-never writes `@AlloyEnvironment` has one graph, every registration belongs to it, and `$startAlloy()`
+never writes `@CobaltEnvironment` has one graph, every registration belongs to it, and `$startCobalt()`
 takes no argument at all.
 
 ```dart
-@AlloyInject(exposeAs: ApiClient)
-@AlloyEnvironment.prod
-@AlloyEnvironment.stage
+@CobaltInject(exposeAs: ApiClient)
+@CobaltEnvironment.prod
+@CobaltEnvironment.stage
 class LiveApiClient implements ApiClient { ... }
 
-@AlloyInject(exposeAs: ApiClient)
-@AlloyEnvironment.dev
-@AlloyEnvironment.test
+@CobaltInject(exposeAs: ApiClient)
+@CobaltEnvironment.dev
+@CobaltEnvironment.test
 class FakeApiClient implements ApiClient { ... }
 ```
 
 ```dart
-final scope = await $startAlloy(environment: AlloyEnvironment.prod);
+final scope = await $startCobalt(environment: CobaltEnvironment.prod);
 ```
 
 The annotation repeats rather than taking a list: a registration belongs to a *set* of environments
 while startup picks exactly *one*. `dev`, `stage`, `prod` and `test` are constants, not a closed set
-— `@AlloyEnvironment('canary')` behaves identically.
+— `@CobaltEnvironment('canary')` behaves identically.
 
 The generated container takes the choice as a field and guards only the restricted registrations,
 which is exactly what you would write by hand:
@@ -773,7 +773,7 @@ if (environment.matches(const <String>{'dev', 'test'})) {
 Three things follow:
 
 - **It stays opt-in to the end.** The parameter appears only once something names an environment, and
-  even then defaults to `AlloyEnvironment.defaultEnvironment` — the single environment an unsplit
+  even then defaults to `CobaltEnvironment.defaultEnvironment` — the single environment an unsplit
   graph lives in. That default matches unrestricted registrations and nothing else, so starting a
   split graph without choosing leaves the split types unregistered and the first resolve fails saying
   so, rather than quietly handing back the wrong class.
@@ -783,10 +783,10 @@ Three things follow:
 - **Completeness is checked per environment**, so a `dev`-only registration cannot satisfy a
   dependent that also runs in `prod`.
 
-Bootstrap steps take environments too. When any of them does, `$alloyBootstrap` becomes a function of
+Bootstrap steps take environments too. When any of them does, `$cobaltBootstrap` becomes a function of
 the chosen environment, and skipped steps never run and never get adopted.
 
-`alloy_environment_needs_a_registration` catches the case where `@AlloyEnvironment` sits on a class
+`cobalt_environment_needs_a_registration` catches the case where `@CobaltEnvironment` sits on a class
 nothing registers, where it silently does nothing.
 
 ---
@@ -799,23 +799,23 @@ rather than only when `build_runner` runs.
 ```yaml
 # analysis_options.yaml
 plugins:
-  alloy_lint: ^0.1.0
+  cobalt_lint: ^0.1.0
 ```
 
 | Rule | Catches |
 |---|---|
-| `alloy_missing_injection_mixin` | `@injected` fields without `with _$ClassName`, on a class the container registers |
-| `alloy_injected_field_needs_an_injectable` | `@injected` fields on a class the container never registers |
-| `alloy_param_needs_an_injectable` | `@AlloyParam` on a class the container never registers |
-| `alloy_injected_field_must_be_late_final` | `@injected` on a mutable, non-late, or static field |
-| `alloy_injectable_must_be_constructible` | `@AlloyInject` on an abstract class or one with no public generative constructor |
-| `alloy_init_requires_init_method` | `@AlloyInit` on a class with no `init()` |
-| `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` on a class with no `run()` |
-| `alloy_bootstrap_step_cannot_inject` | a bootstrap step whose constructor takes required parameters |
-| `alloy_environment_needs_a_registration` | `@AlloyEnvironment` on a class nothing registers |
-| `alloy_dependency_is_not_registered` | an injected dependency nothing in the package registers |
-| `alloy_dependency_cycle` | an injectable class that depends, eventually, on itself |
-| `alloy_registration_is_never_released` | a registered class with a `dispose()` or `close()` the scope cannot see |
+| `cobalt_missing_injection_mixin` | `@injected` fields without `with _$ClassName`, on a class the container registers |
+| `cobalt_injected_field_needs_an_injectable` | `@injected` fields on a class the container never registers |
+| `cobalt_param_needs_an_injectable` | `@CobaltParam` on a class the container never registers |
+| `cobalt_injected_field_must_be_late_final` | `@injected` on a mutable, non-late, or static field |
+| `cobalt_injectable_must_be_constructible` | `@CobaltInject` on an abstract class or one with no public generative constructor |
+| `cobalt_init_requires_init_method` | `@CobaltInit` on a class with no `init()` |
+| `cobalt_bootstrap_requires_run_method` | `@CobaltBootstrap` on a class with no `run()` |
+| `cobalt_bootstrap_step_cannot_inject` | a bootstrap step whose constructor takes required parameters |
+| `cobalt_environment_needs_a_registration` | `@CobaltEnvironment` on a class nothing registers |
+| `cobalt_dependency_is_not_registered` | an injected dependency nothing in the package registers |
+| `cobalt_dependency_cycle` | an injectable class that depends, eventually, on itself |
+| `cobalt_registration_is_never_released` | a registered class with a `dispose()` or `close()` the scope cannot see |
 
 Two things about wiring it up cost real time:
 
@@ -837,39 +837,39 @@ build is the authority; the editor is the fast path.
 Observers see scopes appearing, instances being built, startup finishing, teardown failing. Pass them
 where the graph is created; every scope pushed below inherits them.
 
-`$startAlloy()` does not take observers — it is the short path. Once you want them, go through the
+`$startCobalt()` does not take observers — it is the short path. Once you want them, go through the
 builder you are already composing:
 
 ```dart
-final scope = await AlloyApplication.start(
+final scope = await CobaltApplication.start(
   root: const NotesScope(notesEnvironment),
-  bootstrap: $alloyBootstrap(notesEnvironment),
-  rootName: $alloyRootScopeName,
-  observers: [AlloyLogObserver(const AlloyDeveloperLogSink())],
+  bootstrap: $cobaltBootstrap(notesEnvironment),
+  rootName: $cobaltRootScopeName,
+  observers: [CobaltLogObserver(const CobaltDeveloperLogSink())],
 );
 ```
 
-In a Flutter app it is the `observers:` parameter of `AlloyAppScope.builder`.
+In a Flutter app it is the `observers:` parameter of `CobaltAppScope.builder`.
 
-Callbacks get `AlloyScopeRef` and `AlloyKey` — descriptions, not live objects — and an exception
+Callbacks get `CobaltScopeRef` and `CobaltKey` — descriptions, not live objects — and an exception
 thrown from one is swallowed: watching must not be able to break what it watches. Resolution is not
 reported; a cache hit is the hot path, and what is worth seeing is an instance being *built*.
 
 | Package | Shape |
 |---|---|
-| `alloy_talker` | an observer, one coloured log type per event family |
-| `alloy_logging` | a sink over dart.dev `logging` |
-| `alloy_logger` | a sink over `logger` |
+| `cobalt_talker` | an observer, one coloured log type per event family |
+| `cobalt_logging` | a sink over dart.dev `logging` |
+| `cobalt_logger` | a sink over `logger` |
 
 Anything else is one callback, so no logger is locked out for want of a package:
 
 ```dart
-AlloyLogObserver(AlloyLogSink.from((r) => myLogger.debug(r.message)))
-AlloyLogObserver(AlloyLogSink.from((r) => gelf.send(r.toStructured())))
+CobaltLogObserver(CobaltLogSink.from((r) => myLogger.debug(r.message)))
+CobaltLogObserver(CobaltLogSink.from((r) => gelf.send(r.toStructured())))
 ```
 
 The record is not just a string: `level`, `scope`, `key`, `error`, `stackTrace` and `kind` are all
-there, and `kind` is a value — `AlloyEventKind.scopeInitFailed` rather than a sentence you would have
+there, and `kind` is a value — `CobaltEventKind.scopeInitFailed` rather than a sentence you would have
 to parse.
 
 ### Crash reports are a different shape
@@ -878,11 +878,11 @@ What makes a report actionable is not the exception; it is what the graph was do
 
 ```dart
 observers: [
-  AlloyErrorObserver(
-    AlloyErrorSink.from((report) => Sentry.captureException(
+  CobaltErrorObserver(
+    CobaltErrorSink.from((report) => Sentry.captureException(
       report.error,
       stackTrace: report.stackTrace,
-      withScope: (scope) => scope.setContexts('alloy', report.toStructured()),
+      withScope: (scope) => scope.setContexts('cobalt', report.toStructured()),
     )),
   ),
 ],
@@ -895,11 +895,11 @@ paid service on every hiccup is how reports stop being read. Lower it with `repo
 ### On screen, while the app runs
 
 ```dart
-final log = AlloyInspectorLog();
+final log = CobaltInspectorLog();
 
 // observers: [log]
 
-AlloyInspectorScreen(log: log, scope: context.alloyScope)
+CobaltInspectorScreen(log: log, scope: context.cobaltScope)
 ```
 
 Three tabs: the live scope tree with each registration's lifetime and who owns it, what has actually
@@ -915,15 +915,15 @@ where a `Future.delayed` in an initializer never completes. **Build the graph in
 whole-graph assertions in a plain `test`.
 
 ```dart
-late AlloyScope scope;
+late CobaltScope scope;
 
 setUp(() async {
-  scope = await alloyTestScope(root: const $AlloyRootScope());
+  scope = await cobaltTestScope(root: const $CobaltRootScope());
 });
 ```
 
-The generated builder goes straight in, exactly as the app uses it. `alloyTestScope` and
-`alloyTestRoot` dispose with the test, which is the part that is easy to leave out — and leaving it
+The generated builder goes straight in, exactly as the app uses it. `cobaltTestScope` and
+`cobaltTestRoot` dispose with the test, which is the part that is easy to leave out — and leaving it
 out leaks into the next test rather than failing.
 
 ### Overriding
@@ -962,13 +962,13 @@ teardown order is different. Put it in a test of its own. A parameterized regist
 name as `unchecked` rather than skipped in silence — hand it a sample to cover it:
 
 ```dart
-await expectGraphResolves(scope, params: {AlloyKey(Greeting): (name: 'x', loud: false)});
+await expectGraphResolves(scope, params: {CobaltKey(Greeting): (name: 'x', loud: false)});
 ```
 
 ### Fixtures
 
 ```dart
-final scope = alloyTestRoot()
+final scope = cobaltTestRoot()
   ..registerLazySingleton<Clock>(FnFactory((_) => FixedClock(DateTime(2026))))
   ..registerSingleton<Config>(const Config())
   ..registerAsyncSingleton<Db>(AsyncFnFactory((_) async => Db()));
@@ -986,7 +986,7 @@ shared one, so a scope disposed after the test that made it cannot report into t
 
 ### Widget tests
 
-`alloy_test_flutter` carries the two helpers whose obvious spelling is wrong:
+`cobalt_test_flutter` carries the two helpers whose obvious spelling is wrong:
 
 ```dart
 await settle(tester);                    // not pumpAndSettle: it spins forever on a loading indicator
@@ -1011,11 +1011,11 @@ at run time.
 
 Each of these was found the hard way, in this repository or in the applications it was written for.
 
-- **Not committing `alloy.g.dart`, or committing a stale one.** Regenerate in CI and diff. This is
+- **Not committing `cobalt.g.dart`, or committing a stale one.** Regenerate in CI and diff. This is
   the mode's one real maintenance obligation.
-- **Two `@AlloyScopeRoot` classes in one package.** A build error, and the fix is two packages —
-  `alloy_container` aggregates a whole package into one root.
-- **`@AlloyInject` on a generic class.** Rejected: nothing tells the generator which instantiations
+- **Two `@CobaltScopeRoot` classes in one package.** A build error, and the fix is two packages —
+  `cobalt_container` aggregates a whole package into one root.
+- **`@CobaltInject` on a generic class.** Rejected: nothing tells the generator which instantiations
   to register. Annotate a concrete subtype, or expose one with `exposeAs`. Generics work fine as
   dependencies and as `exposeAs` targets.
 - **`@injected` without `with _$ClassName`.** The fields stay unassigned and the first read throws
@@ -1029,7 +1029,7 @@ Each of these was found the hard way, in this repository or in the applications 
 - **`BlocProvider(create:)` for a bloc the scope owns.** Two owners, and the widget wins first.
   `BlocProvider.value`.
 - **A `ChangeNotifier` or `Cubit` registered without saying it is closable.** Built, used, never
-  closed, silently. `implements Disposable`, `with AlloyBloc`, or `dispose:`.
+  closed, silently. `implements Disposable`, `with CobaltBloc`, or `dispose:`.
 - **An old `dart` first on PATH.** It fails quietly and in the wrong place — `dart analyze` reports
   phantom issues against the wrong analyzer, and generated output shifts between formatter versions.
   Check `dart --version` before believing a run.
@@ -1040,7 +1040,7 @@ Each of these was found the hard way, in this repository or in the applications 
 
 - [GUIDE_MANUAL.md](GUIDE_MANUAL.md) — the same runtime without the build step, and what composes
   with what.
-- [README.md](README.md) — what Alloy is, and why each decision went the way it did.
+- [README.md](README.md) — what Cobalt is, and why each decision went the way it did.
 - [MIGRATION.md](MIGRATION.md) — from `get_it` and `injectable`, including what does not translate.
 - `examples/codegen_basics` is the smallest generated setup, and `examples/notes_app` the largest.
   Both run from the gallery: `cd examples/gallery && flutter run`.

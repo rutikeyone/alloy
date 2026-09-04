@@ -9,7 +9,7 @@ class FlowScopesL10nZh extends FlowScopesL10n {
   FlowScopesL10nZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy · 流程作用域';
+  String get appTitle => 'Cobalt · 流程作用域';
 
   @override
   String get whatIsAlive => '此刻还活着什么';

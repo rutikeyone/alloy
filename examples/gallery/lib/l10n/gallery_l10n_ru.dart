@@ -9,7 +9,7 @@ class GalleryL10nRu extends GalleryL10n {
   GalleryL10nRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appTitle => 'Примеры Alloy';
+  String get appTitle => 'Примеры Cobalt';
 
   @override
   String get tagline => 'внедрение зависимостей · примеры';
@@ -108,7 +108,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get startupPoint3 =>
-      'Фаза 1 ждёт @AlloyInit как граф, поэтому независимые ветки идут параллельно';
+      'Фаза 1 ждёт @CobaltInit как граф, поэтому независимые ветки идут параллельно';
 
   @override
   String get startupPoint4 =>
@@ -123,7 +123,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get environmentsPoint1 =>
-      '@AlloyEnvironment повторяется, а не принимает список: регистрация принадлежит множеству, а старт выбирает одно';
+      '@CobaltEnvironment повторяется, а не принимает список: регистрация принадлежит множеству, а старт выбирает одно';
 
   @override
   String get environmentsPoint2 =>
@@ -188,7 +188,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get widgetScopePoint1 =>
-      'AlloyScopedStatefulWidget регистрирует в скоуп, которым владеет сам';
+      'CobaltScopedStatefulWidget регистрирует в скоуп, которым владеет сам';
 
   @override
   String get widgetScopePoint2 =>
@@ -229,7 +229,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get scopeTreePoint1 =>
-      'AlloyScope.children публичен, поэтому дерево можно осмотреть в рантайме';
+      'CobaltScope.children публичен, поэтому дерево можно осмотреть в рантайме';
 
   @override
   String get scopeTreePoint2 =>
@@ -248,7 +248,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get flowPoint1 =>
-      'AlloyShellRoute: вошли во флоу — скоуп появился, вышли — исчез';
+      'CobaltShellRoute: вошли во флоу — скоуп появился, вышли — исчез';
 
   @override
   String get flowPoint2 =>
@@ -294,7 +294,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get codegenPoint1 =>
-      'Поставьте @alloyInject на класс — и появится lib/alloy.g.dart';
+      'Поставьте @cobaltInject на класс — и появится lib/cobalt.g.dart';
 
   @override
   String get codegenPoint2 =>
@@ -324,7 +324,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get manualPoint3 =>
-      'AlloyScopeBuilder композируется — именно это заменяет модули';
+      'CobaltScopeBuilder композируется — именно это заменяет модули';
 
   @override
   String get manualPoint4 =>
@@ -339,7 +339,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get eventsPoint1 =>
-      'События AlloyObserver: пуш скоупа, создание объекта, падение разбора';
+      'События CobaltObserver: пуш скоупа, создание объекта, падение разбора';
 
   @override
   String get eventsPoint2 =>
@@ -347,7 +347,7 @@ class GalleryL10nRu extends GalleryL10n {
 
   @override
   String get eventsPoint3 =>
-      'AlloyMultiSink раздаёт запись веером; упавший приёмник не заглушает остальные';
+      'CobaltMultiSink раздаёт запись веером; упавший приёмник не заглушает остальные';
 
   @override
   String get eventsPoint4 =>
@@ -400,7 +400,7 @@ class GalleryL10nRu extends GalleryL10n {
       'Дубликат в одном скоупе — ошибка; затенение из ребёнка — поддерживаемый путь';
 
   @override
-  String get demoTitle => 'Alloy · инспектор';
+  String get demoTitle => 'Cobalt · инспектор';
 
   @override
   String get demoInspect => 'осмотреть граф';

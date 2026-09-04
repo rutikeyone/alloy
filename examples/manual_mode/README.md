@@ -1,6 +1,6 @@
 # manual_mode
 
-Alloy without code generation, and without Flutter. Run it:
+Cobalt without code generation, and without Flutter. Run it:
 
 ```bash
 dart run bin/main.dart
@@ -10,12 +10,12 @@ dart run bin/main.dart
 
 **The runtime is the whole framework.** Everything here is written by hand, and
 it is exactly what the generator would emit — that is the project invariant:
-generated code may only use the public API of `alloy`. If Manual Mode cannot
+generated code may only use the public API of `cobalt`. If Manual Mode cannot
 express something, generation must not either.
 
 **It is pure Dart.** No Flutter binding, no widget tree, no `WidgetsBinding`.
 The core runs in a CLI, on a server, or in a test with nothing mocked out.
-`AlloyPrintLogSink` is the right observer sink here — `AlloyDeveloperLogSink`
+`CobaltPrintLogSink` is the right observer sink here — `CobaltDeveloperLogSink`
 wants a debugger attached to be worth anything.
 
 **Scopes nest.** `openSession` pushes a child, the counter is resolved from it

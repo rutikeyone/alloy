@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/app/app_routes.dart';
 import 'package:flow_scopes/features/orders/domain/order_draft.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
@@ -13,7 +13,7 @@ class OrderSummaryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = FlowScopesL10n.of(context);
-    final draft = context.alloy<OrderDraft>();
+    final draft = context.cobalt<OrderDraft>();
 
     return ListView(
       children: [

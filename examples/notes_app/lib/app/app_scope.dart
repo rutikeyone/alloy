@@ -1,6 +1,6 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
-@AlloyScopeRoot(name: 'app')
+@CobaltScopeRoot(name: 'app')
 class AppScope {
   const AppScope();
 }

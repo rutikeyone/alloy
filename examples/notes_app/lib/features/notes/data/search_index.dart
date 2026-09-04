@@ -1,8 +1,8 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/event_log.dart';
 import 'package:notes_app/features/notes/data/note_database.dart';
 
-@AlloyInit(dependsOn: [NoteDatabase])
+@CobaltInit(dependsOn: [NoteDatabase])
 class SearchIndex implements AsyncInitializable {
   SearchIndex(this._database, this._log);
 

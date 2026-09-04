@@ -1,25 +1,25 @@
-name: alloy_workspace
+name: cobalt_workspace
 publish_to: none
 
 environment:
   sdk: ^3.13.0
 
 workspace:
-  - packages/alloy_annotations
-  - packages/alloy_bloc
-  - packages/alloy
-  - packages/alloy_flutter
-  - packages/alloy_go_router
-  - packages/alloy_logging
-  - packages/alloy_logger
-  - packages/alloy_talker
-  - packages/alloy_talker_flutter
-  - packages/alloy_analyzer
-  - packages/alloy_generator
-  - packages/alloy_lint
-  - packages/alloy_inspector
-  - packages/alloy_test
-  - packages/alloy_test_flutter
+  - packages/cobalt_annotations
+  - packages/cobalt_bloc
+  - packages/cobalt
+  - packages/cobalt_flutter
+  - packages/cobalt_go_router
+  - packages/cobalt_logging
+  - packages/cobalt_logger
+  - packages/cobalt_talker
+  - packages/cobalt_talker_flutter
+  - packages/cobalt_analyzer
+  - packages/cobalt_generator
+  - packages/cobalt_lint
+  - packages/cobalt_inspector
+  - packages/cobalt_test
+  - packages/cobalt_test_flutter
   - examples/manual_mode
   - examples/codegen_basics
   - examples/notes_app

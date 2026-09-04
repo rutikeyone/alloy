@@ -1,9 +1,9 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:codegen_basics/services.dart';
 
 part 'counter_bloc.g.dart';
 
-@alloyTransient
+@cobaltTransient
 class CounterBloc with _$CounterBloc {
   CounterBloc();
 

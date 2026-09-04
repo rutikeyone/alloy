@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/app/app_routes.dart';
 import 'package:flow_scopes/features/workspace/ui/tab_screen.dart';
 import 'package:flow_scopes/features/workspace/ui/workspace_chrome.dart';
@@ -10,7 +10,7 @@ import 'package:go_router/go_router.dart';
 /// Three levels: `app` holds the shell's `workspace`, which holds `feed` and
 /// `profile`. Switching tabs disposes nothing — branch navigators are kept
 /// alive off-screen — and leaving the workspace disposes all three.
-class WorkspaceShellRoute extends AlloyStatefulShellRoute {
+class WorkspaceShellRoute extends CobaltStatefulShellRoute {
   WorkspaceShellRoute()
     : super.indexedStack(
         name: 'workspace',
@@ -18,7 +18,7 @@ class WorkspaceShellRoute extends AlloyStatefulShellRoute {
         shell: (_, _, navigationShell) =>
             WorkspaceChrome(navigationShell: navigationShell),
         branches: [
-          AlloyStatefulShellBranch(
+          CobaltStatefulShellBranch(
             name: 'feed',
             scope: (_) => const WorkspaceScope('feed'),
             routes: [
@@ -28,7 +28,7 @@ class WorkspaceShellRoute extends AlloyStatefulShellRoute {
               ),
             ],
           ),
-          AlloyStatefulShellBranch(
+          CobaltStatefulShellBranch(
             name: 'profile',
             scope: (_) => const WorkspaceScope('profile'),
             routes: [

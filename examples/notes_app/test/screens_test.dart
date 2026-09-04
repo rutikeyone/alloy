@@ -1,5 +1,5 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:alloy_test_flutter/alloy_test_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
+import 'package:cobalt_test_flutter/cobalt_test_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
@@ -19,8 +19,8 @@ import 'support.dart';
 
 void main() {
   /// The graph the mounted app owns. Assigned by [pumpApp], because
-  /// `AlloyAppScope` builds the root itself — nothing hands it one.
-  late AlloyScope app;
+  /// `CobaltAppScope` builds the root itself — nothing hands it one.
+  late CobaltScope app;
 
   setUp(BootLog.reset);
 
@@ -35,7 +35,7 @@ void main() {
   Future<void> pumpApp(WidgetTester tester) => open(tester, const HomeScreen());
 
   /// A graph without widgets, for assertions that are about the graph alone.
-  Future<AlloyScope> startGraph() async {
+  Future<CobaltScope> startGraph() async {
     final scope = await startNotesGraph();
     return scope;
   }
@@ -115,7 +115,7 @@ void main() {
       await open(tester, const NoteDetailScreen());
       expect(app.children, hasLength(1));
 
-      // Swapping the child while the root stays put: AlloyAppScope reads its
+      // Swapping the child while the root stays put: CobaltAppScope reads its
       // graph once, so reusing the same element keeps the graph and unmounts
       // only the screen — which is the thing under test.
       await tester.pumpWidget(notesScreenUnderTest(const Scaffold()));
@@ -259,7 +259,7 @@ void main() {
         await tester.pumpWidget(
           notesScreenUnderTest(
             const EnvironmentsScreen(),
-            environment: AlloyEnvironment.defaultEnvironment,
+            environment: CobaltEnvironment.defaultEnvironment,
           ),
         );
         await settle(tester);

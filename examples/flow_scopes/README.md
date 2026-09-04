@@ -1,7 +1,7 @@
 # flow_scopes
 
-An Alloy example built around one idea: a scope whose lifetime is a navigation flow, wired with
-[go_router](https://pub.dev/packages/go_router) through `alloy_go_router`.
+An Cobalt example built around one idea: a scope whose lifetime is a navigation flow, wired with
+[go_router](https://pub.dev/packages/go_router) through `cobalt_go_router`.
 
 > **Not a runnable app.** This package is a library the gallery mounts — it has no `main.dart`
 > and no native project of its own. Run it, and everything else, from one place:
@@ -28,7 +28,7 @@ generator. See `examples/codegen_basics` and `examples/notes_app` for that.
 | Workspace (tabs) | a shell scope plus a scope per tab — three levels |
 | Switch tabs | a scope appears for the new tab and **nothing is disposed** |
 | Leave the workspace | all three go at once |
-| Scope tree (app bar) | the live hierarchy, read from `AlloyScope.children` |
+| Scope tree (app bar) | the live hierarchy, read from `CobaltScope.children` |
 
 The event log on the home screen survives all of it — it lives in the root scope, which is why a
 flow can write to it and the entry outlives the flow.
@@ -38,7 +38,7 @@ flow can write to it and the entry outlives the flow.
 The flow is a route type of its own — `lib/features/orders/order_flow_route.dart`:
 
 ```dart
-class OrderFlowRoute extends AlloyShellRoute {
+class OrderFlowRoute extends CobaltShellRoute {
   OrderFlowRoute()
     : super(
         name: 'order',
@@ -56,7 +56,7 @@ so the route table just names it:
 GoRouter(routes: [homeRoute, scopeTreeRoute, OrderFlowRoute()]);
 ```
 
-Nothing inside the flow knows it is scoped. `OrderSummaryScreen` calls `context.alloy<OrderDraft>()`
+Nothing inside the flow knows it is scoped. `OrderSummaryScreen` calls `context.cobalt<OrderDraft>()`
 exactly like any other screen resolves anything.
 
 ## Layout

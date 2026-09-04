@@ -1,6 +1,6 @@
 # gallery
 
-Every Alloy example in one app, organised by capability rather than by project.
+Every Cobalt example in one app, organised by capability rather than by project.
 
 ```bash
 flutter run
@@ -30,7 +30,7 @@ their delegates beside its own and the inspector's, which is what a multi-packag
 like: the strings belong to the package that shows them, and the app registers the delegates. A
 test reads `GalleryApp` — not the test harness — and fails if one is missing.
 
-`AlloyInspectorL10n.delegate` would work without being registered, since that package falls back to
+`CobaltInspectorL10n.delegate` would work without being registered, since that package falls back to
 the ambient locale; it is listed anyway, so the gallery shows the documented path rather than the
 one you get for free.
 
@@ -88,8 +88,8 @@ example packages next door:
 | `graph_events` | Graph events |
 | `codegen_basics` | Generated container |
 
-Those stay separate packages for a reason that is not tidiness: `alloy_container` aggregates a
-whole package into a single `$AlloyRootScope`, and two `@AlloyScopeRoot` classes in one package is
+Those stay separate packages for a reason that is not tidiness: `cobalt_container` aggregates a
+whole package into a single `$CobaltRootScope`, and two `@CobaltScopeRoot` classes in one package is
 a generation error. Merged, `notes_app` and `codegen_basics` would share one graph — which is
 exactly what a gallery of independent examples must not do.
 

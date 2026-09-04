@@ -1,0 +1,229 @@
+{
+  "@@locale": "en",
+  "inspectorTitle": "Cobalt · inspector",
+  "@inspectorTitle": {
+    "description": "App bar title of the inspector screen."
+  },
+  "pauseTooltip": "hold the view still",
+  "@pauseTooltip": {
+    "description": "Action that stops the log from repainting."
+  },
+  "resumeTooltip": "follow the graph again",
+  "@resumeTooltip": {
+    "description": "Action that lets the log repaint again."
+  },
+  "clearTooltip": "forget what has been recorded",
+  "@clearTooltip": {
+    "description": "Action that empties the log."
+  },
+  "tabTree": "Tree",
+  "@tabTree": {
+    "description": "Tab showing the live scope tree."
+  },
+  "tabBuilt": "Built",
+  "@tabBuilt": {
+    "description": "Tab showing the instances the graph constructed."
+  },
+  "tabLog": "Log",
+  "@tabLog": {
+    "description": "Tab showing every reported event."
+  },
+  "logSearchHint": "filter by message, scope or key",
+  "@logSearchHint": {
+    "description": "Placeholder of the event log search field."
+  },
+  "logEmpty": "Nothing reported yet",
+  "@logEmpty": {
+    "description": "Shown when the graph has reported nothing at all."
+  },
+  "logNoMatch": "Nothing matches that",
+  "@logNoMatch": {
+    "description": "Shown when the search and filters exclude every record."
+  },
+  "filterAll": "all",
+  "@filterAll": {
+    "description": "Filter chip that selects every family."
+  },
+  "familyScope": "scope",
+  "@familyScope": {
+    "description": "Events about scopes appearing and going away."
+  },
+  "familyStartup": "startup",
+  "@familyStartup": {
+    "description": "Events about bootstrap steps and phase-one initialization."
+  },
+  "familyInstance": "instance",
+  "@familyInstance": {
+    "description": "Events about instances being built and released."
+  },
+  "familyFailure": "failure",
+  "@familyFailure": {
+    "description": "Events about something going wrong."
+  },
+  "treeSearchHint": "filter registrations",
+  "@treeSearchHint": {
+    "description": "Placeholder of the scope tree search field."
+  },
+  "collapseAll": "collapse all",
+  "@collapseAll": {
+    "description": "Action that folds every node of the tree."
+  },
+  "expandAll": "expand all",
+  "@expandAll": {
+    "description": "Action that unfolds every node of the tree."
+  },
+  "treeNothingRegistered": "nothing registered",
+  "@treeNothingRegistered": {
+    "description": "Shown under a scope that registers nothing."
+  },
+  "treeNoMatch": "nothing matches",
+  "@treeNoMatch": {
+    "description": "Shown under a scope when the search excludes all of its registrations."
+  },
+  "groupingFlat": "flat",
+  "@groupingFlat": {
+    "description": "Show built instances as one list, newest first."
+  },
+  "groupingByScope": "by scope",
+  "@groupingByScope": {
+    "description": "Gather built instances under the scope that built them."
+  },
+  "groupingByLifetime": "by lifetime",
+  "@groupingByLifetime": {
+    "description": "Gather built instances by how long they live."
+  },
+  "builtEmpty": "Nothing built yet",
+  "@builtEmpty": {
+    "description": "Shown when the graph has constructed nothing."
+  },
+  "builtWhere": "in \"{scope}\" · {ownership}",
+  "@builtWhere": {
+    "description": "Subtitle of a built instance: which scope built it, and who releases it.",
+    "placeholders": {
+      "scope": {
+        "type": "String",
+        "example": "session"
+      },
+      "ownership": {
+        "type": "String",
+        "example": "torn down with the scope"
+      }
+    }
+  },
+  "ownedByScope": "torn down with the scope",
+  "@ownedByScope": {
+    "description": "The scope retains this instance and releases it."
+  },
+  "ownedByCaller": "caller owns it",
+  "@ownedByCaller": {
+    "description": "The scope does not retain this instance."
+  },
+  "lifetimeGone": "gone",
+  "@lifetimeGone": {
+    "description": "Badge for a registration whose lifetime is no longer known."
+  },
+  "copyRecord": "copy this record",
+  "@copyRecord": {
+    "description": "Action that copies one log record to the clipboard."
+  },
+  "recordCopied": "Record copied",
+  "@recordCopied": {
+    "description": "Confirmation after copying a record."
+  },
+  "fieldLevel": "level",
+  "@fieldLevel": {
+    "description": "Field label: how loud the record is."
+  },
+  "fieldScope": "scope",
+  "@fieldScope": {
+    "description": "Field label: which scope the record is about."
+  },
+  "fieldKey": "key",
+  "@fieldKey": {
+    "description": "Field label: which registration the record is about."
+  },
+  "fieldLifetime": "lifetime",
+  "@fieldLifetime": {
+    "description": "Field label: how long the registration lives."
+  },
+  "fieldRetained": "retained",
+  "@fieldRetained": {
+    "description": "Field label: whether the scope holds on to the instance."
+  },
+  "fieldError": "error",
+  "@fieldError": {
+    "description": "Field label: the error carried by the record."
+  },
+  "fieldStack": "stack",
+  "@fieldStack": {
+    "description": "Field label: the stack trace carried by the record."
+  },
+  "fieldStructured": "structured",
+  "@fieldStructured": {
+    "description": "Field label: the record as structured data."
+  },
+  "factOwnedBy": "Owned by",
+  "@factOwnedBy": {
+    "description": "Fact label: which scope declares the registration."
+  },
+  "factReached": "Reached",
+  "@factReached": {
+    "description": "Fact label: how the registration is visible from here."
+  },
+  "reachedInherited": "inherited from an ancestor",
+  "@reachedInherited": {
+    "description": "The registration belongs to a scope further up."
+  },
+  "reachedHere": "registered in this scope",
+  "@reachedHere": {
+    "description": "The registration belongs to the scope being looked at."
+  },
+  "factTornDown": "Torn down with the scope",
+  "@factTornDown": {
+    "description": "Fact label: whether the scope releases the instance."
+  },
+  "tornDownYes": "yes",
+  "@tornDownYes": {
+    "description": "The scope releases it."
+  },
+  "tornDownNo": "no, the caller owns it",
+  "@tornDownNo": {
+    "description": "The scope does not release it."
+  },
+  "tornDownUnknown": "unknown",
+  "@tornDownUnknown": {
+    "description": "The lifetime is not known."
+  },
+  "factBuilt": "Built",
+  "@factBuilt": {
+    "description": "Fact label: the instance built by the explicit action."
+  },
+  "factFailed": "Failed",
+  "@factFailed": {
+    "description": "Fact label: why the explicit build failed."
+  },
+  "buildItTitle": "Build it now",
+  "@buildItTitle": {
+    "description": "Action that resolves the registration for real."
+  },
+  "buildItSubtitle": "Creates the instance for real and logs it — this changes the graph you are looking at",
+  "@buildItSubtitle": {
+    "description": "What the build action costs."
+  },
+  "notBuildable": "Takes a parameter, so it cannot be built from here",
+  "@notBuildable": {
+    "description": "Why a parameterized registration offers no build action."
+  },
+  "nodeCounts": "{registrations} reg · {children, plural, =1{1 child} other{{children} children}}",
+  "@nodeCounts": {
+    "description": "How much a scope node holds: its own registrations, and how many children hang off it.",
+    "placeholders": {
+      "registrations": {
+        "type": "int"
+      },
+      "children": {
+        "type": "int"
+      }
+    }
+  }
+}

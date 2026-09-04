@@ -1,24 +1,24 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:codegen_basics/services.dart';
 
 /// Half from the graph, half from whoever built the widget.
 ///
-/// `@alloyParam` marks what the container cannot know. The generator writes
+/// `@cobaltParam` marks what the container cannot know. The generator writes
 /// `$GreetingArgs` beside the container as a named record, and registers this
 /// as a parameterized factory rather than a singleton.
-@alloyInject
+@cobaltInject
 class Greeting {
   Greeting(
     this._config, {
-    @alloyParam required this.name,
-    @alloyParam required this.loud,
+    @cobaltParam required this.name,
+    @cobaltParam required this.loud,
   });
 
   final Config _config;
   final String name;
   final bool loud;
 
-  /// Which build the graph was started for — the half `@alloyParam` did not
+  /// Which build the graph was started for — the half `@cobaltParam` did not
   /// supply.
   String get environment => _config.environment;
 

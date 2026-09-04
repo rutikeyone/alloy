@@ -1,8 +1,8 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_external_consumer/src/clock.dart';
-import 'package:alloy_external_consumer/src/device_info.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_external_consumer/src/clock.dart';
+import 'package:cobalt_external_consumer/src/device_info.dart';
 
-@alloyInject
+@cobaltInject
 class Diagnostics {
   Diagnostics(this.device, this.clock);
 

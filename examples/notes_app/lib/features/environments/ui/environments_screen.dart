@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 import 'package:notes_app/features/environments/domain/api_client.dart';
@@ -10,10 +10,10 @@ class EnvironmentsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = NotesL10n.of(context);
-    final environment = context.alloy<AlloyEnvironment>();
-    final scope = context.alloyScope;
+    final environment = context.cobalt<CobaltEnvironment>();
+    final scope = context.cobaltScope;
     final api = scope.isRegistered<ApiClient>()
-        ? context.alloy<ApiClient>()
+        ? context.cobalt<ApiClient>()
         : null;
     final armed = BootLog.steps.contains('report-crashes');
 

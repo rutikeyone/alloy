@@ -1,4 +1,4 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/event_log.dart';
 
 class NoteDraft implements Disposable {
@@ -16,10 +16,10 @@ class NoteDraft implements Disposable {
   }
 }
 
-class NoteDraftFactory implements AlloyFactory<NoteDraft> {
+class NoteDraftFactory implements CobaltFactory<NoteDraft> {
   const NoteDraftFactory();
 
   @override
-  NoteDraft create(AlloyResolver resolver) =>
+  NoteDraft create(CobaltResolver resolver) =>
       NoteDraft(resolver.get<EventLog>());
 }

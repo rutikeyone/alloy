@@ -1,10 +1,10 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/app_config.dart';
 import 'package:notes_app/features/environments/domain/api_client.dart';
 
-@AlloyInject(exposeAs: ApiClient)
-@AlloyEnvironment.prod
-@AlloyEnvironment.stage
+@CobaltInject(exposeAs: ApiClient)
+@CobaltEnvironment.prod
+@CobaltEnvironment.stage
 class LiveApiClient implements ApiClient {
   LiveApiClient(this._config);
 

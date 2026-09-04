@@ -108,7 +108,7 @@ class _Masthead extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Alloy', style: text.wordmark),
+                  Text('Cobalt', style: text.wordmark),
                   Text(l10n.tagline, style: text.subtitle),
                 ],
               ),

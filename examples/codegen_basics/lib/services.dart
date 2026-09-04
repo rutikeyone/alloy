@@ -1,13 +1,13 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
-@alloyInject
+@cobaltInject
 class Config {
   Config();
 
   final String environment = 'test';
 }
 
-@alloyInject
+@cobaltInject
 class Repository {
   Repository(this.config);
 
@@ -20,7 +20,7 @@ class Repository {
   void write(String key, int value) => _values[key] = value;
 }
 
-@alloyInject
+@cobaltInject
 class Telemetry implements Disposable {
   Telemetry();
 

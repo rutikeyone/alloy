@@ -1,7 +1,7 @@
-import 'package:alloy/alloy.dart';
-import 'package:alloy_external_consumer/src/clock.dart';
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_external_consumer/src/clock.dart';
 
-@AlloyInject(exposeAs: Clock)
+@CobaltInject(exposeAs: Clock)
 class SystemClock implements Clock {
   SystemClock();
 

@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
 
-  "appTitle": "Alloy codegen basics",
+  "appTitle": "Cobalt codegen basics",
   "@appTitle": { "description": "Title of the generated-container example." },
 
   "environment": "environment: {name}",
@@ -14,7 +14,7 @@
   "@greeting": {
     "description": "The line a parameterized registration produces: the name comes from the call site, the environment from the graph.",
     "placeholders": {
-      "name": { "type": "String", "example": "Alloy" },
+      "name": { "type": "String", "example": "Cobalt" },
       "environment": { "type": "String", "example": "dev" }
     }
   },

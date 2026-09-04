@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Alloy — dependency injection for Dart and Flutter" width="880">
+  <img src="assets/banner.png" alt="Cobalt — dependency injection for Dart and Flutter" width="880">
 </p>
 
 <p align="center">
-  <a href="https://pub.dev/packages/alloy"><img src="https://img.shields.io/pub/v/alloy?logo=dart&logoColor=white&label=pub&color=5FD4C8" alt="pub package"></a>
-  <a href="https://pub.dev/packages/alloy/score"><img src="https://img.shields.io/pub/points/alloy?color=5FD4C8" alt="pub points"></a>
-  <a href="https://pub.dev/packages/alloy"><img src="https://img.shields.io/pub/likes/alloy?color=5FD4C8" alt="pub likes"></a>
+  <a href="https://pub.dev/packages/cobalt"><img src="https://img.shields.io/pub/v/cobalt?logo=dart&logoColor=white&label=pub&color=5FD4C8" alt="pub package"></a>
+  <a href="https://pub.dev/packages/cobalt/score"><img src="https://img.shields.io/pub/points/cobalt?color=5FD4C8" alt="pub points"></a>
+  <a href="https://pub.dev/packages/cobalt"><img src="https://img.shields.io/pub/likes/cobalt?color=5FD4C8" alt="pub likes"></a>
   <a href="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml"><img src="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="licence"></a>
 </p>
@@ -17,7 +17,7 @@
 > Перевод [README.md](README.md). Канонический текст — английский: при расхождении верен он.
 > README отдельных пакетов не переводятся — это справочники по API.
 
-# Alloy
+# Cobalt
 
 Фреймворк внедрения зависимостей для Dart и Flutter. Два режима: декларативная кодогенерация и
 рукописный API на чистом Dart поверх одного и того же рантайма.
@@ -38,7 +38,7 @@
   <img src="assets/screenshots/log.png" width="30%" alt="Всё, о чём сообщил граф">
 </p>
 
-<p align="center"><sub>Галерея примеров, живое дерево скоупов с временем жизни каждой регистрации и всё, о чём сообщил граф, — <code>alloy_inspector</code> внутри работающего приложения.</sub></p>
+<p align="center"><sub>Галерея примеров, живое дерево скоупов с временем жизни каждой регистрации и всё, о чём сообщил граф, — <code>cobalt_inspector</code> внутри работающего приложения.</sub></p>
 
 <p align="center">
   <img src="assets/screenshots/flow.png" width="30%" alt="Скоуп во владении навигационного флоу">
@@ -56,7 +56,7 @@
 четыре метода `reset()`, протёкших в доменные интерфейсы.
 
 Кодогенерация — удобство поверх этого рантайма, а не второй фреймворк. Генератор пишет ровно то, что
-вы написали бы руками, не пользуясь ничем, кроме публичного API `alloy`, — именно это делает
+вы написали бы руками, не пользуясь ничем, кроме публичного API `cobalt`, — именно это делает
 возможной постепенную миграцию: сгенерированный и рукописный контейнеры композируются в одном графе.
 
 ## Возможности
@@ -65,11 +65,11 @@
 |---|---|
 | **Иерархические скоупы** | дерево, а не плоский стек — два независимых поддерева сосуществуют, чего стек выразить не может |
 | **Владение и разбор** | скоуп освобождает построенное, LIFO по порядку **создания**, best-effort с одним дедлайном на всё дерево |
-| **Двухфазный старт** | `@AlloyBootstrap` до появления контейнера, `@AlloyInit` внутри него, обе фазы дождаются до возврата из `start` |
+| **Двухфазный старт** | `@CobaltBootstrap` до появления контейнера, `@CobaltInit` внутри него, обе фазы дождаются до возврата из `start` |
 | **Топологический порядок** | async-инициализаторы разложены по уровням алгоритмом Кана; независимые ветки едут через `Future.wait`, цикл валит сборку с указанием цикла |
 | **Property injection** | поля `late final`, заполняемые сгенерированным миксином: у класса с пятью зависимостями пустой конструктор |
 | **Полнота на этапе сборки** | зависимость, которую никто не регистрирует, валит сборку, называя все пробелы разом |
-| **Параметризованные регистрации** | `@AlloyParam` для того, что даёт место вызова; тип аргумента генератор пишет именованной записью |
+| **Параметризованные регистрации** | `@CobaltParam` для того, что даёт место вызова; тип аргумента генератор пишет именованной записью |
 | **Опциональные зависимости** | `Foo?` резолвится через `getOrNull` и получает null вместо падения сборки |
 | **Модули** | регистрация типов, которые написали не вы, — клиент из чужого пакета, значение из SDK |
 | **Окружения** | одна абстракция, разная реализация по сборкам, пересечения отвергаются на сборке |
@@ -85,27 +85,27 @@
 
 | Пакет | Зависит от | Попадает в приложение |
 |---|---|---|
-| `alloy_annotations` | `meta` | да |
-| `alloy` | `alloy_annotations` | да, ядро рантайма, без Flutter |
-| `alloy_flutter` | `alloy`, `flutter` | да |
-| `alloy_go_router` | `alloy_flutter`, `go_router` | да, опционально |
-| `alloy_bloc` | `alloy`, `bloc` | да, опционально |
-| `alloy_talker` | `alloy`, `talker` | да, опционально |
-| `alloy_logging` | `alloy`, `logging` | да, опционально |
-| `alloy_logger` | `alloy`, `logger` | да, опционально |
-| `alloy_analyzer` | `alloy_annotations`, `analyzer` | нет |
-| `alloy_generator` | `alloy_analyzer`, `build`, `source_gen`, `code_builder` | только dev_dependency |
-| `alloy_lint` | `alloy_analyzer`, `analysis_server_plugin` | только dev_dependency |
-| `alloy_test` | `alloy`, `test_api`, `matcher` | только dev_dependency |
-| `alloy_test_flutter` | `alloy_flutter`, `flutter_test` | только dev_dependency |
-| `alloy_inspector` | `alloy_flutter`, `flutter` | только dev_dependency |
-| `alloy_talker_flutter` | `alloy_inspector`, `alloy_talker`, `talker_flutter` | только dev_dependency |
+| `cobalt_annotations` | `meta` | да |
+| `cobalt` | `cobalt_annotations` | да, ядро рантайма, без Flutter |
+| `cobalt_flutter` | `cobalt`, `flutter` | да |
+| `cobalt_go_router` | `cobalt_flutter`, `go_router` | да, опционально |
+| `cobalt_bloc` | `cobalt`, `bloc` | да, опционально |
+| `cobalt_talker` | `cobalt`, `talker` | да, опционально |
+| `cobalt_logging` | `cobalt`, `logging` | да, опционально |
+| `cobalt_logger` | `cobalt`, `logger` | да, опционально |
+| `cobalt_analyzer` | `cobalt_annotations`, `analyzer` | нет |
+| `cobalt_generator` | `cobalt_analyzer`, `build`, `source_gen`, `code_builder` | только dev_dependency |
+| `cobalt_lint` | `cobalt_analyzer`, `analysis_server_plugin` | только dev_dependency |
+| `cobalt_test` | `cobalt`, `test_api`, `matcher` | только dev_dependency |
+| `cobalt_test_flutter` | `cobalt_flutter`, `flutter_test` | только dev_dependency |
+| `cobalt_inspector` | `cobalt_flutter`, `flutter` | только dev_dependency |
+| `cobalt_talker_flutter` | `cobalt_inspector`, `cobalt_talker`, `talker_flutter` | только dev_dependency |
 
-`alloy_analyzer` существует затем, чтобы генератор и линтер разбирали объявления Alloy **одной**
+`cobalt_analyzer` существует затем, чтобы генератор и линтер разбирали объявления Cobalt **одной**
 реализацией, а не двумя, которые неизбежно разойдутся. Он владеет IR и топологической сортировкой и
 не зависит ни от `build`, ни от API плагина.
 
-**Инвариант проекта:** сгенерированный код имеет право использовать только публичный API `alloy`.
+**Инвариант проекта:** сгенерированный код имеет право использовать только публичный API `cobalt`.
 В тот момент, когда генерации понадобится что-то, чего не выражает Manual Mode, это два разных
 фреймворка под одним именем.
 
@@ -154,7 +154,7 @@ CI гоняет `stable` и `beta`, а не матрицу прошлых рел
 Разбор — LIFO по порядку **создания**, а не объявления. Это различие и есть баг большинства
 рукописных контейнеров: компонент, объявленный первым и созданный последним, умирает первым, пока от
 него ещё кто-то зависит. И разбор best-effort: упавший `dispose` записывается, остальные всё равно
-выполняются, у всего дерева один дедлайн, а несделанное перечисляется в `AlloyDisposeError` вместо
+выполняются, у всего дерева один дедлайн, а несделанное перечисляется в `CobaltDisposeError` вместо
 того, чтобы первая ошибка спрятала остальные девять.
 
 Родитель держит детей сильно. Слабые ссылки рассматривались и отвергнуты: они позволили бы GC забрать
@@ -167,42 +167,42 @@ Code-Gen Mode отвергает неполный граф на сборке, н
 
 ```
 Diagnostics requires DeviceInfo, which nothing registers. Annotate the class that
-provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) when
+provides it with @CobaltInject, or name it in @CobaltScopeRoot(provides: [...]) when
 something outside the generated container registers it.
 ```
 
-Считаются параметры конструктора, `@injected`-поля и `@AlloyInit(dependsOn:)`, квалификатор `@Named`
+Считаются параметры конструктора, `@injected`-поля и `@CobaltInit(dependsOn:)`, квалификатор `@Named`
 входит в ключ, а каждое окружение проверяется отдельно. Дубликаты регистраций, циклы зависимостей,
-два корня скоупа в одном пакете, generic-класс и абстрактный класс под `@AlloyInject` — тоже ошибки
+два корня скоупа в одном пакете, generic-класс и абстрактный класс под `@CobaltInject` — тоже ошибки
 сборки.
 
 Это гарантия Code-Gen, и граница названа честно: рукописная фабрика резолвит внутри `create`, поэтому
 статически не видно, что она попросит. Графы Manual Mode по-прежнему падают в рантайме — ровно под
-этот пробел в `alloy_test` есть `expectGraphResolves`.
+этот пробел в `cobalt_test` есть `expectGraphResolves`.
 
 ### Сгенерированный код — это то, что вы написали бы сами
 
 Три билдера: один пишет миксины property injection, второй сканирует каждую библиотеку в IR, третий
-собирает весь пакет в `lib/alloy.g.dart`. Агрегация двухфазная потому, что один шаг сборки не видит
+собирает весь пакет в `lib/cobalt.g.dart`. Агрегация двухфазная потому, что один шаг сборки не видит
 программу целиком.
 
-На выходе приватные const-фабрики и `$AlloyRootScope`, упорядоченный компайл-тайм топологической
-сортировкой, — ни замыканий, ни рефлексии, ни сканирования в рантайме. `$alloyBootstrap` — геттер, а
+На выходе приватные const-фабрики и `$CobaltRootScope`, упорядоченный компайл-тайм топологической
+сортировкой, — ни замыканий, ни рефлексии, ни сканирования в рантайме. `$cobaltBootstrap` — геттер, а
 не хранимый список, поэтому рестарт получает свежие шаги, а не те, что прошлый старт уже израсходовал.
 
 Дженерики работают как зависимости и как цели `exposeAs`: `Repository<User>` и `Repository<Order>` —
-две регистрации, потому что `AlloyKey` строится из `Type`, а это разные типы. Сам инъектируемый класс
+две регистрации, потому что `CobaltKey` строится из `Type`, а это разные типы. Сам инъектируемый класс
 generic быть не может: генератору никто не говорит, какие инстанциации регистрировать.
 
 ### Наблюдаемость — это типизированные события
 
-`AlloyObserver` сообщает, что делает граф: появляются скоупы, строятся инстансы, завершается старт,
+`CobaltObserver` сообщает, что делает граф: появляются скоупы, строятся инстансы, завершается старт,
 падает разбор. В колбэки приходят описатели, а не живые объекты, потому что наблюдатель, способный
 резолвить из скоупа посреди разбора, уже не наблюдает; а исключение из колбэка проглатывается:
 наблюдение не должно ломать наблюдаемое.
 
 Записи несут `kind` как значение, а не как предложение, — именно это позволяет структурированному
-приёмнику ключеваться на `AlloyEventKind.scopeInitFailed`, не разбирая прозу. Лог-sink — это один
+приёмнику ключеваться на `CobaltEventKind.scopeInitFailed`, не разбирая прозу. Лог-sink — это один
 колбэк, поэтому ни один логгер не остаётся за бортом из-за отсутствия пакета-адаптера; у
 крашрепортинга форма своя, потому что полезным отчёт делает след того, что граф делал перед этим.
 
@@ -210,7 +210,7 @@ generic быть не может: генератору никто не гово�
 
 ### Навигационные флоу
 
-`alloy_go_router` делает время жизни скоупа навигационным флоу: создан при входе, разобран при
+`cobalt_go_router` делает время жизни скоупа навигационным флоу: создан при входе, разобран при
 выходе. Это обычный наследник `ShellRoute`, а скоупом владеет виджет внутри него — ничто не слушает
 роутер и не зеркалит его, потому что именно на зеркалировании рукописные версии ломаются на кнопке
 «назад», на deep links и на переключении вкладок.
@@ -220,28 +220,28 @@ README пакета.
 
 ## Правила линтера
 
-`alloy_lint` — это `analysis_server_plugin`, а не плагин `custom_lint`. В нём двенадцать
-warning-правил, все построены на том же слое разбора `alloy_analyzer`, которым пользуется генератор,
+`cobalt_lint` — это `analysis_server_plugin`, а не плагин `custom_lint`. В нём двенадцать
+warning-правил, все построены на том же слое разбора `cobalt_analyzer`, которым пользуется генератор,
 поэтому ошибка видна в IDE, а не только когда отработает `build_runner`:
 
 | Правило | Что ловит |
 |---|---|
-| `alloy_missing_injection_mixin` | `@injected`-поля без `with _$ClassName` на классе, который контейнер регистрирует |
-| `alloy_injected_field_needs_an_injectable` | `@injected`-поля на классе, который контейнер не регистрирует вовсе |
-| `alloy_param_needs_an_injectable` | `@AlloyParam` на классе, который контейнер не регистрирует вовсе |
-| `alloy_injected_field_must_be_late_final` | `@injected` на изменяемом, не-late или статическом поле |
-| `alloy_injectable_must_be_constructible` | `@AlloyInject` на абстрактном классе или классе без публичного генеративного конструктора |
-| `alloy_init_requires_init_method` | `@AlloyInit` на классе без `init()` |
-| `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` на классе без `run()` |
-| `alloy_bootstrap_step_cannot_inject` | bootstrap-шаг, чей конструктор берёт обязательные параметры |
-| `alloy_environment_needs_a_registration` | `@AlloyEnvironment` на классе, который никто не регистрирует, где она молча ничего не делает |
-| `alloy_dependency_is_not_registered` | инъектируемая зависимость, которую ничто в пакете не регистрирует |
-| `alloy_dependency_cycle` | инъектируемый класс, который в итоге зависит от самого себя |
-| `alloy_registration_is_never_released` | зарегистрированный класс с `dispose()` или `close()`, которых скоуп не видит |
+| `cobalt_missing_injection_mixin` | `@injected`-поля без `with _$ClassName` на классе, который контейнер регистрирует |
+| `cobalt_injected_field_needs_an_injectable` | `@injected`-поля на классе, который контейнер не регистрирует вовсе |
+| `cobalt_param_needs_an_injectable` | `@CobaltParam` на классе, который контейнер не регистрирует вовсе |
+| `cobalt_injected_field_must_be_late_final` | `@injected` на изменяемом, не-late или статическом поле |
+| `cobalt_injectable_must_be_constructible` | `@CobaltInject` на абстрактном классе или классе без публичного генеративного конструктора |
+| `cobalt_init_requires_init_method` | `@CobaltInit` на классе без `init()` |
+| `cobalt_bootstrap_requires_run_method` | `@CobaltBootstrap` на классе без `run()` |
+| `cobalt_bootstrap_step_cannot_inject` | bootstrap-шаг, чей конструктор берёт обязательные параметры |
+| `cobalt_environment_needs_a_registration` | `@CobaltEnvironment` на классе, который никто не регистрирует, где она молча ничего не делает |
+| `cobalt_dependency_is_not_registered` | инъектируемая зависимость, которую ничто в пакете не регистрирует |
+| `cobalt_dependency_cycle` | инъектируемый класс, который в итоге зависит от самого себя |
+| `cobalt_registration_is_never_released` | зарегистрированный класс с `dispose()` или `close()`, которых скоуп не видит |
 
 `custom_lint` не используется: его последний релиз (0.8.1) прибит к `analyzer ^8.0.0` и не уживается
 с современным анализатором. `riverpod_lint` ушёл с него на первопартийный `analysis_server_plugin`,
-и `alloy_lint` следует за ним.
+и `cobalt_lint` следует за ним.
 
 У подключения плагина две ловушки, о которых лучше прочесть до того, как в них попасть, — см.
 [GUIDE_CODEGEN.ru.md §16](GUIDE_CODEGEN.ru.md#16-плагин-линтера).
@@ -277,8 +277,8 @@ cd examples/gallery && flutter run
 многопакетное Flutter-приложение.
 
 Записи журнала самого фреймворка остаются английскими, как и идентификаторы на экране — имена шагов,
-имена скоупов, ключи регистраций, времена жизни. Что именно остаётся словами Alloy и почему — в
-[README `alloy_inspector`](packages/alloy_inspector/README.md), а как устроены примеры — в
+имена скоупов, ключи регистраций, времена жизни. Что именно остаётся словами Cobalt и почему — в
+[README `cobalt_inspector`](packages/cobalt_inspector/README.md), а как устроены примеры — в
 [README галереи](examples/gallery/README.md).
 
 ## Работа над самим репозиторием
@@ -286,15 +286,15 @@ cd examples/gallery && flutter run
 ```
 dart analyze --fatal-infos .
 dart format --output=none --set-exit-if-changed .
-(cd packages/alloy && dart test)
-(cd packages/alloy_flutter && flutter test)
+(cd packages/cobalt && dart test)
+(cd packages/cobalt_flutter && flutter test)
 (cd examples/manual_mode && dart test)
 (cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
-(cd packages/alloy_lint && dart test)
-(cd packages/alloy_test && dart test)
-(cd packages/alloy_inspector && flutter test)
-(cd packages/alloy_talker_flutter && flutter test)
+(cd packages/cobalt_lint && dart test)
+(cd packages/cobalt_test && dart test)
+(cd packages/cobalt_inspector && flutter test)
+(cd packages/cobalt_talker_flutter && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ./tool/coverage.sh
@@ -304,8 +304,8 @@ dart format --output=none --set-exit-if-changed .
 худшими вперёд и падает ниже порога по **сумме** — 85%. Текущая цифра — это то, что печатает сам
 скрипт; здесь она не повторяется: число, которое двигается с каждым коммитом, в прозе устаревает, и
 никто этого не проверяет — оно уже устаревало дважды. Порог именно на сумме, а не на пакете, и это
-сознательно: покрытие меряется по пакетам, а код общий, поэтому парсеры `alloy_analyzer` гоняются
-куда больше из тестов `alloy_generator` и из `compat/external_consumer`, чем из собственного набора.
+сознательно: покрытие меряется по пакетам, а код общий, поэтому парсеры `cobalt_analyzer` гоняются
+куда больше из тестов `cobalt_generator` и из `compat/external_consumer`, чем из собственного набора.
 Порог на пакет требовал бы писать тесты не там, где им место. Переопределяется через
 `COVERAGE_FLOOR=90 ./tool/coverage.sh`.
 
@@ -314,16 +314,16 @@ CI (`.github/workflows/ci.yml`) гоняет всё вышеперечислен
 устаревший сгенерированный код валит сборку. Генератор форматирует свой вывод той же версией
 `dart_style`, которой пользуется проверка формата, — расходиться им негде.
 
-**Раскладка.** Один публичный тип на файл. Sealed-иерархия `AlloyRegistration` — сознательное
+**Раскладка.** Один публичный тип на файл. Sealed-иерархия `CobaltRegistration` — сознательное
 исключение: sealed-иерархия обязана жить в одной библиотеке, поэтому её наследники — `part`-файлы, а
 не отдельные библиотеки. `compat/external_consumer` выпадает из этого правила целиком: это пакет,
 который намеренно **не** входит в workspace и не объявляет `resolution: workspace`, поэтому pub
 резолвит его самостоятельно — так, как это сделал бы чужой проект. Он существует, чтобы держать
 пайплайн кодогенерации честным снаружи репозитория.
 
-**Известное предупреждение при публикации.** `alloy_lint` сообщает, что «the name of lib/main.dart
+**Известное предупреждение при публикации.** `cobalt_lint` сообщает, что «the name of lib/main.dart
 should match the name of the package». Эта точка входа задана API плагина сервера анализа: сервер
-генерирует код, который импортирует `package:alloy_lint/main.dart` и читает его переменную `plugin`.
+генерирует код, который импортирует `package:cobalt_lint/main.dart` и читает его переменную `plugin`.
 У `riverpod_lint` то же самое предупреждение.
 
 ## Лицензия

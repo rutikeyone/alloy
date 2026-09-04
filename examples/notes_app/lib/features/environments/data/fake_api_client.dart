@@ -1,9 +1,9 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/features/environments/domain/api_client.dart';
 
-@AlloyInject(exposeAs: ApiClient)
-@AlloyEnvironment.dev
-@AlloyEnvironment.test
+@CobaltInject(exposeAs: ApiClient)
+@CobaltEnvironment.dev
+@CobaltEnvironment.test
 class FakeApiClient implements ApiClient {
   FakeApiClient();
 

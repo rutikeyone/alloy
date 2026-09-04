@@ -1,7 +1,7 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/bootstrap/load_remote_config.dart';
 
-@alloySingleton
+@cobaltSingleton
 class AppConfig {
   AppConfig();
 

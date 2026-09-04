@@ -1,4 +1,4 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:notes_app/features/notes/ui/notes_controller.dart';
 import 'package:notes_app/l10n/notes_app_l10n.dart';
@@ -11,7 +11,7 @@ class NotesScreen extends StatefulWidget {
 }
 
 class _NotesScreenState extends State<NotesScreen> {
-  late final NotesController _controller = context.alloy<NotesController>();
+  late final NotesController _controller = context.cobalt<NotesController>();
   var _query = '';
 
   @override

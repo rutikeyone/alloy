@@ -114,7 +114,7 @@ abstract class NotesL10n {
   /// Heading above the bootstrap steps.
   ///
   /// In en, this message translates to:
-  /// **'Phase 0 — @AlloyBootstrap'**
+  /// **'Phase 0 — @CobaltBootstrap'**
   String get phaseZero;
 
   /// Who owns the bootstrap steps.
@@ -126,7 +126,7 @@ abstract class NotesL10n {
   /// Heading above the async initializers.
   ///
   /// In en, this message translates to:
-  /// **'Phase 1 — @AlloyInit'**
+  /// **'Phase 1 — @CobaltInit'**
   String get phaseOne;
 
   /// Whether the database finished opening.

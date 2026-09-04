@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Alloy — dependency injection for Dart and Flutter" width="880">
+  <img src="assets/banner.png" alt="Cobalt — dependency injection for Dart and Flutter" width="880">
 </p>
 
 <p align="center">
-  <a href="https://pub.dev/packages/alloy"><img src="https://img.shields.io/pub/v/alloy?logo=dart&logoColor=white&label=pub&color=5FD4C8" alt="pub package"></a>
-  <a href="https://pub.dev/packages/alloy/score"><img src="https://img.shields.io/pub/points/alloy?color=5FD4C8" alt="pub points"></a>
-  <a href="https://pub.dev/packages/alloy"><img src="https://img.shields.io/pub/likes/alloy?color=5FD4C8" alt="pub likes"></a>
+  <a href="https://pub.dev/packages/cobalt"><img src="https://img.shields.io/pub/v/cobalt?logo=dart&logoColor=white&label=pub&color=5FD4C8" alt="pub package"></a>
+  <a href="https://pub.dev/packages/cobalt/score"><img src="https://img.shields.io/pub/points/cobalt?color=5FD4C8" alt="pub points"></a>
+  <a href="https://pub.dev/packages/cobalt"><img src="https://img.shields.io/pub/likes/cobalt?color=5FD4C8" alt="pub likes"></a>
   <a href="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml"><img src="https://github.com/rutikeyone/alloy/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="licence"></a>
 </p>
@@ -17,7 +17,7 @@
 > 本文档译自 [README.md](README.md)。英文版为准：若有出入，以英文为准。
 > 各个包自身的 README 不作翻译——它们是 API 参考。
 
-# Alloy
+# Cobalt
 
 面向 Dart 和 Flutter 的依赖注入框架。双模式：声明式代码生成，以及基于同一套运行时的纯 Dart 手写 API。
 
@@ -36,7 +36,7 @@
   <img src="assets/screenshots/log.png" width="30%" alt="图上报过的一切">
 </p>
 
-<p align="center"><sub>示例画廊、带每条注册生命周期的实时作用域树，以及图上报过的一切——运行中应用里的 <code>alloy_inspector</code>。</sub></p>
+<p align="center"><sub>示例画廊、带每条注册生命周期的实时作用域树，以及图上报过的一切——运行中应用里的 <code>cobalt_inspector</code>。</sub></p>
 
 <p align="center">
   <img src="assets/screenshots/flow.png" width="30%" alt="由导航流程持有的作用域">
@@ -54,7 +54,7 @@
 外加四个渗进领域接口的 `reset()` 方法。
 
 代码生成是这套运行时之上的便利，而不是第二个框架。生成器写出的正是你会手写的东西，
-除了 `alloy` 的公开 API 之外什么都不用——这正是渐进式迁移得以可能的原因：
+除了 `cobalt` 的公开 API 之外什么都不用——这正是渐进式迁移得以可能的原因：
 生成的容器和手写的容器可以组合在同一张图里。
 
 ## 特性
@@ -63,11 +63,11 @@
 |---|---|
 | **层级作用域** | 是树而不是扁平的栈——两棵互不相关的子树可以并存，而栈表达不了这一点 |
 | **所有权与销毁** | 作用域释放它构建的东西，按**创建**顺序倒序，尽力而为，整棵树共用一个截止时间 |
-| **两阶段启动** | `@AlloyBootstrap` 在容器存在之前，`@AlloyInit` 在容器内部，`start` 返回前两者都已完成 |
+| **两阶段启动** | `@CobaltBootstrap` 在容器存在之前，`@CobaltInit` 在容器内部，`start` 返回前两者都已完成 |
 | **拓扑排序** | 异步初始化器按 Kahn 算法分层；互不相关的分支通过 `Future.wait` 并行，出现环则构建失败并指出这个环 |
 | **属性注入** | `late final` 字段由生成的 mixin 填充，于是有五个协作对象的类拥有一个空构造函数 |
 | **编译期完整性** | 没有人注册的依赖会让构建失败，并一次性点出所有缺口 |
-| **参数化注册** | `@AlloyParam` 表示由调用方提供的部分；生成器把参数类型写成具名 record |
+| **参数化注册** | `@CobaltParam` 表示由调用方提供的部分；生成器把参数类型写成具名 record |
 | **可选依赖** | `Foo?` 通过 `getOrNull` 解析，注入 null 而不是让构建失败 |
 | **模块** | 注册不是你写的类型——别的包里的客户端、SDK 交给你的值 |
 | **环境** | 同一个抽象，按构建给出不同实现，重叠会在构建期被拒绝 |
@@ -83,26 +83,26 @@
 
 | 包 | 依赖 | 是否进入应用 |
 |---|---|---|
-| `alloy_annotations` | `meta` | 是 |
-| `alloy` | `alloy_annotations` | 是，运行时核心，不含 Flutter |
-| `alloy_flutter` | `alloy`、`flutter` | 是 |
-| `alloy_go_router` | `alloy_flutter`、`go_router` | 是，可选 |
-| `alloy_bloc` | `alloy`、`bloc` | 是，可选 |
-| `alloy_talker` | `alloy`、`talker` | 是，可选 |
-| `alloy_logging` | `alloy`、`logging` | 是，可选 |
-| `alloy_logger` | `alloy`、`logger` | 是，可选 |
-| `alloy_analyzer` | `alloy_annotations`、`analyzer` | 否 |
-| `alloy_generator` | `alloy_analyzer`、`build`、`source_gen`、`code_builder` | 仅 dev_dependency |
-| `alloy_lint` | `alloy_analyzer`、`analysis_server_plugin` | 仅 dev_dependency |
-| `alloy_test` | `alloy`、`test_api`、`matcher` | 仅 dev_dependency |
-| `alloy_test_flutter` | `alloy_flutter`、`flutter_test` | 仅 dev_dependency |
-| `alloy_inspector` | `alloy_flutter`、`flutter` | 仅 dev_dependency |
-| `alloy_talker_flutter` | `alloy_inspector`、`alloy_talker`、`talker_flutter` | 仅 dev_dependency |
+| `cobalt_annotations` | `meta` | 是 |
+| `cobalt` | `cobalt_annotations` | 是，运行时核心，不含 Flutter |
+| `cobalt_flutter` | `cobalt`、`flutter` | 是 |
+| `cobalt_go_router` | `cobalt_flutter`、`go_router` | 是，可选 |
+| `cobalt_bloc` | `cobalt`、`bloc` | 是，可选 |
+| `cobalt_talker` | `cobalt`、`talker` | 是，可选 |
+| `cobalt_logging` | `cobalt`、`logging` | 是，可选 |
+| `cobalt_logger` | `cobalt`、`logger` | 是，可选 |
+| `cobalt_analyzer` | `cobalt_annotations`、`analyzer` | 否 |
+| `cobalt_generator` | `cobalt_analyzer`、`build`、`source_gen`、`code_builder` | 仅 dev_dependency |
+| `cobalt_lint` | `cobalt_analyzer`、`analysis_server_plugin` | 仅 dev_dependency |
+| `cobalt_test` | `cobalt`、`test_api`、`matcher` | 仅 dev_dependency |
+| `cobalt_test_flutter` | `cobalt_flutter`、`flutter_test` | 仅 dev_dependency |
+| `cobalt_inspector` | `cobalt_flutter`、`flutter` | 仅 dev_dependency |
+| `cobalt_talker_flutter` | `cobalt_inspector`、`cobalt_talker`、`talker_flutter` | 仅 dev_dependency |
 
-`alloy_analyzer` 的存在是为了让生成器和 lint 插件用**同一套**实现解析 Alloy 声明，而不是两套迟早会
+`cobalt_analyzer` 的存在是为了让生成器和 lint 插件用**同一套**实现解析 Cobalt 声明，而不是两套迟早会
 各说各话的实现。它持有 IR 和拓扑排序，并且既不依赖 `build`，也不依赖插件 API。
 
-**项目不变量：** 生成的代码只允许使用 `alloy` 的公开 API。一旦生成需要 Manual Mode 无法表达的东西，
+**项目不变量：** 生成的代码只允许使用 `cobalt` 的公开 API。一旦生成需要 Manual Mode 无法表达的东西，
 那就是两个共用一个名字的框架了。
 
 ## 环境要求
@@ -147,7 +147,7 @@ CI 跑 `stable` 和 `beta`，而不是历史版本矩阵，另外还有一个固
 销毁按**创建**顺序倒序，而不是声明顺序。这个区别正是多数手写容器里的 bug：
 先声明、后创建的组件会被先销毁，而那时还有人依赖它。销毁是尽力而为的：
 抛异常的 `dispose` 会被记录、其余照常执行，整棵树共用一个截止时间，
-没做完的事列在 `AlloyDisposeError` 里，而不是让第一个错误盖住其余九个。
+没做完的事列在 `CobaltDisposeError` 里，而不是让第一个错误盖住其余九个。
 
 父作用域强引用子作用域。弱引用曾被考虑并否决：它会允许子作用域在 `dispose()` 运行前被回收，
 也就是永远不运行；而且它根本防不住泄漏——内部的活对象自己就撑着自己。
@@ -158,38 +158,38 @@ Code-Gen Mode 在构建期拒绝不完整的图，并在一条消息里点出所
 
 ```
 Diagnostics requires DeviceInfo, which nothing registers. Annotate the class that
-provides it with @AlloyInject, or name it in @AlloyScopeRoot(provides: [...]) when
+provides it with @CobaltInject, or name it in @CobaltScopeRoot(provides: [...]) when
 something outside the generated container registers it.
 ```
 
-构造参数、`@injected` 字段和 `@AlloyInit(dependsOn:)` 都算在内，`@Named` 限定符是键的一部分，
+构造参数、`@injected` 字段和 `@CobaltInit(dependsOn:)` 都算在内，`@Named` 限定符是键的一部分，
 每个环境分别检查。重复注册、依赖环、同一个包里两个作用域根、泛型可注入类、抽象类——同样都是构建失败。
 
 这是 Code-Gen 才有的保证，边界也说得很老实：手写工厂在 `create` 内部解析，
 静态分析看不到它将要请求什么。Manual Mode 的图仍然会在运行时失败——
-`alloy_test` 里的 `expectGraphResolves` 正是为这个缺口准备的。
+`cobalt_test` 里的 `expectGraphResolves` 正是为这个缺口准备的。
 
 ### 生成的代码就是你本来会写的代码
 
-三个构建器：一个写属性注入的 mixin，一个把每个库扫描成 IR，一个把整个包聚合成 `lib/alloy.g.dart`。
+三个构建器：一个写属性注入的 mixin，一个把每个库扫描成 IR，一个把整个包聚合成 `lib/cobalt.g.dart`。
 聚合之所以分两阶段，是因为单个构建步骤看不到整个程序。
 
-产物是私有 const 工厂类和一个 `$AlloyRootScope`，其顺序由编译期拓扑排序确定——
-没有闭包、没有反射、没有运行时扫描。`$alloyBootstrap` 是 getter 而不是存下来的列表，
+产物是私有 const 工厂类和一个 `$CobaltRootScope`，其顺序由编译期拓扑排序确定——
+没有闭包、没有反射、没有运行时扫描。`$cobaltBootstrap` 是 getter 而不是存下来的列表，
 所以重启拿到的是新的步骤，而不是上次启动已经用掉的那些。
 
 泛型作为依赖和 `exposeAs` 目标都可用：`Repository<User>` 和 `Repository<Order>` 是两条注册，
-因为 `AlloyKey` 由 `Type` 构成，而它们是不同的类型。但可注入类本身不能是泛型：
+因为 `CobaltKey` 由 `Type` 构成，而它们是不同的类型。但可注入类本身不能是泛型：
 没有人告诉生成器该注册哪些具体实例化。
 
 ### 可观测性是类型化事件
 
-`AlloyObserver` 汇报这张图在做什么——作用域出现、实例被构建、启动完成、销毁失败。
+`CobaltObserver` 汇报这张图在做什么——作用域出现、实例被构建、启动完成、销毁失败。
 回调收到的是描述符而不是活对象，因为一个能在销毁进行到一半时从作用域里解析东西的观察者，
 就不再只是在观察了；回调抛出的异常会被吞掉：观察不能有能力破坏被观察者。
 
 记录把 `kind` 作为值而不是一句话来携带，这正是结构化上报端能够以
-`AlloyEventKind.scopeInitFailed` 为键、而不必解析散文的原因。日志 sink 只是一个回调，
+`CobaltEventKind.scopeInitFailed` 为键、而不必解析散文的原因。日志 sink 只是一个回调，
 所以不会有哪个日志库因为缺少适配包而被挡在外面；崩溃上报则自成一种形态，
 因为让报告有用的是「图在那之前正在做什么」这条线索。
 
@@ -197,7 +197,7 @@ something outside the generated container registers it.
 
 ### 导航流程
 
-`alloy_go_router` 让作用域的生命周期成为一段导航流程：进入流程时创建，离开时销毁。
+`cobalt_go_router` 让作用域的生命周期成为一段导航流程：进入流程时创建，离开时销毁。
 它就是一个普通的 `ShellRoute` 子类，作用域由其内部的一个 widget 持有——
 没有任何东西去监听并镜像路由，因为手写版本恰恰是在镜像这件事上，
 栽在返回键、深链接和标签页切换上的。
@@ -206,27 +206,27 @@ something outside the generated container registers it.
 
 ## lint 规则
 
-`alloy_lint` 是 `analysis_server_plugin`，不是 `custom_lint` 插件。它提供十二条 warning 规则，
-全部建立在生成器所用的同一套 `alloy_analyzer` 解析层上，
+`cobalt_lint` 是 `analysis_server_plugin`，不是 `custom_lint` 插件。它提供十二条 warning 规则，
+全部建立在生成器所用的同一套 `cobalt_analyzer` 解析层上，
 因此错误会在 IDE 里出现，而不是非等到 `build_runner` 跑完：
 
 | 规则 | 捕捉什么 |
 |---|---|
-| `alloy_missing_injection_mixin` | 容器会注册的类上有 `@injected` 字段却没有 `with _$ClassName` |
-| `alloy_injected_field_needs_an_injectable` | 容器根本不注册的类上有 `@injected` 字段 |
-| `alloy_param_needs_an_injectable` | 容器根本不注册的类上有 `@AlloyParam` |
-| `alloy_injected_field_must_be_late_final` | `@injected` 用在可变、非 late 或静态字段上 |
-| `alloy_injectable_must_be_constructible` | `@AlloyInject` 用在抽象类或没有公开生成式构造函数的类上 |
-| `alloy_init_requires_init_method` | `@AlloyInit` 用在没有 `init()` 的类上 |
-| `alloy_bootstrap_requires_run_method` | `@AlloyBootstrap` 用在没有 `run()` 的类上 |
-| `alloy_bootstrap_step_cannot_inject` | 构造函数带必填参数的 bootstrap 步骤 |
-| `alloy_environment_needs_a_registration` | `@AlloyEnvironment` 用在无人注册的类上，此时它静默地什么也不做 |
-| `alloy_dependency_is_not_registered` | 包内无人注册的被注入依赖 |
-| `alloy_dependency_cycle` | 最终依赖到自身的可注入类 |
-| `alloy_registration_is_never_released` | 已注册的类带有作用域看不见的 `dispose()` 或 `close()` |
+| `cobalt_missing_injection_mixin` | 容器会注册的类上有 `@injected` 字段却没有 `with _$ClassName` |
+| `cobalt_injected_field_needs_an_injectable` | 容器根本不注册的类上有 `@injected` 字段 |
+| `cobalt_param_needs_an_injectable` | 容器根本不注册的类上有 `@CobaltParam` |
+| `cobalt_injected_field_must_be_late_final` | `@injected` 用在可变、非 late 或静态字段上 |
+| `cobalt_injectable_must_be_constructible` | `@CobaltInject` 用在抽象类或没有公开生成式构造函数的类上 |
+| `cobalt_init_requires_init_method` | `@CobaltInit` 用在没有 `init()` 的类上 |
+| `cobalt_bootstrap_requires_run_method` | `@CobaltBootstrap` 用在没有 `run()` 的类上 |
+| `cobalt_bootstrap_step_cannot_inject` | 构造函数带必填参数的 bootstrap 步骤 |
+| `cobalt_environment_needs_a_registration` | `@CobaltEnvironment` 用在无人注册的类上，此时它静默地什么也不做 |
+| `cobalt_dependency_is_not_registered` | 包内无人注册的被注入依赖 |
+| `cobalt_dependency_cycle` | 最终依赖到自身的可注入类 |
+| `cobalt_registration_is_never_released` | 已注册的类带有作用域看不见的 `dispose()` 或 `close()` |
 
 不使用 `custom_lint`：它的最新版本（0.8.1）被钉在 `analyzer ^8.0.0`，无法与现代 analyzer 共存。
-`riverpod_lint` 已迁移到官方的 `analysis_server_plugin`，`alloy_lint` 亦然。
+`riverpod_lint` 已迁移到官方的 `analysis_server_plugin`，`cobalt_lint` 亦然。
 
 配置这个插件有两个坑，最好在踩上之前先读一读——见
 [GUIDE_CODEGEN.zh-CN.md §16](GUIDE_CODEGEN.zh-CN.md#16-lint-插件)。
@@ -261,8 +261,8 @@ cd examples/gallery && flutter run
 由画廊连同自己的和检查器的一起收集；一个多包 Flutter 应用就是这个样子。
 
 框架自身的日志记录仍然是英文，屏幕上的标识符也是——步骤名、作用域名、注册键、生命周期。
-哪些内容保留 Alloy 自己的措辞、为什么，见
-[`alloy_inspector` 的 README](packages/alloy_inspector/README.md)；
+哪些内容保留 Cobalt 自己的措辞、为什么，见
+[`cobalt_inspector` 的 README](packages/cobalt_inspector/README.md)；
 示例如何接线，见[画廊的 README](examples/gallery/README.md)。
 
 ## 在本仓库上工作
@@ -270,15 +270,15 @@ cd examples/gallery && flutter run
 ```
 dart analyze --fatal-infos .
 dart format --output=none --set-exit-if-changed .
-(cd packages/alloy && dart test)
-(cd packages/alloy_flutter && flutter test)
+(cd packages/cobalt && dart test)
+(cd packages/cobalt_flutter && flutter test)
 (cd examples/manual_mode && dart test)
 (cd examples/codegen_basics && dart run build_runner build && flutter test)
 (cd examples/notes_app && dart run build_runner build && flutter test)
-(cd packages/alloy_lint && dart test)
-(cd packages/alloy_test && dart test)
-(cd packages/alloy_inspector && flutter test)
-(cd packages/alloy_talker_flutter && flutter test)
+(cd packages/cobalt_lint && dart test)
+(cd packages/cobalt_test && dart test)
+(cd packages/cobalt_inspector && flutter test)
+(cd packages/cobalt_talker_flutter && flutter test)
 (cd examples/gallery && flutter test)
 (cd compat/external_consumer && dart pub get && dart run build_runner build && dart test)
 ./tool/coverage.sh
@@ -287,8 +287,8 @@ dart format --output=none --set-exit-if-changed .
 `tool/coverage.sh` 统计有测试的可发布包的行覆盖率，从最低往高打印，并在**总和**低于下限时失败——85%。
 当前数字以脚本打印的为准，这里不再重复：一个每次提交都会变的数字写进散文里就会过时，
 而且没有任何东西会检查它——它已经过时过两次了。下限取总和而非逐包，这是有意的：
-覆盖率是按包统计的，而代码是共享的，所以 `alloy_analyzer` 的解析器更多是被
-`alloy_generator` 的测试和 `compat/external_consumer` 驱动的，而不是被它自己的测试集。
+覆盖率是按包统计的，而代码是共享的，所以 `cobalt_analyzer` 的解析器更多是被
+`cobalt_generator` 的测试和 `compat/external_consumer` 驱动的，而不是被它自己的测试集。
 逐包下限会逼人把测试写在不该写的地方。用 `COVERAGE_FLOOR=90 ./tool/coverage.sh` 覆盖它。
 
 CI（`.github/workflows/ci.yml`）在 `stable` 和 `beta` 上跑上述全部内容，
@@ -296,15 +296,15 @@ CI（`.github/workflows/ci.yml`）在 `stable` 和 `beta` 上跑上述全部内�
 因此过时的生成代码会让构建失败。生成器用与格式检查相同的 `dart_style` 版本格式化自己的产物，
 所以两者不会有分歧。
 
-**目录约定。** 一个文件一个公开类型。sealed 的 `AlloyRegistration` 层次是有意的例外：
+**目录约定。** 一个文件一个公开类型。sealed 的 `CobaltRegistration` 层次是有意的例外：
 sealed 层次必须位于同一个库中，所以它的子类是 `part` 文件而不是独立的库。
 `compat/external_consumer` 则完全在这条经验法则之外——它是一个刻意**不**作为 workspace 成员、
 也不声明 `resolution: workspace` 的包，因此 pub 会像对待第三方项目那样独立解析它。
 它的存在是为了从仓库之外保持代码生成流水线的诚实。
 
-**已知的发布警告。** `alloy_lint` 会报「the name of lib/main.dart should match the name of the
+**已知的发布警告。** `cobalt_lint` 会报「the name of lib/main.dart should match the name of the
 package」。这个入口点是由分析服务器插件 API 固定的——服务器生成的代码会导入
-`package:alloy_lint/main.dart` 并读取其中的 `plugin` 变量。`riverpod_lint` 也带着同样的警告。
+`package:cobalt_lint/main.dart` 并读取其中的 `plugin` 变量。`riverpod_lint` 也带着同样的警告。
 
 ## 许可证
 

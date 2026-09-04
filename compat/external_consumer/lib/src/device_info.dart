@@ -2,7 +2,7 @@
 /// program starts.
 ///
 /// Nothing annotates it: it is registered by hand in `ConsumerScope`, which is
-/// why `@AlloyScopeRoot` has to promise it through `provides`.
+/// why `@CobaltScopeRoot` has to promise it through `provides`.
 class DeviceInfo {
   const DeviceInfo(this.model);
 

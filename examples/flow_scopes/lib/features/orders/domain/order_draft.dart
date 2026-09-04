@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/core/event_log.dart';
 import 'package:flow_scopes/core/flow_event.dart';
 
@@ -25,12 +25,12 @@ class OrderDraft implements Disposable {
       _log.record(FlowEvent(FlowEventKind.draftDisposed, orderId));
 }
 
-final class OrderDraftFactory implements AlloyFactory<OrderDraft> {
+final class OrderDraftFactory implements CobaltFactory<OrderDraft> {
   const OrderDraftFactory(this.orderId);
 
   final String orderId;
 
   @override
-  OrderDraft create(AlloyResolver resolver) =>
+  OrderDraft create(CobaltResolver resolver) =>
       OrderDraft(orderId, resolver.get<EventLog>());
 }

@@ -1,4 +1,4 @@
-import 'package:alloy_go_router/alloy_go_router.dart';
+import 'package:cobalt_go_router/cobalt_go_router.dart';
 import 'package:flow_scopes/app/app_routes.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,7 @@ class ScopeTreeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = FlowScopesL10n.of(context);
-    final root = context.alloyScope.root;
+    final root = context.cobaltScope.root;
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +28,7 @@ class ScopeTreeScreen extends StatelessWidget {
 
   Iterable<Widget> _rows(
     FlowScopesL10n l10n,
-    AlloyScope scope,
+    CobaltScope scope,
     int depth,
   ) sync* {
     yield ListTile(

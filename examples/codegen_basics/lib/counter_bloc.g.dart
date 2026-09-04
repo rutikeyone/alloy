@@ -6,11 +6,11 @@ part of 'counter_bloc.dart';
 // PropertyInjectionGenerator
 // **************************************************************************
 
-mixin _$CounterBloc implements AlloyInjectable {
+mixin _$CounterBloc implements CobaltInjectable {
   set _repository(Repository value);
   set _telemetry(Telemetry value);
   @override
-  void onInject(AlloyResolver resolver) {
+  void onInject(CobaltResolver resolver) {
     _repository = resolver.get<Repository>();
     _telemetry = resolver.get<Telemetry>();
   }

@@ -1,6 +1,6 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 
-@alloyInject
+@cobaltInject
 class EventLog implements Disposable {
   EventLog();
 

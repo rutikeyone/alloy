@@ -1,10 +1,10 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/bootstrap/boot_log.dart';
 
-@AlloyBootstrap(order: 20)
-@AlloyEnvironment.prod
-@AlloyEnvironment.stage
-class ReportCrashes implements AlloyBootstrapStep {
+@CobaltBootstrap(order: 20)
+@CobaltEnvironment.prod
+@CobaltEnvironment.stage
+class ReportCrashes implements CobaltBootstrapStep {
   ReportCrashes();
 
   @override

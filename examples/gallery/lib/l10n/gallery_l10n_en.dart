@@ -9,7 +9,7 @@ class GalleryL10nEn extends GalleryL10n {
   GalleryL10nEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy examples';
+  String get appTitle => 'Cobalt examples';
 
   @override
   String get tagline => 'dependency injection · examples';
@@ -108,7 +108,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get startupPoint3 =>
-      'Phase 1 awaits @AlloyInit as a graph, so independent branches run together';
+      'Phase 1 awaits @CobaltInit as a graph, so independent branches run together';
 
   @override
   String get startupPoint4 =>
@@ -123,7 +123,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get environmentsPoint1 =>
-      '@AlloyEnvironment repeats rather than taking a list — a registration belongs to a set, a start picks one';
+      '@CobaltEnvironment repeats rather than taking a list — a registration belongs to a set, a start picks one';
 
   @override
   String get environmentsPoint2 =>
@@ -188,7 +188,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get widgetScopePoint1 =>
-      'AlloyScopedStatefulWidget registers into a scope it owns';
+      'CobaltScopedStatefulWidget registers into a scope it owns';
 
   @override
   String get widgetScopePoint2 =>
@@ -229,7 +229,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get scopeTreePoint1 =>
-      'AlloyScope.children is public, so the tree is inspectable at runtime';
+      'CobaltScope.children is public, so the tree is inspectable at runtime';
 
   @override
   String get scopeTreePoint2 =>
@@ -248,7 +248,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get flowPoint1 =>
-      'AlloyShellRoute — enter the flow and the scope appears; leave and it is gone';
+      'CobaltShellRoute — enter the flow and the scope appears; leave and it is gone';
 
   @override
   String get flowPoint2 =>
@@ -294,7 +294,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get codegenPoint1 =>
-      'Put @alloyInject on a class and lib/alloy.g.dart appears';
+      'Put @cobaltInject on a class and lib/cobalt.g.dart appears';
 
   @override
   String get codegenPoint2 =>
@@ -325,7 +325,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get manualPoint3 =>
-      'AlloyScopeBuilder composes; that is what replaces modules';
+      'CobaltScopeBuilder composes; that is what replaces modules';
 
   @override
   String get manualPoint4 =>
@@ -340,7 +340,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get eventsPoint1 =>
-      'AlloyObserver events — scopes pushed, instances built, teardown failing';
+      'CobaltObserver events — scopes pushed, instances built, teardown failing';
 
   @override
   String get eventsPoint2 =>
@@ -348,7 +348,7 @@ class GalleryL10nEn extends GalleryL10n {
 
   @override
   String get eventsPoint3 =>
-      'AlloyMultiSink fans a record out; a failing sink does not silence the rest';
+      'CobaltMultiSink fans a record out; a failing sink does not silence the rest';
 
   @override
   String get eventsPoint4 =>
@@ -401,7 +401,7 @@ class GalleryL10nEn extends GalleryL10n {
       'A duplicate in one scope is an error; shadowing from a child is the supported way';
 
   @override
-  String get demoTitle => 'Alloy · inspector';
+  String get demoTitle => 'Cobalt · inspector';
 
   @override
   String get demoInspect => 'inspect the graph';

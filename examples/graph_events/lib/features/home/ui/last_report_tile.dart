@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graph_events/app/report_log.dart';
 import 'package:graph_events/l10n/graph_events_l10n.dart';
 
-/// Shows the most recent failure Alloy reported, with the trail behind it.
+/// Shows the most recent failure Cobalt reported, with the trail behind it.
 ///
 /// This is what a crash reporter receives. The exception alone would say the
 /// teardown threw; the breadcrumbs say which scope had been pushed and what it

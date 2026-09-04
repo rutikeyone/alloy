@@ -7,12 +7,12 @@ trick `compat/external_consumer` uses.
 
 Two mistakes are easy here and both were made before this was written:
 
-* overriding *everything* puts `alloy_analyzer` into resolutions that never ask
+* overriding *everything* puts `cobalt_analyzer` into resolutions that never ask
   for it, and those then fail on constraints that have nothing to do with the
   package under test;
 * overriding only the *direct* names is not enough, because an override has to
-  cover every unpublished package in the resolution — `alloy_flutter` reaches
-  `alloy_annotations` only through `alloy`.
+  cover every unpublished package in the resolution — `cobalt_flutter` reaches
+  `cobalt_annotations` only through `cobalt`.
 
 So: the transitive closure of what each package actually names, and nothing
 else.
@@ -26,7 +26,7 @@ import sys
 def main() -> int:
   work = pathlib.Path(sys.argv[1])
   # `name=path` pairs: the copies keep the layout they have in the repository,
-  # so a package that reaches outside itself — `alloy_lint/test` includes the
+  # so a package that reaches outside itself — `cobalt_lint/test` includes the
   # root analysis options — finds the same thing at the same depth.
   where = dict(member.split('=', 1) for member in sys.argv[2:])
   packages = list(where)
@@ -49,7 +49,7 @@ def main() -> int:
         break
       reachable = grown
 
-    # `alloy` dev-depends on `alloy_test`, which depends on `alloy`. Legal —
+    # `cobalt` dev-depends on `cobalt_test`, which depends on `cobalt`. Legal —
     # dev dependencies are not transitive — but the closure walks straight back
     # round it, and pub refuses a package that lists itself.
     reachable.discard(package)

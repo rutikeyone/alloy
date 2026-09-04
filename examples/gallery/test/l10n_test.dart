@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:alloy_inspector/alloy_inspector.dart';
+import 'package:cobalt_inspector/cobalt_inspector.dart';
 import 'package:codegen_basics/l10n/codegen_basics_l10n.dart';
 import 'package:flow_scopes/l10n/flow_scopes_l10n.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +67,7 @@ void main() {
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(
       app.localizationsDelegates,
-      contains(AlloyInspectorL10n.delegate),
+      contains(CobaltInspectorL10n.delegate),
       reason:
           'the inspector reads the ambient locale with no delegate at all, so '
           'the screens would look right either way — only this says which of '
@@ -105,7 +105,7 @@ void main() {
       ),
     );
     // Two settles: the host shows its loading frame before the scope is
-    // published, exactly as AlloyAppScope does anywhere else.
+    // published, exactly as CobaltAppScope does anywhere else.
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
 
@@ -115,7 +115,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Alloy · инспектор'),
+      find.text('Cobalt · инспектор'),
       findsOneWidget,
       reason:
           'what a reader sees, by whichever of the two routes got them there '
@@ -254,7 +254,7 @@ void main() {
       'flow_scopes': FlowScopesL10n.supportedLocales,
       'graph_events': GraphEventsL10n.supportedLocales,
       'codegen_basics': CodegenBasicsL10n.supportedLocales,
-      'alloy_inspector': AlloyInspectorL10n.supportedLocales,
+      'cobalt_inspector': CobaltInspectorL10n.supportedLocales,
     };
 
     delegates.forEach((package, supported) {
@@ -301,7 +301,7 @@ void main() {
         ),
       );
       // Two settles: the host shows its loading frame before the scope is
-      // published, exactly as AlloyAppScope does anywhere else.
+      // published, exactly as CobaltAppScope does anywhere else.
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 

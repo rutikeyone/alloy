@@ -22,7 +22,7 @@ resolved by anything, but its life is the scope's all the same.
 
 **Teardown is best-effort under one deadline.** `FlakySocket` throws on the way
 out and `StuckWatcher` never returns — and the database still closes. Both
-problems are collected into `AlloyDisposeError` (`failures`, `hasTimeout`), the
+problems are collected into `CobaltDisposeError` (`failures`, `hasTimeout`), the
 remaining services still run, and the scope still reaches `disposed`. The
 deadline is global to the teardown, not per service.
 

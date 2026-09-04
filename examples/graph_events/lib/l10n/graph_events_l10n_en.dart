@@ -9,7 +9,7 @@ class GraphEventsL10nEn extends GraphEventsL10n {
   GraphEventsL10nEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy · observability';
+  String get appTitle => 'Cobalt · observability';
 
   @override
   String get liveLog => 'the live log';
@@ -19,7 +19,7 @@ class GraphEventsL10nEn extends GraphEventsL10n {
 
   @override
   String get everyEventDetail =>
-      'AlloyTalkerObserver files each kind under its own title, so the log screen can filter them apart.';
+      'CobaltTalkerObserver files each kind under its own title, so the log screen can filter them apart.';
 
   @override
   String get openSession => 'Open a session scope';

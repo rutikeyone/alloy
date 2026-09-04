@@ -1,12 +1,12 @@
 {
   "@@locale": "en",
-  "appTitle": "Alloy examples",
+  "appTitle": "Cobalt examples",
   "@appTitle": {
     "description": "Title of the gallery application."
   },
   "tagline": "dependency injection · examples",
   "@tagline": {
-    "description": "Subtitle under the Alloy wordmark."
+    "description": "Subtitle under the Cobalt wordmark."
   },
   "lede": "One example per capability. Most open right here; the ones that only print show you their output instead.",
   "@lede": {
@@ -78,7 +78,7 @@
   },
   "startupPoint1": "Phase 0 steps are adopted by the root scope and released with it",
   "startupPoint2": "A step that opened something is closed last, after everything built on it",
-  "startupPoint3": "Phase 1 awaits @AlloyInit as a graph, so independent branches run together",
+  "startupPoint3": "Phase 1 awaits @CobaltInit as a graph, so independent branches run together",
   "startupPoint4": "dependsOn decides the order — you never write the sequence yourself",
   "environmentsTitle": "Environments",
   "@environmentsTitle": {
@@ -88,7 +88,7 @@
   "@environmentsTeaches": {
     "description": "One line: what \"Environments\" exists to show."
   },
-  "environmentsPoint1": "@AlloyEnvironment repeats rather than taking a list — a registration belongs to a set, a start picks one",
+  "environmentsPoint1": "@CobaltEnvironment repeats rather than taking a list — a registration belongs to a set, a start picks one",
   "environmentsPoint2": "Two registrations whose environments overlap fail the build, not the app",
   "environmentsPoint3": "Choosing nothing leaves the split types unregistered, so the miss is loud",
   "environmentsPoint4": "Manual Mode writes the same `if` the generator emits",
@@ -123,7 +123,7 @@
   "@widgetScopeTeaches": {
     "description": "One line: what \"Widget-owned scope\" exists to show."
   },
-  "widgetScopePoint1": "AlloyScopedStatefulWidget registers into a scope it owns",
+  "widgetScopePoint1": "CobaltScopedStatefulWidget registers into a scope it owns",
   "widgetScopePoint2": "Leaving the screen disposes everything the screen built",
   "widgetScopePoint3": "registerParamFactory passes a value into construction",
   "widgetScopePoint4": "The parent graph stays untouched — this is a child, not a mutation",
@@ -146,7 +146,7 @@
   "@scopeTreeTeaches": {
     "description": "One line: what \"Scope tree\" exists to show."
   },
-  "scopeTreePoint1": "AlloyScope.children is public, so the tree is inspectable at runtime",
+  "scopeTreePoint1": "CobaltScope.children is public, so the tree is inspectable at runtime",
   "scopeTreePoint2": "Open two examples and their trees are unrelated — each has its own root",
   "scopeTreePoint3": "Depth and parent are on the scope, which is what diagnostics read",
   "flowTitle": "Navigation flows",
@@ -157,7 +157,7 @@
   "@flowTeaches": {
     "description": "One line: what \"Navigation flows\" exists to show."
   },
-  "flowPoint1": "AlloyShellRoute — enter the flow and the scope appears; leave and it is gone",
+  "flowPoint1": "CobaltShellRoute — enter the flow and the scope appears; leave and it is gone",
   "flowPoint2": "identity rebuilds the scope when the flow’s subject changes",
   "flowPoint3": "Tabs: a branch is kept alive, not visible, so switching disposes nothing",
   "flowPoint4": "No router listener anywhere — ownership belongs to the widget tree",
@@ -181,7 +181,7 @@
   "@codegenTeaches": {
     "description": "One line: what \"Generated container\" exists to show."
   },
-  "codegenPoint1": "Put @alloyInject on a class and lib/alloy.g.dart appears",
+  "codegenPoint1": "Put @cobaltInject on a class and lib/cobalt.g.dart appears",
   "codegenPoint2": "Named const factory classes in the output — never closures",
   "codegenPoint3": "Registrations ordered by a compile-time topological sort",
   "codegenPoint4": "A dependency cycle fails the build naming the cycle",
@@ -195,7 +195,7 @@
   },
   "manualPoint1": "The generator writes exactly this, using only the public API",
   "manualPoint2": "Pure Dart — runs in a CLI, on a server, in a plain test",
-  "manualPoint3": "AlloyScopeBuilder composes; that is what replaces modules",
+  "manualPoint3": "CobaltScopeBuilder composes; that is what replaces modules",
   "manualPoint4": "If generation ever needs something this cannot express, they are two frameworks sharing a name",
   "eventsTitle": "Graph events",
   "@eventsTitle": {
@@ -205,9 +205,9 @@
   "@eventsTeaches": {
     "description": "One line: what \"Graph events\" exists to show."
   },
-  "eventsPoint1": "AlloyObserver events — scopes pushed, instances built, teardown failing",
+  "eventsPoint1": "CobaltObserver events — scopes pushed, instances built, teardown failing",
   "eventsPoint2": "One line to adapt talker, logging, logger, or any logger at all",
-  "eventsPoint3": "AlloyMultiSink fans a record out; a failing sink does not silence the rest",
+  "eventsPoint3": "CobaltMultiSink fans a record out; a failing sink does not silence the rest",
   "eventsPoint4": "Resolution is deliberately not reported — a cache hit is the hot path",
   "inspectorTitle": "In-app inspector",
   "@inspectorTitle": {
@@ -233,7 +233,7 @@
   "testingPoint2": "Build the graph in setUp; testWidgets runs inside a fake-async zone",
   "testingPoint3": "No global container, so one test cannot leak into the next",
   "testingPoint4": "A duplicate in one scope is an error; shadowing from a child is the supported way",
-  "demoTitle": "Alloy · inspector",
+  "demoTitle": "Cobalt · inspector",
   "@demoTitle": {
     "description": "App bar of the screen the inspector example gives you to poke at."
   },

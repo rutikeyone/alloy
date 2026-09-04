@@ -1,5 +1,5 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:codegen_basics/alloy.g.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
+import 'package:codegen_basics/cobalt.g.dart';
 import 'package:codegen_basics/counter_screen.dart';
 import 'package:codegen_basics/greeting.dart';
 import 'package:codegen_basics/l10n/codegen_basics_l10n.dart';
@@ -28,9 +28,9 @@ void main() {
       const MaterialApp(
         localizationsDelegates: _delegates,
         supportedLocales: CodegenBasicsL10n.supportedLocales,
-        home: AlloyAppScope(
-          root: $AlloyRootScope(),
-          rootName: $alloyRootScopeName,
+        home: CobaltAppScope(
+          root: $CobaltRootScope(),
+          rootName: $cobaltRootScopeName,
           child: CounterScreen(),
         ),
       ),
@@ -58,7 +58,7 @@ void main() {
     await pumpScreen(tester);
 
     expect(
-      find.text('hello Alloy from test'),
+      find.text('hello Cobalt from test'),
       findsOneWidget,
       reason:
           'the config came from the graph, the name and the flag from the '
@@ -74,12 +74,12 @@ void main() {
       MaterialApp(
         localizationsDelegates: _delegates,
         supportedLocales: CodegenBasicsL10n.supportedLocales,
-        home: AlloyAppScope(
-          root: const $AlloyRootScope(),
-          rootName: $alloyRootScopeName,
+        home: CobaltAppScope(
+          root: const $CobaltRootScope(),
+          rootName: $cobaltRootScopeName,
           child: Builder(
             builder: (context) {
-              loud = context.alloyWithParam<Greeting, $GreetingArgs>((
+              loud = context.cobaltWithParam<Greeting, $GreetingArgs>((
                 name: 'World',
                 loud: true,
               ));

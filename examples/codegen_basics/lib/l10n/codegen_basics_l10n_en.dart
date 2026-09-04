@@ -9,7 +9,7 @@ class CodegenBasicsL10nEn extends CodegenBasicsL10n {
   CodegenBasicsL10nEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Alloy codegen basics';
+  String get appTitle => 'Cobalt codegen basics';
 
   @override
   String environment(String name) {

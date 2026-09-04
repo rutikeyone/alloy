@@ -1,8 +1,8 @@
-import 'package:alloy/alloy.dart';
+import 'package:cobalt/cobalt.dart';
 import 'package:notes_app/core/event_log.dart';
 import 'package:notes_app/features/notes/domain/note.dart';
 
-@AlloyInit()
+@CobaltInit()
 class NoteDatabase implements AsyncInitializable, AsyncDisposable {
   NoteDatabase(this._log);
 

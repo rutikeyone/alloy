@@ -15,7 +15,7 @@ class NotesL10nEn extends NotesL10n {
   String get restartGraph => 'dispose the app scope and start a new one';
 
   @override
-  String get phaseZero => 'Phase 0 — @AlloyBootstrap';
+  String get phaseZero => 'Phase 0 — @CobaltBootstrap';
 
   @override
   String phaseZeroNote(String scope) {
@@ -23,7 +23,7 @@ class NotesL10nEn extends NotesL10n {
   }
 
   @override
-  String get phaseOne => 'Phase 1 — @AlloyInit';
+  String get phaseOne => 'Phase 1 — @CobaltInit';
 
   @override
   String get databaseOpen => 'database open';

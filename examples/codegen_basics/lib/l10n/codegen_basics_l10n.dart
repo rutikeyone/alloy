@@ -103,7 +103,7 @@ abstract class CodegenBasicsL10n {
   /// Title of the generated-container example.
   ///
   /// In en, this message translates to:
-  /// **'Alloy codegen basics'**
+  /// **'Cobalt codegen basics'**
   String get appTitle;
 
   /// Which build the graph was started for.

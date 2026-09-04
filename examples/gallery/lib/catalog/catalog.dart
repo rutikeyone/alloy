@@ -1,6 +1,6 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
-import 'package:alloy_inspector/alloy_inspector.dart';
-import 'package:codegen_basics/alloy.g.dart' as codegen;
+import 'package:cobalt_flutter/cobalt_flutter.dart';
+import 'package:cobalt_inspector/cobalt_inspector.dart';
+import 'package:codegen_basics/cobalt.g.dart' as codegen;
 import 'package:codegen_basics/counter_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery/catalog/example_entry.dart';
@@ -198,8 +198,8 @@ List<ExampleEntry> buildCatalog(GalleryL10n l10n) => [
     transcriptLabel: l10n.whereItLives,
     transcript: 'examples/codegen_basics/lib/counter_screen.dart',
     open: (_) => const ExampleHost(
-      root: codegen.$AlloyRootScope(),
-      rootName: codegen.$alloyRootScopeName,
+      root: codegen.$CobaltRootScope(),
+      rootName: codegen.$cobaltRootScopeName,
       child: CounterScreen(),
     ),
   ),
@@ -252,7 +252,8 @@ List<ExampleEntry> buildCatalog(GalleryL10n l10n) => [
       l10n.inspectorPoint4,
     ],
     transcriptLabel: l10n.whereItLives,
-    transcript: 'packages/alloy_inspector/lib/src/alloy_inspector_screen.dart',
+    transcript:
+        'packages/cobalt_inspector/lib/src/cobalt_inspector_screen.dart',
     open: (_) => const _InspectorHost(),
   ),
 
@@ -299,7 +300,7 @@ class _InspectorHost extends StatefulWidget {
 }
 
 class _InspectorHostState extends State<_InspectorHost> {
-  final _log = AlloyInspectorLog();
+  final _log = CobaltInspectorLog();
 
   @override
   void dispose() {
@@ -321,18 +322,18 @@ class _InspectorHostState extends State<_InspectorHost> {
 class _InspectorDemo extends StatefulWidget {
   const _InspectorDemo({required this.log});
 
-  final AlloyInspectorLog log;
+  final CobaltInspectorLog log;
 
   @override
   State<_InspectorDemo> createState() => _InspectorDemoState();
 }
 
 class _InspectorDemoState extends State<_InspectorDemo> {
-  AlloyScope? _session;
+  CobaltScope? _session;
 
   Future<void> _openSession() async {
     if (_session != null) return;
-    final scope = context.alloyScope.push('session');
+    final scope = context.cobaltScope.push('session');
     const InspectorSessionScope().build(scope);
     await scope.init();
     if (!mounted) return;
@@ -363,9 +364,9 @@ class _InspectorDemoState extends State<_InspectorDemo> {
             // built by the navigator, which sits above it.
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => AlloyInspectorScreen(
+                builder: (_) => CobaltInspectorScreen(
                   log: widget.log,
-                  scope: context.alloyScope,
+                  scope: context.cobaltScope,
                   // The gallery's own palette, so the inspector reads as part
                   // of this app rather than as a panel bolted onto it.
                   theme: galleryInspectorTheme(context),

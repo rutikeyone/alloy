@@ -1,10 +1,10 @@
-import 'package:alloy_flutter/alloy_flutter.dart';
+import 'package:cobalt_flutter/cobalt_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:graph_events/app/report_log.dart';
 import 'package:graph_events/l10n/graph_events_l10n.dart';
 import 'package:graph_events/features/home/ui/last_report_tile.dart';
 import 'package:graph_events/features/session/session_scope.dart';
-import 'package:alloy_talker_flutter/alloy_talker_flutter.dart';
+import 'package:cobalt_talker_flutter/cobalt_talker_flutter.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 /// Drives the graph so the log has something to show.
@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 
   final Talker talker;
 
-  /// Where AlloyErrorObserver's reports land.
+  /// Where CobaltErrorObserver's reports land.
   final ReportLog reports;
 
   @override
@@ -21,13 +21,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  AlloyScope? _session;
+  CobaltScope? _session;
   var _busy = false;
 
   Future<void> _openSession({required bool breaks}) async {
     if (_session != null || _busy) return;
     setState(() => _busy = true);
-    final scope = context.alloyScope.push(
+    final scope = context.cobaltScope.push(
       breaks ? 'session:broken' : 'session',
     );
     SessionScope(breaks: breaks).build(scope);
@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _busy = true);
     try {
       await scope.dispose();
-    } on AlloyDisposeError catch (error) {
+    } on CobaltDisposeError catch (error) {
       widget.talker.handle(error, StackTrace.current, 'session teardown');
     }
     if (!mounted) return;
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.receipt_long),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => AlloyTalkerScreen(talker: widget.talker),
+                builder: (_) => CobaltTalkerScreen(talker: widget.talker),
               ),
             ),
           ),
