@@ -1,5 +1,15 @@
 ## 0.1.0
 
+- The palette answers for everything the screens draw. Three things that used to
+  derive from a base colour with no way round it now take an override map read
+  per entry, so naming one leaves the rest deriving: `lifetimeColors`,
+  `levelColors`, `familyIcons`. The four chip opacities — `tintAlpha`,
+  `selectedTintAlpha`, `idleTintAlpha`, `borderAlpha` — are settings rather than
+  numbers written into four files, because the same value reads much weaker on a
+  light host than on a dark one.
+- `warning` is a colour of its own rather than the startup green it borrowed, and
+  the severity of a record is now painted with it in the detail sheet. Until now
+  `colorOfLevel` had no caller at all: a public method that decided nothing.
 - English, Russian and Chinese, chosen from the host app's locale. Installing
   `CobaltInspectorL10n.delegate` is the documented path; with no delegate the
   ambient locale still decides, and English is the floor. Lifetimes, levels and

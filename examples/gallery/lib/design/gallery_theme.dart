@@ -301,5 +301,6 @@ CobaltInspectorThemeData galleryInspectorTheme(BuildContext context) =>
       startup: const Color(0xFF8FD98F),
       instance: GalleryColors.textFaint,
       failure: const Color(0xFFE0705F),
+      warning: GalleryColors.terminal,
       monospace: GalleryText.of(context).mono,
     );

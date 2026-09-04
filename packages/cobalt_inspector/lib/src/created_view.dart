@@ -149,7 +149,9 @@ class _GroupingSwitch extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: theme.accent.withValues(
-                    alpha: selected == grouping ? 0.2 : 0.06,
+                    alpha: selected == grouping
+                        ? theme.selectedTintAlpha
+                        : theme.idleTintAlpha,
                   ),
                   borderRadius: BorderRadius.circular(9),
                   border: Border.all(

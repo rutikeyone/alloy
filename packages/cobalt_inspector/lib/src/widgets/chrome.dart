@@ -36,7 +36,7 @@ class FamilyMark extends StatelessWidget {
       height: size + 12,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: color.withValues(alpha: theme.tintAlpha),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(theme.iconOfFamily(family), size: size, color: color),
@@ -62,9 +62,9 @@ class LifetimeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: color.withValues(alpha: theme.tintAlpha),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: color.withValues(alpha: theme.borderAlpha)),
       ),
       child: Text(
         kind?.name ?? inspectorStringsOf(context).lifetimeGone,

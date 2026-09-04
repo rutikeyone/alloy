@@ -71,7 +71,11 @@ class RecordDetailSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _Field(label: strings.fieldLevel, value: record.level.name),
+                    _Field(
+                      label: strings.fieldLevel,
+                      value: record.level.name,
+                      tint: theme.colorOfLevel(record.level),
+                    ),
                     if (record.scope != null)
                       _Field(
                         label: strings.fieldScope,

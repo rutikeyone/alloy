@@ -193,7 +193,9 @@ class _Chip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: isSelected ? 0.22 : 0.06),
+          color: color.withValues(
+            alpha: isSelected ? theme.selectedTintAlpha : theme.idleTintAlpha,
+          ),
           borderRadius: BorderRadius.circular(9),
           border: Border.all(
             color: isSelected ? color : theme.outline,

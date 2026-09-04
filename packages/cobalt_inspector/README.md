@@ -100,6 +100,25 @@ are the same division `cobalt_talker` files its logs under, which is what lets
 [`cobalt_talker_flutter`](https://pub.dev/packages/cobalt_talker_flutter) dress talker's screen in the
 same palette.
 
+Three things are drawn from a base colour rather than named directly, and each has an override map
+beside it. A lifetime badge takes the colour of what retains it, so five lifetimes share three
+colours; a severity takes `failure`, `warning` or `muted`; a family takes an icon. Where that
+reading is not yours, name the entries you care about — the map is read per entry, so the rest keep
+deriving:
+
+```dart
+CobaltInspectorThemeData.of(Theme.of(context)).copyWith(
+  lifetimeColors: {CobaltRegistrationKind.singleton: brand.gold},
+  levelColors: {CobaltLogLevel.trace: brand.faint},
+  familyIcons: {CobaltInspectorFamily.startup: Icons.bolt},
+)
+```
+
+Four opacities decide how strongly a coloured chip reads: `tintAlpha` for a badge or family mark,
+`selectedTintAlpha` and `idleTintAlpha` for a filter, `borderAlpha` for the outline. They are
+settings rather than constants because the same value carries much further on a dark host than on a
+light one.
+
 ## Speaking your users' language
 
 The chrome is translated into English, Russian and Chinese, and picks the language the host app is
