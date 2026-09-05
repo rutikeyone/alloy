@@ -35,6 +35,72 @@ await scope.dispose();
 `SearchIndex` states `dependsOn` because both it and `Database` are built during `init()` and one
 has to finish first. `Logger` needs no such line: a factory that wants it simply resolves it.
 
+## Quick start
+
+Both modes build the same graph over the same runtime. Pick one per project, or
+mix them while you migrate.
+
+**By hand** — no build step, nothing generated:
+
+```dart
+import 'package:cobalt/cobalt.dart';
+
+class Clock {
+  DateTime now() => DateTime.now();
+}
+
+class ClockFactory implements CobaltFactory<Clock> {
+  const ClockFactory();
+
+  @override
+  Clock create(CobaltResolver resolver) => Clock();
+}
+
+class AppScope implements CobaltScopeBuilder {
+  const AppScope();
+
+  @override
+  void build(CobaltScope scope) {
+    scope.registerLazySingleton<Clock>(const ClockFactory());
+  }
+}
+
+Future<void> main() async {
+  final app = await CobaltApplication.start(root: const AppScope());
+
+  print(app.get<Clock>().now());
+
+  await app.dispose();
+}
+```
+
+**Generated** — the same graph, written for you by `build_runner`:
+
+```dart
+import 'package:cobalt/cobalt.dart';
+import 'package:cobalt_annotations/cobalt_annotations.dart';
+
+@cobaltInject
+class Clock {
+  DateTime now() => DateTime.now();
+}
+
+@CobaltScopeRoot(name: 'app')
+class AppScope {
+  const AppScope();
+}
+```
+
+```bash
+dart run build_runner build
+```
+
+That writes `lib/cobalt.g.dart`, and `await $startCobalt()` gives you the same
+scope the hand-written version built.
+
+Full walkthroughs: [Manual Mode](https://github.com/rutikeyone/cobalt/blob/main/GUIDE_MANUAL.md)
+and [Code-Gen Mode](https://github.com/rutikeyone/cobalt/blob/main/GUIDE_CODEGEN.md).
+
 ## What it guarantees
 
 - **Hierarchical scopes.** `scope.push('session')` creates a child that sees its parent and can

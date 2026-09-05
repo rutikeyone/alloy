@@ -1,5 +1,5 @@
 import 'package:cobalt_analyzer/cobalt_analyzer.dart';
-import 'package:cobalt_generator/cobalt_generator.dart';
+import 'package:cobalt_generator/src/emitters/container_source_emitter.dart';
 
 const appImport = 'package:app/app.dart';
 

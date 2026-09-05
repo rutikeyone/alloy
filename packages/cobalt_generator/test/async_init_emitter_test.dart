@@ -1,5 +1,5 @@
 import 'package:cobalt_analyzer/cobalt_analyzer.dart';
-import 'package:cobalt_generator/cobalt_generator.dart';
+import 'package:cobalt_generator/src/errors/cobalt_generation_error.dart';
 import 'package:test/test.dart';
 
 import 'support.dart';

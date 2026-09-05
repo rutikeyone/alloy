@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:cobalt_analyzer/cobalt_analyzer.dart';
-import 'package:cobalt_generator/cobalt_generator.dart';
+import 'package:cobalt_generator/src/builders/container_builder.dart';
 import 'package:build_test/build_test.dart';
 import 'package:test/test.dart';
 

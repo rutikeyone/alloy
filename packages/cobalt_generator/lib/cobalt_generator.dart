@@ -1,22 +1,15 @@
 /// Code generator for Cobalt.
 ///
-/// Exposed for testing and for tools building on top of it; applications only
-/// need `builder.dart`, which `build_runner` finds through `build.yaml`.
+/// An application never imports this: `build_runner` finds `builder.dart`
+/// through `build.yaml`, and everything else here happens behind it.
 ///
-/// Generation runs in two phases because a build step sees one library at a
-/// time: `CobaltScanGenerator` writes a per-library IR, and
-/// `CobaltContainerBuilder` aggregates every IR file into one container.
+/// Only the error is exported. The emitters, the generators and the allocator
+/// are `src/` and stay there — they were exported for the tests once, and the
+/// tests import them directly instead, because a type that ships is a type
+/// that cannot be reshaped without a major version. Generation runs in two
+/// phases because a build step sees one library at a time: `CobaltScanGenerator`
+/// writes a per-library IR, and `CobaltContainerBuilder` aggregates every IR
+/// file into one container.
 library;
 
-export 'package:cobalt_generator/src/builders/container_builder.dart';
-export 'package:cobalt_generator/src/emitters/cobalt_references.dart';
-export 'package:cobalt_generator/src/emitters/bootstrap_emitter.dart';
-export 'package:cobalt_generator/src/emitters/container_source_emitter.dart';
-export 'package:cobalt_generator/src/emitters/injectable_factory_emitter.dart';
-export 'package:cobalt_generator/src/emitters/injection_mixin_emitter.dart';
-export 'package:cobalt_generator/src/emitters/root_scope_emitter.dart';
-export 'package:cobalt_generator/src/emitters/start_function_emitter.dart';
 export 'package:cobalt_generator/src/errors/cobalt_generation_error.dart';
-export 'package:cobalt_generator/src/generators/property_injection_generator.dart';
-export 'package:cobalt_generator/src/generators/scan_generator.dart';
-export 'package:cobalt_generator/src/hashed_allocator.dart';
