@@ -279,6 +279,41 @@ class Api {
 
   /// Two classes of the same name are two registrations the build accepts, and
   /// fusing them by name is how a graph with no loop grows one.
+  /// The same collision with only one side registered.
+  ///
+  /// `Api` takes the vendored `Clock`; the registered `Clock` takes `Api`.
+  /// Two types, no loop — but one bare name, and the index is built from
+  /// bare names. Reported as a cycle until 2026-09-04.
+  void test_oneNameOneRegistration_staysSilent() async {
+    newFile('$testPackageLibPath/vendor.dart', '''
+class Clock {}
+''');
+
+    newFile('$testPackageLibPath/registered_clock.dart', '''
+$cobaltImport
+
+import 'api.dart';
+
+@cobaltInject
+class Clock {
+  Clock(this.api);
+  final Api api;
+}
+''');
+
+    await assertDiagnostics('''
+$cobaltImport
+
+import 'vendor.dart';
+
+@cobaltInject
+class Api {
+  Api(this.clock);
+  final Clock clock;
+}
+''', []);
+  }
+
   void test_oneNameTwoLibraries_staysSilent() async {
     newFile('$testPackageLibPath/plain.dart', '''
 $cobaltImport

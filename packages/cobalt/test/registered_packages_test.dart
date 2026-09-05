@@ -33,6 +33,21 @@ void main() {
 
   String read(String path) => File('${root.path}/$path').readAsStringSync();
 
+  /// The Cobalt packages [package] needs at runtime, dev dependencies aside.
+  ///
+  /// Only these constrain the publication order: a dev dependency is not
+  /// transitive, so nothing a consumer resolves ever asks for it.
+  Set<String> runtimeDependenciesOf(String package) {
+    final lines = read('packages/$package/pubspec.yaml').split('\n');
+    final end = lines.indexWhere((it) => it.startsWith('dev_dependencies:'));
+    final runtime = end == -1 ? lines : lines.sublist(0, end);
+    return {
+      for (final line in runtime)
+        if (RegExp(r'^  (cobalt[a-z_]*):').firstMatch(line) case final it?)
+          it.group(1)!,
+    };
+  }
+
   test('there are packages to check', () => expect(shipped, isNotEmpty));
 
   group('every package is named in', () {
@@ -89,6 +104,61 @@ void main() {
             'what it depends on',
       );
       expect(listed.difference(shipped), isEmpty);
+    });
+
+    /// A dependency has to be published before whatever needs it.
+    ///
+    /// The group numbers are prose; the graph is in the pubspecs. The
+    /// membership check above catches a package left out of the list — this
+    /// catches one listed in the wrong place, which fails the same way and
+    /// later: version solving stops mid-release with the earlier half already
+    /// live and unpublishable again.
+    ///
+    /// Dev dependencies are excluded, and that is why `cobalt` may be
+    /// published before `cobalt_test` even though it dev-depends on it: they
+    /// are not transitive, so nothing a consumer resolves needs the order to
+    /// hold for them.
+    test('the release order is one a publisher can follow', () {
+      final order = read('RELEASING.md');
+      final block = order.substring(
+        order.indexOf('## Order'),
+        order.indexOf('Steps within a numbered group'),
+      );
+
+      final group = <String, int>{};
+      var current = 0;
+      for (final line in block.split('\n')) {
+        final numbered = RegExp(
+          r'^\s*(\d+)\.\s+(cobalt[a-z_]*)\s',
+        ).firstMatch(line);
+        if (numbered != null) {
+          current = int.parse(numbered.group(1)!);
+          group[numbered.group(2)!] = current;
+          continue;
+        }
+        final continued = RegExp(r'^\s+(cobalt[a-z_]*)\s').firstMatch(line);
+        if (continued != null) group[continued.group(1)!] = current;
+      }
+
+      final wrong = <String>[];
+      for (final package in shipped) {
+        for (final needed in runtimeDependenciesOf(package)) {
+          final mine = group[package];
+          final theirs = group[needed];
+          if (mine == null || theirs == null) continue;
+          if (theirs >= mine) {
+            wrong.add('$package (group $mine) needs $needed (group $theirs)');
+          }
+        }
+      }
+
+      expect(
+        wrong,
+        isEmpty,
+        reason:
+            'each of these is published before the thing it depends on, and '
+            'pub cannot solve that',
+      );
     });
 
     test('both CI loops', () {

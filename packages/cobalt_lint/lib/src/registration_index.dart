@@ -43,9 +43,19 @@ class CobaltRegistrationIndex {
 
   /// Names claimed by more than one declaration, excluded from [edges].
   ///
-  /// Two classes called `Clock` in different libraries are two registrations
-  /// the build is happy with. Merging them by name would hand one of them the
-  /// other's dependencies, which is how a graph with no loop grows one.
+  /// Two classes called `Clock` in different libraries are two types the build
+  /// keeps apart. Merging them by name would hand one of them the other's
+  /// dependencies, which is how a graph with no loop grows one.
+  ///
+  /// Both of them count, registered or not. An unregistered `Clock` is still
+  /// something a constructor can take, and from syntax alone an edge naming
+  /// `Clock` could mean either — so a name two declarations claim is dropped
+  /// even when only one of them is registered. Missing a real loop is the
+  /// direction this index is allowed to fail in; reporting one that is not
+  /// there is not.
+  ///
+  /// A same-named type in another *package* stays invisible, and the false
+  /// loop with it. Nothing syntactic can see that far.
   final Set<String> ambiguous;
 
   /// One cycle in the graph, or null when there is none.
@@ -86,7 +96,20 @@ class _IndexBuilder {
   final edges = <String, Set<String>>{};
   final ambiguous = <String>{};
 
+  /// How many declarations in the package claim each bare name.
+  ///
+  /// Registered or not: an unregistered class is still something a dependency
+  /// can name, and the index cannot tell the two apart from syntax alone.
+  final _claims = <String, int>{};
+
   CobaltRegistrationIndex build() {
+    // A name more than one declaration claims cannot be a node: an edge
+    // naming it may mean either of them, and guessing joins two types the
+    // build keeps apart — which is how a graph with no loop grows one.
+    for (final entry in _claims.entries) {
+      if (entry.value > 1) ambiguous.add(entry.key);
+    }
+
     final nodes = {
       for (final entry in edges.entries)
         if (!ambiguous.contains(entry.key)) entry.key,
@@ -109,6 +132,9 @@ class _IndexBuilder {
   void collect(CompilationUnit unit) {
     for (final declaration in unit.declarations) {
       if (declaration is! ClassDeclaration) continue;
+
+      final claimed = declaration.namePart.typeName.lexeme;
+      _claims[claimed] = (_claims[claimed] ?? 0) + 1;
 
       var registers = false;
       var isModule = false;

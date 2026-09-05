@@ -106,6 +106,31 @@ Ownership is explicit: a parent holds its children strongly, and whoever creates
 A scope that is dropped without `dispose()` leaks by design — that is the price of a deterministic
 teardown order, and it is what makes `dispose()` reliable.
 
+### What ownership does not do
+
+Owning an object is not the same as being the only thing that holds it. `dispose()` runs, the scope
+lets go, and the object still lives for as long as anything else points at it — and nothing in a
+container can reach into your code and take a reference back.
+
+The case worth naming, because it is the one this framework was written against: something
+long-lived that keeps what a short-lived scope handed it.
+
+```dart
+// A root-lived hub, and a session object that registers itself with it.
+final session = root.push('session');
+session.get<SessionState>();   // its constructor calls hub.listen(this)
+
+await session.dispose();       // SessionState.dispose() runs — and the hub still holds it
+```
+
+`test/leak_test.dart` pins that behaviour with `leak_tracker`, so it is known rather than
+discovered.
+
+Migrating an application that already fans out state changes to nine listeners is exactly where this
+bites. The point of a session scope is that those subscriptions **go away** — you stop listening for
+a logout and let the scope end instead. Carrying them across unchanged keeps the leak and adds a
+scope that looks like it solved it.
+
 ## Closing what the scope cannot recognise
 
 A scope tears down what it built, in reverse creation order, by looking for

@@ -635,6 +635,12 @@ class Greeting {
 }
 ```
 
+**A marked parameter always comes from the call site, even when the container could build one.**
+`@cobaltParam Draft draft` puts `Draft` in the record whether or not `Draft` is registered, and the
+completeness check stops asking for it. That is what marking means, and there is no diagnostic for
+marking something the graph already has — so if a value stops arriving, look here before looking at
+the registration.
+
 The generator writes the argument type beside the container as a named record and registers a
 parameterized factory:
 
