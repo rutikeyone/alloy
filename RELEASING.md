@@ -189,6 +189,13 @@ One tag for the release, not fifteen: they are published together and carry the
 same version, so a tag each would say the same thing fifteen times and go stale
 the first time one of them is republished on its own.
 
+**A tag can be moved right up until the first `publish`, and not one commit
+after.** Before that it points at a candidate nobody can have; after it, it is
+the only claim about which source a downloaded archive was built from, and
+moving it makes that claim quietly false for everyone who already has the
+package. If the tagged commit turns out to be the wrong one after publishing,
+the answer is another version, not another tag.
+
 A GitHub release on that tag is optional and costs nothing — its body is the
 release's own CHANGELOG entry, which is written already.
 
