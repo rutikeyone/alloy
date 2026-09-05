@@ -69,7 +69,7 @@ final class CobaltApplication {
       scope.adopt(step);
     }
 
-    root.build(scope);
+    scope.runBuilder(root);
     await scope.init();
     return scope;
   }

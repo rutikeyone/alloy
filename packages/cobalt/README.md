@@ -126,6 +126,13 @@ await session.dispose();       // SessionState.dispose() runs — and the hub st
 `test/leak_test.dart` pins that behaviour with `leak_tracker`, so it is known rather than
 discovered.
 
+The same thing one step further in: an object that *holds* something closeable and offers no way to
+close it. A `StreamSubscription` in a field, no `dispose()` anywhere. The scope retains only what
+says how to close, so it never retains this at all — the object is built, the subscription runs, and
+the logout that was supposed to end it does not. Five session scopes measured that way left five
+live listeners. `cobalt_resource_is_never_closed` reports it before it ships, because the runtime
+cannot: guessing at a `cancel()` by name would cancel the ones that only look closeable.
+
 Migrating an application that already fans out state changes to nine listeners is exactly where this
 bites. The point of a session scope is that those subscriptions **go away** — you stop listening for
 a logout and let the scope end instead. Carrying them across unchanged keeps the leak and adds a

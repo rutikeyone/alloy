@@ -11,6 +11,7 @@ export 'package:cobalt_external_consumer/src/note_editor.dart';
 export 'package:cobalt_external_consumer/src/platform_module.dart';
 export 'package:cobalt_external_consumer/src/report.dart';
 export 'package:cobalt_external_consumer/src/reporter.dart';
+export 'package:cobalt_external_consumer/src/support_bundle.dart';
 export 'package:cobalt_external_consumer/src/repository.dart';
 export 'package:cobalt_external_consumer/src/search_index.dart';
 export 'package:cobalt_external_consumer/src/session_cache.dart';

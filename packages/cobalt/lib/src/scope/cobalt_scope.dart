@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cobalt/src/bootstrap/cobalt_scope_builder.dart';
 import 'package:cobalt/src/errors/cobalt_depends_on_error.dart';
 import 'package:cobalt/src/errors/cobalt_dispose_error.dart';
 import 'package:cobalt/src/errors/cobalt_dispose_failure.dart';
@@ -402,7 +403,12 @@ final class CobaltScope implements CobaltResolver {
     final key = CobaltKey(T, name: name);
     final found = _lookup(key);
     if (found == null) {
-      throw CobaltNotRegisteredError(key, this.name, resolving: _tracker.chain);
+      throw CobaltNotRegisteredError(
+        key,
+        this.name,
+        resolving: _tracker.chain,
+        whileBuilding: _building,
+      );
     }
     return found.scope._materialize(found.registration) as T;
   }
@@ -413,7 +419,12 @@ final class CobaltScope implements CobaltResolver {
     final key = CobaltKey(T, name: name);
     final found = _lookup(key);
     if (found == null) {
-      throw CobaltNotRegisteredError(key, this.name, resolving: _tracker.chain);
+      throw CobaltNotRegisteredError(
+        key,
+        this.name,
+        resolving: _tracker.chain,
+        whileBuilding: _building,
+      );
     }
     final registration = found.registration;
     if (registration is! ParamRegistration) {
@@ -858,6 +869,30 @@ final class CobaltScope implements CobaltResolver {
         instance is Disposable ||
         instance is AsyncDisposable) {
       _owned.add(_OwnedInstance(instance, teardown));
+    }
+  }
+
+  /// Whether a builder is running against this scope right now.
+  ///
+  /// Only [runBuilder] sets it, and only for the length of one call. It exists
+  /// so a failed resolution can tell "not registered yet" from "not
+  /// registered": inside the window the registration may be three lines below,
+  /// outside it there is nothing to add. The scope state cannot answer this —
+  /// it is `open` during composition and `open` afterwards, and a test scope
+  /// that never calls init() stays `open` for its whole life.
+  var _building = false;
+
+  /// Runs [builder] against this scope.
+  ///
+  /// Prefer this to calling `builder.build(scope)` yourself: what it adds is
+  /// the window above, and with it the diagnostic that tells a reader their
+  /// eager registration ran before the one it needed.
+  void runBuilder(CobaltScopeBuilder builder) {
+    _building = true;
+    try {
+      builder.build(this);
+    } finally {
+      _building = false;
     }
   }
 

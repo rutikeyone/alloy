@@ -270,6 +270,10 @@ builder: (context, child) => CobaltAppScope(
 
 ---
 
+**`build()` 内部的顺序对饿汉式注册有意义，对懒汉式没有。** `registerLazySingleton` 是「稍后再建」的承诺，
+所以它不在乎上面或下面注册了什么。`registerSingleton` 是**当场**构建的，它解析的东西必须已经注册。
+把手写的 builder 组合在生成的 builder 之上时就会遇到：把饿汉式的放在容器之后，或者改成懒汉式。
+
 ## 5. 在 widget 中读取依赖
 
 ```dart

@@ -218,4 +218,56 @@ void main() {
       expect(identical(first, second), isFalse);
     });
   });
+
+  group('the two modes in one graph', () {
+    /// The direction the stand already had is generated-takes-hand-written:
+    /// `Diagnostics` receives the `DeviceInfo` that `ConsumerScope`
+    /// registered. This is the other one, and the chain runs through all
+    /// three: hand-written `SupportBundle` <- generated `Diagnostics` <-
+    /// hand-written `DeviceInfo`.
+    test('a hand-written registration may take a generated one', () async {
+      final app = await startConsumer(device: const DeviceInfo('pixel-9'));
+      addTearDown(app.dispose);
+
+      expect(app.get<SupportBundle>().summary, contains('pixel-9'));
+    });
+
+    /// Order inside build() is invisible to a lazy registration and decisive
+    /// for an eager one, which is the shape a migration lands in: hand-written
+    /// registrations at the top of the file, the generated container at the
+    /// bottom. The message has to say that, or it reads as "you forgot to
+    /// register this" about something registered three lines below.
+    test('a hand-written eager registration cannot outrun the container', () {
+      final scope = CobaltScope.root(name: 'test');
+      addTearDown(scope.dispose);
+
+      expect(
+        () => scope.runBuilder(const _EagerFirst()),
+        throwsA(
+          isA<CobaltNotRegisteredError>()
+              .having((it) => it.whileBuilding, 'whileBuilding', isTrue)
+              .having(
+                (it) => it.toString(),
+                'message',
+                contains('still being built'),
+              ),
+        ),
+      );
+    });
+  });
+}
+
+/// Resolves a generated registration before the generated container has run.
+class _EagerFirst implements CobaltScopeBuilder {
+  const _EagerFirst();
+
+  @override
+  void build(CobaltScope scope) {
+    scope
+      ..registerSingleton<SupportBundle>(
+        const SupportBundleFactory().create(scope),
+      )
+      ..registerSingleton<DeviceInfo>(const DeviceInfo('late'));
+    const $CobaltRootScope().build(scope);
+  }
 }

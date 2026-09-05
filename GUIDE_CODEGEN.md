@@ -295,6 +295,11 @@ factory resolves inside `create`, so nothing static can see what it will ask for
 
 ---
 
+**A hand-written registration composed around the container follows the same rule.** A lazy one may
+sit above `$CobaltRootScope().build(scope)` and still resolve what the generator registered; an
+eager one may not, and the error says so — it names the missing type and adds that the scope is
+still being built.
+
 ## 6. Composing on top of the generated root
 
 The generator only sees its own package's annotations. Anything else — a value from `--dart-define`,

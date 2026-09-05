@@ -16,7 +16,8 @@ class CobaltNotRegisteredError extends CobaltError {
     this.key,
     this.scopeName, {
     this.resolving = const [],
-  }) : super(_message(key, scopeName, resolving));
+    this.whileBuilding = false,
+  }) : super(_message(key, scopeName, resolving, whileBuilding));
 
   /// The key that could not be resolved.
   final CobaltKey key;
@@ -27,15 +28,27 @@ class CobaltNotRegisteredError extends CobaltError {
   /// The registrations under construction when this was asked for.
   final List<CobaltKey> resolving;
 
+  /// Whether a scope builder was still running when this was asked for.
+  ///
+  /// Then the answer is probably "not yet" rather than "not at all", and the
+  /// message says so. Outside that window the same sentence would be a guess.
+  final bool whileBuilding;
+
   static String _message(
     CobaltKey key,
     String scopeName,
     List<CobaltKey> resolving,
+    bool whileBuilding,
   ) {
     final where =
         '$key is not registered in scope "$scopeName" or its ancestors.';
-    if (resolving.isEmpty) return where;
+    final when = whileBuilding
+        ? ' The scope is still being built, so a registration made further '
+              'down build() is not there yet — an eager registerSingleton '
+              'resolves at once, while a lazy one would have waited.'
+        : '';
+    if (resolving.isEmpty) return '$where$when';
     final path = [...resolving, key].join(' -> ');
-    return '$where Resolving: $path.';
+    return '$where$when Resolving: $path.';
   }
 }

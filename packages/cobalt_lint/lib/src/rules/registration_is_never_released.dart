@@ -1,11 +1,11 @@
 import 'package:cobalt_analyzer/cobalt_analyzer.dart';
+import 'package:cobalt_lint/src/teardown_shape.dart';
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/error/error.dart';
 
 /// Reports a registration the scope will hold and never close.
@@ -82,7 +82,7 @@ class _Visitor extends SimpleAstVisitor<void> {
     if (declaration.dispose != null) return;
     if (_saysHow(element)) return;
 
-    final closing = _closingMethodOf(element);
+    final closing = teardownMethodOf(element);
     if (closing == null) return;
 
     rule.reportAtNode(
@@ -94,25 +94,4 @@ class _Visitor extends SimpleAstVisitor<void> {
   bool _saysHow(ClassElement element) => element.allSupertypes.any(
     (supertype) => _recognised.contains(supertype.element.name),
   );
-
-  /// The name of a method that looks like a teardown, or null when there is
-  /// none.
-  String? _closingMethodOf(ClassElement element) {
-    for (final name in const ['dispose', 'close']) {
-      final method =
-          element.methods.where((it) => it.name == name).firstOrNull ??
-          element.allSupertypes
-              .expand((supertype) => supertype.methods)
-              .where((it) => it.name == name)
-              .firstOrNull;
-      if (method == null) continue;
-      if (method.formalParameters.any((it) => it.isRequired)) continue;
-      if (!_isTeardownReturn(method.returnType)) continue;
-      return name;
-    }
-    return null;
-  }
-
-  bool _isTeardownReturn(DartType type) =>
-      type is VoidType || type.isDartAsyncFuture || type.isDartAsyncFutureOr;
 }

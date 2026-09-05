@@ -273,6 +273,12 @@ builder: (context, child) => CobaltAppScope(
 
 ---
 
+**Order inside `build()` matters for eager registrations and not for lazy ones.** A
+`registerLazySingleton` is a promise to build later, so it does not care what is registered above or
+below it. A `registerSingleton` builds *now*, and anything it resolves has to be registered already.
+Composing a hand-written builder on top of a generated one is where this shows up — put the eager
+ones after the container, or make them lazy.
+
 ## 5. Reading from the graph in a widget
 
 ```dart

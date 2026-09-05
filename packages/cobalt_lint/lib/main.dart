@@ -16,6 +16,7 @@ import 'package:cobalt_lint/src/rules/injected_field_must_be_late_final.dart';
 import 'package:cobalt_lint/src/rules/missing_injection_mixin.dart';
 import 'package:cobalt_lint/src/rules/param_needs_an_injectable.dart';
 import 'package:cobalt_lint/src/rules/registration_is_never_released.dart';
+import 'package:cobalt_lint/src/rules/resource_is_never_closed.dart';
 import 'package:analysis_server_plugin/plugin.dart';
 import 'package:analysis_server_plugin/registry.dart';
 
@@ -44,5 +45,6 @@ class _CobaltPlugin extends Plugin {
     registry.registerWarningRule(MissingInjectionMixin());
     registry.registerWarningRule(ParamNeedsAnInjectable());
     registry.registerWarningRule(RegistrationIsNeverReleased());
+    registry.registerWarningRule(ResourceIsNeverClosed());
   }
 }

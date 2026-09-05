@@ -1,5 +1,7 @@
 ## 0.1.0
 
+- `CobaltScope.runBuilder`, which marks the window a scope builder runs in so
+  a failed resolution can say the registration may be further down `build()`.
 - Documented the named-record form of a parameterized factory's argument,
   which keeps the argument names a positional record loses. Pinned by tests.
 - `getAll` no longer sorts a copy of the matches on every call: registrations

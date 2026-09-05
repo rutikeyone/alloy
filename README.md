@@ -238,6 +238,7 @@ in the IDE instead of only when `build_runner` runs:
 | `cobalt_dependency_is_not_registered` | an injected dependency nothing in the package registers |
 | `cobalt_dependency_cycle` | an injectable class that depends, eventually, on itself |
 | `cobalt_registration_is_never_released` | a registered class with a `dispose()` or `close()` the scope cannot see |
+| `cobalt_resource_is_never_closed` | A registration holds something closeable and offers no way to close it |
 
 `custom_lint` is not used: its latest release (0.8.1) is pinned to `analyzer ^8.0.0` and cannot
 coexist with a modern analyzer. `riverpod_lint` migrated off it to the first-party

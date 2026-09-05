@@ -64,6 +64,7 @@ package, and the three lines go back into `analysis_options.yaml`.
 | `cobalt_dependency_is_not_registered` | an injected dependency nothing in the package registers |
 | `cobalt_dependency_cycle` | an injectable class that depends, eventually, on itself |
 | `cobalt_registration_is_never_released` | a registered class with a `dispose()` or `close()` the scope cannot see |
+| `cobalt_resource_is_never_closed` | A registration holds something closeable and offers no way to close it. |
 
 All rules are warnings, so they are on by default. Every rule reads annotations through
 `cobalt_analyzer`, the same layer the generator uses.

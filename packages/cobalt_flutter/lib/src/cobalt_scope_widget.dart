@@ -74,7 +74,7 @@ class _CobaltScopeWidgetState extends State<CobaltScopeWidget> {
 
     final parent = CobaltScopeProvider.of(context);
     final scope = parent.push(widget.effectiveName);
-    widget.builder.build(scope);
+    scope.runBuilder(widget.builder);
     _scope = scope;
     unawaited(_initialize(scope));
   }

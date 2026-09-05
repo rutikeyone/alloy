@@ -224,6 +224,7 @@ something outside the generated container registers it.
 | `cobalt_dependency_is_not_registered` | 包内无人注册的被注入依赖 |
 | `cobalt_dependency_cycle` | 最终依赖到自身的可注入类 |
 | `cobalt_registration_is_never_released` | 已注册的类带有作用域看不见的 `dispose()` 或 `close()` |
+| `cobalt_resource_is_never_closed` | 注册项持有需要关闭的东西，却没有提供关闭它的办法 |
 
 不使用 `custom_lint`：它的最新版本（0.8.1）被钉在 `analyzer ^8.0.0`，无法与现代 analyzer 共存。
 `riverpod_lint` 已迁移到官方的 `analysis_server_plugin`，`cobalt_lint` 亦然。

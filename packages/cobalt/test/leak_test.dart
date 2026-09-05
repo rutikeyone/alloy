@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cobalt/cobalt.dart';
 import 'package:cobalt_test/cobalt_test.dart';
 import 'package:leak_tracker/leak_tracker.dart';
@@ -23,6 +25,16 @@ WeakReference<Payload> seed(CobaltScope scope) {
 }
 
 Future<void> collect() => forceGC(fullGcCycles: 3);
+
+/// Holds a subscription and offers no way to close it — the shape
+/// `cobalt_resource_is_never_closed` was written for.
+class Holder {
+  Holder(Stream<int> source) {
+    sub = source.listen((_) {});
+  }
+
+  late final StreamSubscription<int> sub;
+}
 
 /// A long-lived service that keeps whatever registers with it.
 class Hub {
@@ -158,4 +170,41 @@ void main() {
       await root.dispose();
     },
   );
+
+  /// A resource nobody offered to close keeps running after its scope ends.
+  ///
+  /// The scope retains only what says how to close — an interface, or a
+  /// `dispose:` on the registration. This class says neither, so it is never
+  /// retained and never released, and the subscription outlives the logout
+  /// that was supposed to end it. Measured before the lint rule existed: five
+  /// session scopes, five live listeners afterwards.
+  ///
+  /// Pinned rather than fixed. The runtime cannot close what does not offer a
+  /// way to be closed, and guessing at `cancel()` by name would cancel things
+  /// that mean something else. `cobalt_resource_is_never_closed` reports it
+  /// instead, before it ships.
+  test('a resource nobody offered to close outlives its scope', () async {
+    final controller = StreamController<int>.broadcast();
+    final root = cobaltTestRoot();
+    final session = root.push('session')
+      ..registerLazySingleton<Holder>(
+        FnFactory((_) => Holder(controller.stream)),
+      );
+
+    session.get<Holder>();
+    await session.dispose();
+    await collect();
+
+    expect(
+      controller.hasListener,
+      isTrue,
+      reason:
+          'if this ever goes false the runtime started closing things it was '
+          'never told how to close, which cancels the ones that only look '
+          'closeable',
+    );
+
+    await root.dispose();
+    await controller.close();
+  });
 }

@@ -1,6 +1,7 @@
 import 'package:cobalt/cobalt.dart';
 import 'package:cobalt_external_consumer/cobalt.g.dart';
 import 'package:cobalt_external_consumer/src/device_info.dart';
+import 'package:cobalt_external_consumer/src/support_bundle.dart';
 
 /// The whole root scope: what the generator found, plus the one thing it
 /// cannot know about.
@@ -16,6 +17,12 @@ class ConsumerScope implements CobaltScopeBuilder {
   void build(CobaltScope scope) {
     scope.registerSingleton<DeviceInfo>(device);
     const $CobaltRootScope().build(scope);
+
+    // Registered after the generated container and lazily, both on purpose: a
+    // hand-written registration may take a generated one, and a lazy factory
+    // does not care which of them was written first. An eager one would —
+    // see `a hand-written eager registration cannot outrun the container`.
+    scope.registerLazySingleton<SupportBundle>(const SupportBundleFactory());
   }
 }
 
