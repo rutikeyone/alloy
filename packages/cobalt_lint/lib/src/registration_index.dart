@@ -193,6 +193,12 @@ class _IndexBuilder {
                 _returnedName(member.returnType);
             if (node == null) continue;
 
+            // A member registers by its return type, not by a declaration, so
+            // the class-declaration count above never sees it. Without this a
+            // module registering `Channel` and an unrelated `Channel` class
+            // elsewhere in the package read as one node.
+            _claims[node] = (_claims[node] ?? 0) + 1;
+
             final wanted = <String>{};
             for (final parameter
                 in member.parameters?.parameters ?? const <FormalParameter>[]) {

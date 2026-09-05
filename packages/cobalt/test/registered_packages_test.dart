@@ -140,12 +140,25 @@ void main() {
         if (continued != null) group[continued.group(1)!] = current;
       }
 
+      // Before comparing anything: a block this cannot read leaves the map
+      // empty, and every comparison below would be skipped rather than run.
+      // The neighbouring membership test would not notice — it only needs the
+      // names to appear, and they still do. Without this the guard can stop
+      // guarding without saying so.
+      expect(
+        shipped.difference(group.keys.toSet()),
+        isEmpty,
+        reason:
+            'the order block was not read as numbered groups, so nothing '
+            'below this line checked anything',
+      );
+
       final wrong = <String>[];
       for (final package in shipped) {
         for (final needed in runtimeDependenciesOf(package)) {
-          final mine = group[package];
+          final mine = group[package]!;
           final theirs = group[needed];
-          if (mine == null || theirs == null) continue;
+          if (theirs == null) continue; // not a shipped package
           if (theirs >= mine) {
             wrong.add('$package (group $mine) needs $needed (group $theirs)');
           }

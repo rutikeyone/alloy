@@ -279,6 +279,42 @@ class Api {
 
   /// Two classes of the same name are two registrations the build accepts, and
   /// fusing them by name is how a graph with no loop grows one.
+  /// The collision the class-declaration count cannot see: the registered
+  /// `Channel` is a module member's return type, and the *other* `Channel` is
+  /// an unregistered class. One declaration claims the name, so the widened
+  /// ambiguity check leaves the node in the graph.
+  void test_moduleMemberCollidesWithAnUnregisteredClass() async {
+    newFile('$testPackageLibPath/vendor.dart', '''
+class Channel {}
+''');
+
+    newFile('$testPackageLibPath/platform_module.dart', '''
+$cobaltImport
+
+import 'courier.dart';
+
+@cobaltModule
+class PlatformModule {
+  const PlatformModule();
+
+  @cobaltInject
+  Channel channel(Courier courier) => Channel();
+}
+''');
+
+    await assertDiagnostics('''
+$cobaltImport
+
+import 'vendor.dart';
+
+@cobaltInject
+class Courier {
+  Courier(this.channel);
+  final Channel channel;
+}
+''', []);
+  }
+
   /// The same collision with only one side registered.
   ///
   /// `Api` takes the vendored `Clock`; the registered `Clock` takes `Api`.
